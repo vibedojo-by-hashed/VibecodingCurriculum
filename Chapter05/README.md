@@ -172,11 +172,49 @@ Claude combines memory from multiple sources:
 3. User CLAUDE.md (personal preferences)
 ```
 
+### 7. Rules Directory
+
+You can manage specific rules as separate files in `.claude/rules/`:
+
+```
+.claude/rules/
+├── security.md     # Security rules
+├── testing.md      # Testing rules
+└── api-design.md   # API design rules
+```
+
+**Example** (`.claude/rules/security.md`):
+```markdown
+# Security Rules
+
+Always check for:
+- Input sanitization
+- SQL injection prevention
+- XSS vulnerabilities
+- No logging of sensitive data
+```
+
+Rules are automatically loaded and applied to all conversations.
+
+### 8. Response Language Setting
+
+You can control Claude's response language in the settings file:
+
+```json
+// .claude/settings.json
+{
+  "language": "korean"
+}
+```
+
+Supported languages: `korean`, `japanese`, `english`, `chinese`, `spanish`, etc.
+
 ---
 
 ## Resources
 
 - [Claude Code Memory Documentation](https://docs.anthropic.com/en/docs/claude-code)
+- [Settings Reference](https://docs.anthropic.com/en/docs/claude-code)
 - [Markdown Guide](https://www.markdownguide.org/)
 
 ---
@@ -242,11 +280,56 @@ Complete these tasks to master this chapter:
 
 ## Advanced
 
-- [ ] Set up parent directory CLAUDE.md for monorepo structure
-- [ ] Create different CLAUDE.md for different branches
-- [ ] Experiment with dynamic memory (environment-specific rules)
-- [ ] Compare Claude's behavior with and without CLAUDE.md
+### Monorepo CLAUDE.md Structure
 
-### Pro Tips
+Use hierarchical CLAUDE.md files in monorepos:
 
-> **"Hold the same bar for Claude's code as you would for a human's"** - Review AI-generated code with the same rigor you'd apply to a colleague's PR. This keeps code quality high and helps you learn what to add to CLAUDE.md.
+```
+monorepo/
+├── CLAUDE.md              # Common rules
+├── packages/
+│   ├── frontend/
+│   │   └── CLAUDE.md      # React-specific rules
+│   └── backend/
+│       └── CLAUDE.md      # Node.js-specific rules
+```
+
+Root CLAUDE.md example:
+```markdown
+# Monorepo Rules
+- All packages use TypeScript strict mode
+- Run `bun test` before committing
+- See package-specific CLAUDE.md for details
+```
+
+### CLAUDE.md Effect Experiment
+
+Compare the same task with and without CLAUDE.md:
+
+```bash
+# 1. Start without CLAUDE.md
+mv CLAUDE.md CLAUDE.md.bak
+claude
+> Create a new API endpoint for /users
+
+# 2. Restore CLAUDE.md and try again
+mv CLAUDE.md.bak CLAUDE.md
+claude
+> Create a new API endpoint for /users
+
+# Compare differences: coding style, error handling, file location, etc.
+```
+
+### Updating CLAUDE.md When Claude Makes Mistakes
+
+When Claude breaks a rule, document it immediately:
+
+```bash
+# If Claude used var
+> # Never use var, always use const or let
+
+# If Claude used any type
+> # Avoid TypeScript any type, define proper interfaces
+```
+
+> **Pro Tip**: "Hold the same bar for Claude's code as you would for a human's." Update CLAUDE.md whenever mistakes occur, and the same mistakes won't repeat.

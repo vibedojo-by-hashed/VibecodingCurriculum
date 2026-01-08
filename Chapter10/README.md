@@ -237,12 +237,58 @@ claude -p "Complete this task" --dangerouslySkipPermissions
 4. **Review Changes**: Don't auto-merge AI changes
 5. **Monitor Costs**: Track API usage
 
+### 10. Ralph-Wiggum Plugin: Autonomous Iteration Loop
+
+Ralph-Wiggum is an official plugin that enables Claude to iterate autonomously until task completion:
+
+```bash
+# Basic usage
+/ralph-loop "Your task description" --completion-promise "DONE"
+```
+
+Claude automatically:
+1. Performs the task
+2. Attempts to exit
+3. Stop hook blocks the exit
+4. Re-runs with same prompt
+5. Repeats until completion
+
+**Key Options**:
+| Option | Description |
+|--------|-------------|
+| `--max-iterations <n>` | Maximum iterations (default: unlimited) |
+| `--completion-promise <text>` | Completion signal phrase |
+
+**Practical Example**:
+```bash
+/ralph-loop "Build a REST API for todos. Requirements:
+- CRUD operations
+- Input validation
+- Tests
+Output <promise>COMPLETE</promise> when done." \
+--completion-promise "COMPLETE" \
+--max-iterations 50
+```
+
+**Good Use Cases**:
+- Tasks with clear success criteria
+- Iterative tasks requiring testing/debugging
+- New project creation
+
+**Use With Caution**:
+- Tasks requiring human judgment
+- Production debugging
+- Unclear success criteria
+
+> **Note**: ralph-wiggum is an [official plugin](https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum).
+
 ---
 
 ## Resources
 
 - [Claude Code CI/CD Documentation](https://docs.anthropic.com/en/docs/claude-code)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [Ralph-Wiggum Plugin](https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum)
 - [Anthropic API Pricing](https://www.anthropic.com/pricing)
 
 ---
@@ -308,7 +354,84 @@ Build a complete CI/CD pipeline with Claude Code automation by completing:
 
 ## Advanced
 
-- [ ] Build a custom GitHub Action that wraps Claude Code
-- [ ] Create GitLab CI/Jenkins equivalents
-- [ ] Implement cost optimization with caching
-- [ ] Build a dashboard for CI Claude usage
+### CI Cost Optimization
+
+Practical tips to reduce Claude API costs:
+
+```yaml
+# 1. Review only changed files
+- name: Get changed files
+  id: changed
+  run: |
+    echo "files=$(gh pr view ${{ github.event.pull_request.number }} --json files -q '.files[].path' | tr '\n' ' ')" >> $GITHUB_OUTPUT
+
+- name: Review only changed files
+  run: |
+    claude -p "Review only these files: ${{ steps.changed.outputs.files }}"
+
+# 2. Start with smaller models
+- name: Quick review with Haiku
+  run: |
+    claude -p "Quick lint check" --model claude-haiku
+
+# 3. Conditional execution
+- name: Deep review for large PRs only
+  if: github.event.pull_request.additions > 100
+  run: |
+    claude -p "Thorough security review"
+```
+
+### Reusable Workflows
+
+Create workflows that can be reused across multiple repositories:
+
+```yaml
+# .github/workflows/reusable-claude-review.yml
+name: Reusable Claude Review
+
+on:
+  workflow_call:
+    inputs:
+      review_type:
+        required: true
+        type: string
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: true
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Claude Review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          claude -p "Perform a ${{ inputs.review_type }} review"
+```
+
+Use in other repositories:
+```yaml
+jobs:
+  review:
+    uses: your-org/workflows/.github/workflows/reusable-claude-review.yml@main
+    with:
+      review_type: "security"
+    secrets:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+```
+
+### Failure Notifications
+
+Send Slack/Discord notifications when Claude tasks fail:
+
+```yaml
+- name: Notify on failure
+  if: failure()
+  run: |
+    curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+      -H 'Content-type: application/json' \
+      -d '{"text":"Claude review failed for PR #${{ github.event.pull_request.number }}"}'
+```

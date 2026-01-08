@@ -266,7 +266,58 @@ Build an MCP-powered development environment by completing:
 
 ## Advanced
 
-- [ ] Build an MCP server that wraps your company's internal APIs
-- [ ] Create an MCP aggregator that combines multiple services
-- [ ] Implement caching in MCP servers for better performance
-- [ ] Build MCP servers for domain-specific tools (CAD, music, etc.)
+### Exploring Popular MCP Servers
+
+Find useful servers at the [MCP Server Directory](https://github.com/modelcontextprotocol/servers) and try them:
+
+```bash
+# Filesystem server (local file access)
+npx -y @anthropic-ai/mcp-server-filesystem
+
+# Browser automation server
+npx -y @anthropic-ai/mcp-server-puppeteer
+
+# Git server (advanced git operations)
+npx -y @anthropic-ai/mcp-server-git
+```
+
+### Combining MCP Servers
+
+Practical workflows using multiple MCP servers together:
+
+```bash
+# GitHub Issues + Database combination
+> Look up issue #123 from GitHub, then query our database
+> to find related user complaints from the last week
+
+# Slack + Git combination
+> Summarize today's git commits and post to #dev-updates channel
+```
+
+### Building a Simple Custom MCP Server
+
+If you really need one, create a minimal MCP server:
+
+```javascript
+// simple-mcp-server.js
+import { Server } from "@anthropic-ai/mcp-server";
+
+const server = new Server({
+  name: "my-tools",
+  version: "1.0.0"
+});
+
+server.addTool({
+  name: "get_weather",
+  description: "Get current weather for a city",
+  parameters: { city: { type: "string" } },
+  handler: async ({ city }) => {
+    // Actually call weather API
+    return { temp: 22, condition: "sunny" };
+  }
+});
+
+server.start();
+```
+
+> **Note**: In most cases, existing MCP servers are sufficient. Only create custom servers when you have truly specialized needs.

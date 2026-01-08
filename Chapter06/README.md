@@ -252,7 +252,63 @@ Build a comprehensive slash command library by completing:
 
 ## Advanced
 
-- [ ] Create commands that call other commands
-- [ ] Build commands for specific frameworks (React, Django, etc.)
-- [ ] Create an onboarding command set for new team members
-- [ ] Experiment with commands that generate other commands
+### Framework-Specific Commands
+
+Create commands for frameworks you use frequently:
+
+**React Component Generation** (`.claude/commands/react-component.md`):
+```markdown
+Create a new React component named $ARGUMENTS with:
+- TypeScript + functional component
+- Props interface defined
+- Basic unit test file
+- Storybook story (if stories/ exists)
+Follow patterns in @src/components/Button.tsx
+```
+
+**API Endpoint Generation** (`.claude/commands/api-endpoint.md`):
+```markdown
+Create a new API endpoint for $ARGUMENTS:
+- Follow REST conventions
+- Include validation with zod
+- Add error handling
+- Create test file
+Follow patterns in @src/api/users.ts
+```
+
+### Team Onboarding Command Set
+
+Commands that help new team members become productive immediately:
+
+```markdown
+<!-- .claude/commands/onboarding/setup.md -->
+Help me set up this project:
+1. Explain the project architecture
+2. Show me how to run it locally
+3. Point out the main files I should know
+4. Explain the testing strategy
+
+<!-- .claude/commands/onboarding/first-task.md -->
+I'm new to this codebase. Help me with my first task: $ARGUMENTS
+- Explain relevant code sections
+- Suggest which files to modify
+- Warn about common pitfalls
+```
+
+### Command Chaining Pattern
+
+Use commands sequentially for complex tasks:
+
+```bash
+# 1. Review first
+/review
+
+# 2. Fix discovered issues
+/fix-bug found in review
+
+# 3. Add tests
+/test src/utils/newFeature.ts
+
+# 4. Document
+/docs src/utils/newFeature.ts
+```

@@ -206,7 +206,52 @@ Complete these tasks to master this chapter:
 
 ## Advanced
 
-- [ ] Learn regex patterns for more powerful Grep searches
-- [ ] Explore how Claude handles large codebases (token limits)
-- [ ] Practice exploring codebases in languages you don't know
-- [ ] Compare exploration strategies: Claude Code vs traditional IDE search
+### Real-World Grep Patterns
+
+Practice frequently used search patterns:
+
+```bash
+# Find TODO/FIXME comments
+> Find all TODO and FIXME comments in the codebase
+
+# Find specific function calls
+> Find all places where "fetchUser" is called
+
+# Find unused imports
+> Find files that import "lodash" but might not use it
+
+# Find error handling patterns
+> Show me all try-catch blocks in the api/ directory
+```
+
+### Unfamiliar Codebase Challenge
+
+Pick a project you've never seen from GitHub and try:
+
+```bash
+# 1. Understand the project in 5 minutes
+> I just cloned this repo. Give me a 2-minute overview of what it does,
+> the tech stack, and the main entry points.
+
+# 2. Trace a specific feature
+> How does user authentication work in this project?
+> Walk me through the code path from login to session creation.
+
+# 3. Find modification points
+> If I wanted to add a new API endpoint, which files would I need to modify?
+```
+
+**Recommended Projects**: Express.js, Fastify, or any mid-sized open source project you're interested in
+
+### Large Codebase Strategies
+
+Context management is critical in large projects:
+
+```bash
+# Don't read everything at once, only what's needed
+> Don't read all files. First, show me the directory structure,
+> then I'll tell you which parts to explore.
+
+# Limit exploration scope
+> Focus only on the src/auth/ directory for now
+```

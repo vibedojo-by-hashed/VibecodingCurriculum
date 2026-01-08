@@ -176,6 +176,33 @@ Skills activate automatically when Claude detects:
 | **CLAUDE.md** | Yes (always) | Project rules | Global guidelines |
 | **Subagents** | No (delegated) | Separate context | Complex tasks |
 
+### 9. Skill Hot Reload
+
+Skills automatically reload when created or modified—no session restart needed:
+
+```bash
+# Create or edit a skill
+vim ~/.claude/skills/my-skill/SKILL.md
+
+# Changes apply immediately in current session
+```
+
+### 10. Forked Subagent Context
+
+Run skills or commands in isolated contexts:
+
+```yaml
+---
+name: isolated-task
+description: Runs in separate context
+context: fork
+agent: custom-agent
+---
+# This skill runs in its own context
+```
+
+Using `context: fork` allows independent work without affecting the main conversation context.
+
 ---
 
 ## Resources
@@ -241,7 +268,60 @@ Build a team of specialized subagents and skills by completing:
 
 ## Advanced
 
-- [ ] Create agents that coordinate with each other
-- [ ] Build skills that reference external documentation
-- [ ] Implement version-specific skills (React 18 vs 17)
-- [ ] Create a skill/agent sharing system for your team
+### Document-Based Skills
+
+Create practical skills that reference external documentation:
+
+```markdown
+<!-- .claude/skills/react-19-migration.md -->
+---
+name: react-19-migration
+description: React 19 migration guide
+globs: ["**/*.tsx", "**/*.jsx"]
+---
+
+# React 19 Migration Guide
+
+## Key Changes
+- use() hook added
+- Server Components native support
+- ref can be passed as prop
+
+## Migration Checklist
+1. Remove forwardRef, use ref prop instead
+2. Leverage useFormStatus, useFormState
+3. Separate server components / client components
+
+Details: https://react.dev/blog/2024/04/25/react-19
+```
+
+### Practical Subagent Usage
+
+Patterns for leveraging subagents for specific tasks:
+
+```bash
+# Using Security Auditor
+> Have the security-auditor agent review the authentication flow
+> in src/auth/. Focus on token handling and session management.
+
+# Fix based on results
+> Based on the security review, fix the identified issues
+```
+
+### Team Sharing Method
+
+Include the `.claude/` folder in git so the entire team can use it:
+
+```
+.claude/
+├── agents/
+│   ├── security-auditor.md    # Team-shared agents
+│   └── api-designer.md
+├── skills/
+│   ├── our-coding-style.md    # Team coding conventions
+│   └── api-patterns.md
+└── commands/
+    └── review.md
+```
+
+> **Tip**: When a new team member joins, a single `git pull` automatically applies all configurations.

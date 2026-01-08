@@ -111,19 +111,19 @@ Claude Code 개발진과 실용주의 개발자들의 팁을 최대한 모았습
 
 ## Chapter 개요
 
-| Chapter | 주제 | 설명 | 난이도 |
-|---------|------|------|--------|
-| [Chapter 00](./Chapter00/) | 시작하기 | 설치, 기본 명령어, 권한 모드 | ⭐ |
-| [Chapter 01](./Chapter01/) | 대화와 컨텍스트 | 효과적인 프롬프팅, @-mention, 파일 참조 | ⭐ |
-| [Chapter 02](./Chapter02/) | 코드 탐색 | Grep, Glob, Read를 활용한 코드베이스 분석 | ⭐⭐ |
-| [Chapter 03](./Chapter03/) | 코드 편집 | Edit, Write, 안전한 리팩토링 | ⭐⭐ |
-| [Chapter 04](./Chapter04/) | Git 워크플로우 | 커밋, PR, 자동화된 코드 리뷰 | ⭐⭐ |
-| [Chapter 05](./Chapter05/) | 프로젝트 메모리 | CLAUDE.md, 프로젝트 가이드라인, 팀 공유 | ⭐⭐ |
-| [Chapter 06](./Chapter06/) | Slash Commands | 커스텀 명령어, 워크플로우 자동화 | ⭐⭐⭐ |
-| [Chapter 07](./Chapter07/) | Hooks | 이벤트 기반 자동화, pre/post 액션 | ⭐⭐⭐ |
-| [Chapter 08](./Chapter08/) | MCP 서버 | 외부 도구 연결 (DB, GitHub 등) | ⭐⭐⭐ |
-| [Chapter 09](./Chapter09/) | Subagents와 Skills | 전문화된 에이전트, 도메인 지식 | ⭐⭐⭐⭐ |
-| [Chapter 10](./Chapter10/) | CI/CD 통합 | Headless 모드, GitHub Actions, 자동화 파이프라인 | ⭐⭐⭐⭐ |
+| Chapter | 주제 | 설명 | 난이도 | 링크 |
+|---------|------|------|--------|------|
+| 00 | 시작하기 | 설치, 기본 명령어, 권한 모드 | ⭐ | [EN](./Chapter00/README.md) / [KO](./Chapter00/README.ko.md) |
+| 01 | 대화와 컨텍스트 | 효과적인 프롬프팅, @-mention, 파일 참조 | ⭐ | [EN](./Chapter01/README.md) / [KO](./Chapter01/README.ko.md) |
+| 02 | 코드 탐색 | Grep, Glob, Read를 활용한 코드베이스 분석 | ⭐⭐ | [EN](./Chapter02/README.md) / [KO](./Chapter02/README.ko.md) |
+| 03 | 코드 편집 | Edit, Write, 안전한 리팩토링 | ⭐⭐ | [EN](./Chapter03/README.md) / [KO](./Chapter03/README.ko.md) |
+| 04 | Git 워크플로우 | 커밋, PR, 자동화된 코드 리뷰 | ⭐⭐ | [EN](./Chapter04/README.md) / [KO](./Chapter04/README.ko.md) |
+| 05 | 프로젝트 메모리 | CLAUDE.md, 프로젝트 가이드라인, 팀 공유 | ⭐⭐ | [EN](./Chapter05/README.md) / [KO](./Chapter05/README.ko.md) |
+| 06 | Slash Commands | 커스텀 명령어, 워크플로우 자동화 | ⭐⭐⭐ | [EN](./Chapter06/README.md) / [KO](./Chapter06/README.ko.md) |
+| 07 | Hooks | 이벤트 기반 자동화, pre/post 액션 | ⭐⭐⭐ | [EN](./Chapter07/README.md) / [KO](./Chapter07/README.ko.md) |
+| 08 | MCP 서버 | 외부 도구 연결 (DB, GitHub 등) | ⭐⭐⭐ | [EN](./Chapter08/README.md) / [KO](./Chapter08/README.ko.md) |
+| 09 | Subagents와 Skills | 전문화된 에이전트, 도메인 지식 | ⭐⭐⭐⭐ | [EN](./Chapter09/README.md) / [KO](./Chapter09/README.ko.md) |
+| 10 | CI/CD 통합 | Headless 모드, GitHub Actions, 자동화 파이프라인 | ⭐⭐⭐⭐ | [EN](./Chapter10/README.md) / [KO](./Chapter10/README.ko.md) |
 
 ## 사용 방법
 

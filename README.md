@@ -108,19 +108,19 @@ Learn advanced features and practical applications. Each chapter is structured a
 
 ## Chapter Overview
 
-| Chapter | Topic | Description | Difficulty |
-|---------|-------|-------------|------------|
-| [00](./Chapter00/) | Getting Started | Installation, basic commands, permission modes | ⭐ |
-| [01](./Chapter01/) | Conversation & Context | Effective prompting, @-mentions, file references | ⭐ |
-| [02](./Chapter02/) | Code Exploration | Using Glob, Grep, Read to analyze codebases | ⭐⭐ |
-| [03](./Chapter03/) | Code Editing | Edit, Write, safe refactoring practices | ⭐⭐ |
-| [04](./Chapter04/) | Git Workflow | Commits, PRs, automated code review | ⭐⭐ |
-| [05](./Chapter05/) | Project Memory | CLAUDE.md, project guidelines, team sharing | ⭐⭐ |
-| [06](./Chapter06/) | Slash Commands | Custom commands, workflow automation | ⭐⭐⭐ |
-| [07](./Chapter07/) | Hooks | Event-based automation, pre/post actions | ⭐⭐⭐ |
-| [08](./Chapter08/) | MCP Servers | External tool integration (DB, GitHub, etc.) | ⭐⭐⭐ |
-| [09](./Chapter09/) | Subagents & Skills | Specialized agents, domain knowledge | ⭐⭐⭐⭐ |
-| [10](./Chapter10/) | CI/CD Integration | Headless mode, GitHub Actions, automation pipelines | ⭐⭐⭐⭐ |
+| Chapter | Topic | Description | Difficulty | Link |
+|---------|-------|-------------|------------|------|
+| 00 | Getting Started | Installation, basic commands, permission modes | ⭐ | [EN](./Chapter00/README.md) / [KO](./Chapter00/README.ko.md) |
+| 01 | Conversation & Context | Effective prompting, @-mentions, file references | ⭐ | [EN](./Chapter01/README.md) / [KO](./Chapter01/README.ko.md) |
+| 02 | Code Exploration | Using Glob, Grep, Read to analyze codebases | ⭐⭐ | [EN](./Chapter02/README.md) / [KO](./Chapter02/README.ko.md) |
+| 03 | Code Editing | Edit, Write, safe refactoring practices | ⭐⭐ | [EN](./Chapter03/README.md) / [KO](./Chapter03/README.ko.md) |
+| 04 | Git Workflow | Commits, PRs, automated code review | ⭐⭐ | [EN](./Chapter04/README.md) / [KO](./Chapter04/README.ko.md) |
+| 05 | Project Memory | CLAUDE.md, project guidelines, team sharing | ⭐⭐ | [EN](./Chapter05/README.md) / [KO](./Chapter05/README.ko.md) |
+| 06 | Slash Commands | Custom commands, workflow automation | ⭐⭐⭐ | [EN](./Chapter06/README.md) / [KO](./Chapter06/README.ko.md) |
+| 07 | Hooks | Event-based automation, pre/post actions | ⭐⭐⭐ | [EN](./Chapter07/README.md) / [KO](./Chapter07/README.ko.md) |
+| 08 | MCP Servers | External tool integration (DB, GitHub, etc.) | ⭐⭐⭐ | [EN](./Chapter08/README.md) / [KO](./Chapter08/README.ko.md) |
+| 09 | Subagents & Skills | Specialized agents, domain knowledge | ⭐⭐⭐⭐ | [EN](./Chapter09/README.md) / [KO](./Chapter09/README.ko.md) |
+| 10 | CI/CD Integration | Headless mode, GitHub Actions, automation pipelines | ⭐⭐⭐⭐ | [EN](./Chapter10/README.md) / [KO](./Chapter10/README.ko.md) |
 
 ---
 

@@ -211,7 +211,48 @@ Complete these tasks to master this chapter:
 
 ## Advanced
 
-- [ ] Set up commit message templates that Claude follows
-- [ ] Explore `gh` CLI integration for issue management
-- [ ] Learn about git hooks and how they interact with Claude
-- [ ] Practice reviewing complex PRs with multiple files
+### Commit Message Template Setup
+
+Add your team's commit conventions to CLAUDE.md:
+
+```markdown
+## Commit Convention
+- Format: type(scope): description
+- Types: feat, fix, docs, style, refactor, test, chore
+- Example: feat(auth): add OAuth2 login support
+- Keep subject line under 50 characters
+```
+
+Then test:
+```bash
+> Commit these changes following our commit convention
+```
+
+### GitHub CLI Integration
+
+Use the `gh` CLI with Claude to manage issues and PRs:
+
+```bash
+# Check issue list and work on one
+> !gh issue list
+> Let's work on issue #42. Read the issue first, then create a plan.
+
+# Automate PR creation
+> Create a PR for this branch. Use the issue #42 description as context.
+```
+
+### Complex PR Review Practice
+
+Find a PR with 10+ changed files and review it:
+
+```bash
+# Get PR changes
+> !gh pr diff 123
+
+# Request systematic review
+> Review this PR focusing on:
+> 1. Breaking changes
+> 2. Security issues
+> 3. Performance concerns
+> Organize feedback by severity.
+```

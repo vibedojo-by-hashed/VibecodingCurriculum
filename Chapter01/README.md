@@ -180,6 +180,32 @@ After Claude completes a task, grayed-out follow-up suggestions appear:
 | `/bug` | Report a bug |
 | `/doctor` | Diagnose common issues |
 | `/context` | View what's consuming your token window |
+| `/plan` | Enter Plan mode |
+| `/vim` | Enable Vim editing mode |
+
+### 8. Vim Editing Mode
+
+Enable Vim-style editing in the terminal with `/vim` command:
+
+**Mode Switching**:
+- `Esc` → Normal mode
+- `i`, `a`, `o` → Insert mode
+
+**Navigation (Normal mode)**:
+| Key | Action |
+|-----|--------|
+| `h`/`j`/`k`/`l` | Left/Down/Up/Right |
+| `w`/`b` | Next/Previous word |
+| `0`/`$` | Start/End of line |
+
+**Editing (Normal mode)**:
+| Key | Action |
+|-----|--------|
+| `x` | Delete character |
+| `dd` | Delete line |
+| `yy` | Yank (copy) line |
+| `p` | Paste |
+| `>>`, `<<` | Indent/Outdent |
 
 ---
 
@@ -251,7 +277,50 @@ Complete these tasks to master this chapter:
 
 ## Advanced
 
-- [ ] Explore `/compact` and understand how context compression works
-- [ ] Try the same task with different prompt styles and compare results
-- [ ] Learn about token limits and how to manage long conversations
-- [ ] Experiment with providing code snippets directly vs using @-mentions
+### Context Management Deep Dive
+
+Practice efficiently managing context in long conversations:
+
+```bash
+# Check current context status
+/context
+
+# Compress when conversation gets long
+/compact
+
+# Compare token usage before/after compression
+/cost
+```
+
+### Prompt Style Experiment
+
+Try requesting the same task in different ways and compare results:
+
+```bash
+# Style 1: Simple request
+> Add validation to the form
+
+# Style 2: Specific request
+> Add email validation to the signup form in @components/SignupForm.tsx
+> Show error message below the field when invalid
+
+# Style 3: Example-based request
+> Add validation like the one in @components/LoginForm.tsx to SignupForm
+```
+
+**Experiment**: Record which style produces the most accurate results.
+
+### @-mention vs Code Pasting
+
+```bash
+# Method 1: @-mention (recommended)
+> Fix the bug in @src/utils/parser.ts line 45
+
+# Method 2: Direct code pasting
+> Fix this code:
+> function parse(input) { ... }
+
+# When to use which?
+# - @-mention: When you need full file context
+# - Pasting: When you only want to show a specific snippet
+```
