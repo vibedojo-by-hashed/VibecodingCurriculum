@@ -1,277 +1,525 @@
-# Chapter 20: Mastery
+# Chapter 20: Hooks & Commands
 
 **English** | [한국어](./README.ko.md)
 
-## Congratulations
+## What You Will Learn
 
-You have completed all 20 chapters.
-
-Now you can create various projects using Claude Code.
-
----
-
-## What You Have Learned
-
-### Part 1: Getting Started (Chapter 01-05)
-
-- AI coding and vibecoding concepts
-- Installing Claude Code and first conversation
-- Reading and writing files
-- Terminal commands
-
-### Part 2: Core Features (Chapter 06-10)
-
-- Effective prompting
-- Exploring code (Glob, Grep)
-- Editing code
-- Git basics
-- Project memory (CLAUDE.md)
-
-### Part 3: Practical Projects I (Chapter 11-14)
-
-- Website development
-- Deployment (Vercel, Railway)
-- Data storage (localStorage, CRUD)
-- Making mini games
-
-### Part 4: Practical Projects II (Chapter 15-17)
-
-- Building AI tools
-- Data processing
-- API integration
-
-### Part 5: Advanced & Mastery (Chapter 18-20)
-
-- Advanced features (Hooks, Skills)
-- Automation (MCP, CI/CD)
-- Mastery (now!)
+- Creating automation triggers with Hooks
+- Saving frequently used prompts with Commands
+- Practical automation examples
 
 ---
 
-## Core Principles Review
+## Why Learn Hooks and Commands?
 
-### 1. Be Specific
+Configuration alone has limits. Understanding Hooks and Commands gives you:
 
-```
-# Bad example
-> Fix the bug
+- **Eliminate repetition**: No need to type the same request every time
+- **Workflow automation**: Auto-process before/after specific actions
+- **Team standardization**: Whole team works the same way
 
-# Good example
-> There's a bug in @src/login.js where email validation doesn't work.
-> Invalid emails like "test@" pass through.
-> Fix it to check that domain has a dot (.)
-```
+---
 
-### 2. Work Step by Step
+## Hooks System
 
-```
-# Step 1: Understand
-> Explain this project structure
+Hooks are code that automatically runs when specific events occur.
 
-# Step 2: Plan
-> How should I build the login feature? Don't write code yet.
-
-# Step 3: Execute
-> Good, build it according to that plan
-
-# Step 4: Verify
-> Run the tests
-```
-
-### 3. Improve with Feedback
-
-The first result does not need to be perfect.
+### Hook Types
 
 ```
-> Button is too small. Make it bigger.
-> Don't like the color. Change it to blue.
-> Add hover effect.
+┌─────────────────────────────────────────────────────────────────┐
+│                      Hook Execution Points                       │
+└─────────────────────────────────────────────────────────────────┘
+
+ User Input
+      │
+      ▼
+┌──────────────────┐
+│ UserPromptSubmit │ ← When user presses enter
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│   PreToolUse     │ ← Just before tool execution
+└────────┬─────────┘
+         │
+         ▼
+    [Tool Executes]
+         │
+         ▼
+┌──────────────────┐
+│   PostToolUse    │ ← Just after tool execution
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│      Stop        │ ← When response completes
+└──────────────────┘
 ```
 
-### 4. Use CLAUDE.md
+### Hook Configuration File
 
-Create a CLAUDE.md for each project.
+```json
+// ~/.claude/settings.json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit",
+        "command": "echo 'Starting file edit: $FILE_PATH'"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "command": "echo 'Command execution complete'"
+      }
+    ]
+  }
+}
+```
+
+### Why Does This Matter?
+
+**Auto lint check:**
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "command": "npm run lint -- --fix $FILE_PATH"
+      }
+    ]
+  }
+}
+```
+
+Lint runs automatically every time a file is edited.
+
+**Auto testing:**
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "command": "npm test -- --related $FILE_PATH"
+      }
+    ]
+  }
+}
+```
+
+Only tests related to the modified file run automatically.
+
+---
+
+## Practical Hook Examples
+
+### 1. File Backup
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit",
+        "command": "cp $FILE_PATH $FILE_PATH.backup"
+      }
+    ]
+  }
+}
+```
+
+Automatically creates backup before editing files.
+
+### 2. Change Notification
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "command": "echo 'New file created: $FILE_PATH' | tee -a ~/.claude/log.txt"
+      }
+    ]
+  }
+}
+```
+
+Logs file creation.
+
+### 3. Security Check
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "command": "if echo '$COMMAND' | grep -q 'rm -rf'; then exit 1; fi"
+      }
+    ]
+  }
+}
+```
+
+Blocks dangerous commands before execution.
+
+### 4. Auto Formatting
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "command": "npx prettier --write $FILE_PATH"
+      }
+    ]
+  }
+}
+```
+
+Automatically formats files after editing.
+
+---
+
+## Commands System
+
+Commands save frequently used prompts for reuse.
+
+### Commands Folder Structure
+
+```
+.claude/
+└── commands/
+    ├── commit.md       # /commit command
+    ├── review.md       # /review command
+    └── test.md         # /test command
+```
+
+### Simple Command Example
 
 ```markdown
-# My Project
+<!-- .claude/commands/commit.md -->
+Analyze current changes and write a meaningful commit message.
 
-## Tech Stack
-- React, TypeScript, Tailwind
-
-## Rules
-- Use functional components
-- English comments
+- Check changes with git diff
+- Identify change type (feat, fix, refactor, etc.)
+- Write commit message
+- Execute git commit
 ```
 
-### 5. Stay Safe with Git
+Usage:
+```
+> /commit
+```
 
-Always commit before big changes:
+### Command with Variables
+
+```markdown
+<!-- .claude/commands/explain.md -->
+Analyze the $ARGUMENTS code.
+
+1. What this code does
+2. Important logic
+3. Improvements
+```
+
+Usage:
+```
+> /explain src/auth/login.ts
+```
+
+### Including Dynamic Information
+
+```markdown
+<!-- .claude/commands/status.md -->
+Show the current project status.
+
+Current branch: $(git branch --show-current)
+Changed files: $(git status --short)
+
+Based on this info:
+1. Summarize current work status
+2. Suggest next steps
+```
+
+Commands inside `$()` are executed and results are inserted.
+
+---
+
+## Practical Command Examples
+
+### 1. Code Review Request
+
+```markdown
+<!-- .claude/commands/review.md -->
+Review the $ARGUMENTS file.
+
+Check for:
+- [ ] Potential bugs
+- [ ] Security vulnerabilities
+- [ ] Performance issues
+- [ ] Code style
+
+Provide specific improvement suggestions.
+```
 
 ```
-> Commit current state. Backup before refactoring.
+> /review src/api/users.ts
+```
+
+### 2. Write Tests
+
+```markdown
+<!-- .claude/commands/test.md -->
+Write tests for $ARGUMENTS.
+
+Requirements:
+- Use Jest
+- Unit tests first
+- Include edge cases
+- Test file: *.test.ts
+```
+
+```
+> /test src/utils/validation.ts
+```
+
+### 3. Documentation
+
+```markdown
+<!-- .claude/commands/docs.md -->
+Write documentation for $ARGUMENTS.
+
+Include:
+- Function/class description
+- Parameter descriptions
+- Return values
+- Usage examples
+
+Add to code in JSDoc format.
+```
+
+```
+> /docs src/services/auth.ts
+```
+
+### 4. Refactoring
+
+```markdown
+<!-- .claude/commands/refactor.md -->
+Refactor $ARGUMENTS.
+
+Principles:
+- Improve readability
+- Remove duplication
+- Split functions (under 20 lines)
+- Clear variable names
+
+Show the plan before making changes.
+```
+
+```
+> /refactor src/components/Dashboard.tsx
+```
+
+### 5. Issue → Implementation Workflow
+
+A common pattern in real work. From issue to implementation in one go:
+
+```markdown
+<!-- .claude/commands/ticket.md -->
+Handle issue #$ARGUMENTS.
+
+## 1. Check Issue
+$(gh issue view $ARGUMENTS)
+
+## 2. Create Branch
+Create a feature/$ARGUMENTS branch.
+
+## 3. Implementation Plan
+Analyze the issue and create an implementation plan.
+
+## 4. Implement
+Implement according to the plan.
+
+## 5. Create PR
+Create a PR with the changes.
+```
+
+```
+> /ticket 42
+```
+
+One command handles: check issue → create branch → implement → create PR.
+
+---
+
+## Project-Specific Commands
+
+### Frontend Project
+
+```
+.claude/
+└── commands/
+    ├── component.md   # Create component
+    ├── hook.md        # Create custom hook
+    ├── story.md       # Create Storybook story
+    └── style.md       # Add styles
+```
+
+```markdown
+<!-- .claude/commands/component.md -->
+Create a React component named $ARGUMENTS.
+
+Rules:
+- Functional component
+- TypeScript
+- Tailwind CSS
+- Define props types
+
+File: src/components/$ARGUMENTS/$ARGUMENTS.tsx
+```
+
+### Backend Project
+
+```
+.claude/
+└── commands/
+    ├── endpoint.md    # Create API endpoint
+    ├── migration.md   # DB migration
+    ├── seed.md        # Seed data
+    └── validate.md    # Add input validation
+```
+
+```markdown
+<!-- .claude/commands/endpoint.md -->
+Create CRUD API for $ARGUMENTS resource.
+
+Structure:
+- GET /$ARGUMENTS - List
+- GET /$ARGUMENTS/:id - Detail
+- POST /$ARGUMENTS - Create
+- PATCH /$ARGUMENTS/:id - Update
+- DELETE /$ARGUMENTS/:id - Delete
+
+Also create the Prisma model.
 ```
 
 ---
 
-## Common Workflows
+## Combining Hooks + Commands
 
-### Starting a New Project
+### Commit Workflow Automation
 
-```
-1. > Create project folder
-2. > Initialize npm/git
-3. > Create CLAUDE.md
-4. > Create basic file structure
-```
-
-### Bug Fixing
-
-```
-1. > Why am I getting this error? [error message]
-2. > Find the cause
-3. > Fix it
-4. > Test it
+```json
+// settings.json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "command": "if echo '$COMMAND' | grep -q 'git commit'; then npm test; fi"
+      }
+    ]
+  }
+}
 ```
 
-### Adding New Features
+```markdown
+<!-- .claude/commands/commit.md -->
+Commit the changes.
 
-```
-1. > How should I build this feature?
-2. > Build it according to that plan
-3. > Add tests
-4. > Commit
-```
-
-### Deployment
-
-```
-1. > Build
-2. > All tests passing?
-3. > Push to GitHub
-4. > (Auto-deploy on Vercel)
+1. Check changes with git diff
+2. Run tests (auto-runs via Hook)
+3. Write commit message
+4. Execute commit
 ```
 
----
+This way:
+1. Run `/commit`
+2. Hook auto-runs tests before commit
+3. Commit proceeds if tests pass
 
-## Tips for Improving
+### File Creation Workflow
 
-### 1. Start Small
-
-```
-# What to build today
-- [ ] Button component
-- [ ] Simple form
-- [ ] API call
-```
-
-### 2. Practice Daily
-
-30 minutes a day consistently is best.
-
-### 3. Read Others' Code
-
-Analyze open source projects on GitHub with Claude:
-
-```
-> Explain this project structure
-> What does this function do?
+```json
+// settings.json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "command": "npx prettier --write $FILE_PATH && npx eslint --fix $FILE_PATH"
+      }
+    ]
+  }
+}
 ```
 
-### 4. Failure is Part of Learning
+```markdown
+<!-- .claude/commands/feature.md -->
+Create the $ARGUMENTS feature.
 
-```
-> Esc Esc  # Undo
-> Retry with a different approach...
+After file creation, Hook automatically:
+- Prettier formatting
+- ESLint fixes
+
+Trust this automation and write code.
 ```
 
 ---
 
-## Next Steps
+## Sharing Commands with Team
 
-### If You Want to Learn More
-
-1. **Official docs**: [code.claude.com/docs](https://code.claude.com/docs)
-2. **Example projects**: Search for Claude Code examples on GitHub
-3. **Community**: Learn from how others use it
-
-### Projects to Challenge
-
-- [ ] Personal blog
-- [ ] Todo app (Full-stack)
-- [ ] Real-time chat app
-- [ ] AI chatbot service
-- [ ] Automation dashboard
-
-### Get Involved
-
-- **Feedback**: Help improve this curriculum
-- **Share**: Share projects you've made
-- **Help**: Help other beginners
-
----
-
-## Final Practice: Comprehensive Project
-
-Use everything you've learned to complete one project.
-
-### Recommended Project: Personal Dashboard
+### Commit to Git
 
 ```
-> Create a personal dashboard.
-> - Todo list
-> - Random quote (using Quotable API)
-> - Recent GitHub activity (public API)
-> - Notepad
-
-> Store data with localStorage
-> Deploy with Vercel
-> Write good CLAUDE.md
-> Version control with Git
+my-project/
+├── .claude/
+│   └── commands/     # Team shared Commands
+│       ├── commit.md
+│       ├── review.md
+│       └── deploy.md
+├── CLAUDE.md
+└── src/
 ```
 
-### Project Checklist
+Committing `.claude/commands/` to git lets the whole team use the same Commands.
 
-- [ ] Planning: Define features
-- [ ] Development: Implement one by one
-- [ ] Testing: Verify it works
-- [ ] Deployment: Publish to internet
-- [ ] Sharing: Show to others
+### Document in README
 
----
+```markdown
+# Team Commands
 
-## Thank You
+## Available Commands
 
-You have completed this curriculum.
-
-With Claude Code, you can turn any idea into reality.
-
-**Remember:**
-- You do not need to be perfect from the start
-- Keep improving with feedback
-- Claude is always ready to help
+- `/commit` - Commit changes
+- `/review <file>` - Code review
+- `/deploy` - Deploy to staging
+- `/hotfix <issue>` - Emergency fix
+```
 
 ---
 
-## Appendix: Useful Links
+## Summary
 
-### Official Resources
+What you learned in this chapter:
+- [x] Hooks system (Pre/Post ToolUse, UserPromptSubmit, Stop)
+- [x] Reusing prompts with Commands
+- [x] Using variables and dynamic information
+- [x] Combining Hooks + Commands
+- [x] Sharing Commands with team
 
-- [Claude Code Official Docs](https://code.claude.com/docs)
-- [Anthropic Blog](https://www.anthropic.com/blog)
-- [Claude Code GitHub](https://github.com/anthropics/claude-code)
+**Key point**: Automate repetitive work with Hooks and Commands.
 
-### Reference Materials
+In the next chapter, you'll learn more powerful extensions with Agents and Skills.
 
-- [MDN Web Docs](https://developer.mozilla.org/) - Web development
-- [JavaScript.info](https://javascript.info/) - JavaScript tutorial
-- [React Official Docs](https://react.dev/) - React
-
-### Tools
-
-- [Vercel](https://vercel.com) - Deployment
-- [GitHub](https://github.com) - Code repository
-- [PokeAPI](https://pokeapi.co) - Free Pokemon API
-
----
-
-**The End. Now go build.**
+Proceed to [Chapter 21: Agents & Skills](../Chapter21/README.md).

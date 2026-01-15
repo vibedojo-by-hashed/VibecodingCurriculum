@@ -1,456 +1,464 @@
-# Chapter 19: Automation
+# Chapter 19: Advanced Configuration
 
 **English** | [한국어](./README.ko.md)
 
 ## What You Will Learn
 
-- Extending Claude with MCP
-- Auto-deployment with CI/CD
-- Using headless mode
+- CLAUDE.md 3-tier configuration system
+- settings.json detailed options
+- Permission management and custom settings
 
 ---
 
-## What is MCP?
+## Why Understand Configuration?
 
-MCP (Model Context Protocol) is a way to add new capabilities to Claude.
+Claude Code works well with defaults. But understanding configuration gives you:
 
-### What MCP Can Do
-
-- Connect directly to databases
-- Send Slack/Discord messages
-- Extend file system access
-- Integrate external APIs
-
-### Basic Concept
-
-```
-Claude Code ←→ MCP Server ←→ External Services
-```
-
-The MCP server connects Claude to external services.
+- **Consistent work**: No need to repeat the same rules every time
+- **Safe usage**: Prevent dangerous actions in advance
+- **Custom environment**: Build your own workflow
 
 ---
 
-## Setting Up MCP Servers
+## CLAUDE.md 3-Tier System
 
-### Configuration File Location
+Claude Code reads CLAUDE.md files from 3 levels.
 
-`~/.claude/mcp_servers.json`:
+### Hierarchy Structure
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    CLAUDE.md Priority                            │
+└─────────────────────────────────────────────────────────────────┘
+
+[1] Project Level (Highest Priority)
+    ./CLAUDE.md
+    └── Rules specific to current project
+
+[2] Root Level (Medium Priority)
+    ~/.claude/CLAUDE.md
+    └── Personal rules applied to all projects
+
+[3] User Level (Lowest Priority)
+    System defaults
+    └── Claude Code default behavior
+```
+
+### Why Does This Matter?
+
+**When you need different rules per project:**
+
+```markdown
+# Project A's CLAUDE.md
+This project uses TypeScript + React.
+Tests are written with Jest.
+
+# Project B's CLAUDE.md
+This project uses Python + FastAPI.
+Tests are written with pytest.
+```
+
+**Common rules go in root level:**
+
+```markdown
+# ~/.claude/CLAUDE.md
+All commit messages are written in English.
+Always check for security vulnerabilities during code review.
+```
+
+---
+
+## CLAUDE.md Writing Guide
+
+### Characteristics of Good CLAUDE.md
+
+```markdown
+# Project Overview
+This project is a user authentication service.
+
+# Tech Stack
+- Backend: Express.js + TypeScript
+- Database: PostgreSQL
+- ORM: Prisma
+
+# Coding Conventions
+- Function names: camelCase
+- File names: kebab-case
+- Types: PascalCase
+
+# Common Commands
+- npm run dev: Start dev server
+- npm test: Run tests
+- npm run lint: Check lint
+
+# Important Files
+- src/config/: Environment settings
+- src/middleware/: Auth, logging middleware
+- prisma/schema.prisma: DB schema
+```
+
+### Effective Request Tips
+
+```markdown
+# Instead of this
+"Handle errors well"
+
+# Be specific like this
+## Error Handling Rules
+- All API responses use { success, data, error } format
+- HTTP error codes: only 400/401/403/404/500
+- Error logs recorded with winston
+```
+
+---
+
+## settings.json Detailed Configuration
+
+### File Location
+
+```
+~/.claude/settings.json
+```
+
+### Full Structure
 
 ```json
 {
-  "servers": {
-    "filesystem": {
-      "command": "npx",
-      "args": ["-y", "@anthropic-ai/mcp-server-filesystem", "/path/to/allowed/files"]
-    },
-    "postgres": {
-      "command": "npx",
-      "args": ["-y", "@anthropic-ai/mcp-server-postgres"],
-      "env": {
-        "DATABASE_URL": "postgresql://user:pass@localhost/db"
-      }
-    }
+  "permissions": {
+    "autoApprove": [],
+    "deny": []
+  },
+  "model": {
+    "default": "sonnet",
+    "preferredForPlanning": "opus"
+  },
+  "behavior": {
+    "autoCompact": true,
+    "compactThreshold": 80000
+  },
+  "output": {
+    "format": "markdown",
+    "verbosity": "normal"
   }
 }
 ```
 
-### Commonly Used MCP Servers
-
-| Server | Function |
-|--------|----------|
-| `mcp-server-filesystem` | File system access |
-| `mcp-server-postgres` | PostgreSQL connection |
-| `mcp-server-github` | GitHub API |
-| `mcp-server-slack` | Slack messaging |
-
-### Adding MCP Servers
-
-```
-> Tell me how to set up the GitHub MCP server
-```
-
----
-
-## Practice: Connect Database with MCP
-
-### 1. PostgreSQL MCP Setup
+### Permission Settings
 
 ```json
 {
-  "servers": {
-    "postgres": {
-      "command": "npx",
-      "args": ["-y", "@anthropic-ai/mcp-server-postgres"],
-      "env": {
-        "DATABASE_URL": "postgresql://localhost/mydb"
-      }
-    }
+  "permissions": {
+    // Tools to auto-approve
+    "autoApprove": [
+      "Read",      // File reading
+      "Glob",      // File search
+      "Grep",      // Content search
+      "WebFetch"   // URL fetching
+    ],
+
+    // Patterns to always block
+    "deny": [
+      "rm -rf",
+      "DROP TABLE",
+      "force push"
+    ]
   }
 }
 ```
 
-### 2. Using in Claude
+### Why Does This Matter?
 
-```
-> Get user list from database
+**Reduce approval fatigue:**
 
-> Add new user to users table
-> Name: John Doe, Email: john@email.com
-```
+Auto-approving read-only tools means no need to press "y" every time.
 
-Claude can directly query and modify the database.
-
----
-
-## What is CI/CD?
-
-CI/CD is a system for automatically testing and deploying code.
-
-- **CI** (Continuous Integration): Auto-test on code changes
-- **CD** (Continuous Deployment): Auto-deploy when tests pass
-
-### Why Do We Need It?
-
-Manually:
-1. Modify code
-2. Run tests
-3. Build
-4. Deploy
-5. Verify
-
-With CI/CD:
-1. Modify code
-2. Everything else is automatic
-
----
-
-## CI/CD with GitHub Actions
-
-### Basic Workflow
-
-`.github/workflows/deploy.yml`:
-
-```yaml
-name: Deploy
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run tests
-        run: npm test
-
-      - name: Build
-        run: npm run build
-
-      - name: Deploy to Vercel
-        run: vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
+```json
+{
+  "permissions": {
+    "autoApprove": ["Read", "Glob", "Grep"]
+  }
+}
 ```
 
-### Creating Workflow with Claude
+**Block dangerous commands:**
 
-```
-> Create a GitHub Actions workflow for this project.
-> Test and deploy to Vercel when pushed to main.
+Block commands that shouldn't be run by mistake.
+
+```json
+{
+  "permissions": {
+    "deny": [
+      "rm -rf /",
+      "DROP DATABASE",
+      "git push --force origin main"
+    ]
+  }
+}
 ```
 
 ---
 
-## Using Claude Code in CI
+## Model Settings
 
-### Headless Mode
+### Specify Default Model
 
-Use the `-p` flag to run Claude in scripts:
+```json
+{
+  "model": {
+    "default": "sonnet"
+  }
+}
+```
+
+### Model Strategy by Task
+
+```json
+{
+  "model": {
+    "default": "sonnet",
+    "preferredForPlanning": "opus",
+    "preferredForSimpleTasks": "haiku"
+  }
+}
+```
+
+### Why Does This Matter?
+
+**Auto-adjust cost and quality:**
+
+- Complex planning: Opus (quality first)
+- General work: Sonnet (balanced)
+- Simple tasks: Haiku (speed first)
+
+```
+> /model opus
+> Design this system architecture
+
+> /model haiku
+> Add logging to this function
+```
+
+---
+
+## Output Settings
+
+### Format Settings
+
+```json
+{
+  "output": {
+    "format": "markdown",
+    "codeBlockStyle": "fenced",
+    "verbosity": "normal"
+  }
+}
+```
+
+### Verbosity Control
+
+```json
+{
+  "output": {
+    // "minimal": essentials only
+    // "normal": default
+    // "verbose": detailed explanations
+    "verbosity": "normal"
+  }
+}
+```
+
+---
+
+## Environment-Specific Settings
+
+### Development Environment
+
+```json
+// ~/.claude/settings.json (for development)
+{
+  "permissions": {
+    "autoApprove": ["Read", "Glob", "Grep", "Edit", "Write", "Bash"]
+  },
+  "behavior": {
+    "sandbox": false
+  }
+}
+```
+
+### Production Environment
+
+```json
+// ~/.claude/settings.json (for production)
+{
+  "permissions": {
+    "autoApprove": ["Read", "Glob", "Grep"],
+    "deny": ["rm", "DROP", "DELETE", "force"]
+  },
+  "behavior": {
+    "sandbox": true
+  }
+}
+```
+
+### Why Does This Matter?
+
+**Safety level matching the environment:**
+
+- Development: Auto-approve many things for fast work
+- Production: Strict limits to prevent mistakes
+
+---
+
+## Project-Specific Settings
+
+### Using .claude/ Folder
+
+```
+my-project/
+├── .claude/
+│   ├── settings.json    # Project-specific settings
+│   └── templates/       # Frequently used prompts
+├── CLAUDE.md           # Project rules
+└── src/
+```
+
+### Project-Specific settings.json
+
+```json
+// my-project/.claude/settings.json
+{
+  "permissions": {
+    "autoApprove": ["Read", "Glob", "Grep"],
+    "deny": ["npm publish"]
+  }
+}
+```
+
+---
+
+## Practical Configuration Examples
+
+### Frontend Project
+
+```markdown
+# CLAUDE.md
+## Project
+React + TypeScript + Tailwind CSS
+
+## Conventions
+- Components are functional
+- State management with Zustand
+- Styles use Tailwind classes
+
+## Testing
+- Test files: *.test.tsx
+- Use React Testing Library
+
+## Forbidden
+- No any type
+- No inline styles
+```
+
+```json
+// .claude/settings.json
+{
+  "permissions": {
+    "autoApprove": ["Read", "Glob", "Grep"],
+    "deny": [": any", "style={{"]
+  }
+}
+```
+
+### Backend Project
+
+```markdown
+# CLAUDE.md
+## Project
+Express + TypeScript + Prisma
+
+## API Rules
+- RESTful design
+- Response: { success, data, error }
+- Auth: JWT Bearer tokens
+
+## Security
+- Watch for SQL injection
+- Input validation required
+- No logging sensitive info
+
+## DB
+- Migration: prisma migrate
+- Seed: prisma db seed
+```
+
+```json
+// .claude/settings.json
+{
+  "permissions": {
+    "deny": [
+      "DROP TABLE",
+      "DELETE FROM",
+      "console.log(password",
+      "console.log(token"
+    ]
+  }
+}
+```
+
+### Full-Stack Project
+
+```markdown
+# CLAUDE.md
+## Structure
+- frontend/: Next.js
+- backend/: NestJS
+- shared/: Shared types
+
+## Dev Servers
+- frontend: npm run dev (port 3000)
+- backend: npm run start:dev (port 4000)
+
+## Environment Variables
+- .env.local: Local config (not in git)
+- .env.example: Template
+```
+
+---
+
+## Configuration Debugging
+
+### Check Current Settings
+
+```
+> /config
+```
+
+Shows currently applied settings.
+
+### When Settings Don't Work
+
+1. **Check file location**: `~/.claude/settings.json`
+2. **Check JSON syntax**: commas, quotes, etc.
+3. **Restart Claude Code**: May be needed after changes
 
 ```bash
-# Basic usage
-claude -p "Summarize this project"
-
-# Allow only specific tools
-claude -p "Fix the bug" --allowedTools "Read,Edit"
-
-# JSON output
-claude -p "Extract function list" --output-format json
+# Validate JSON syntax
+cat ~/.claude/settings.json | jq .
 ```
-
-### Automate Code Review in CI
-
-```yaml
-name: Claude Code Review
-
-on: [pull_request]
-
-jobs:
-  review:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: anthropics/claude-code-action@v1
-        with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          prompt: |
-            Please review this PR for:
-            - Potential bugs
-            - Security vulnerabilities
-            - Code quality
-```
-
-### Auto-fix Lint Errors
-
-```yaml
-- name: Auto-fix with Claude
-  run: |
-    npm run lint 2>&1 || true > lint-errors.txt
-    claude -p "Fix the lint errors in lint-errors.txt" \
-      --allowedTools "Read,Edit"
-```
-
----
-
-## Auto-Deploy Pipeline
-
-### Full Automation Example
-
-```yaml
-name: Full Pipeline
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: npm install
-      - run: npm test
-
-  build:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: npm install
-      - run: npm run build
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - run: vercel --prod
-
-  notify:
-    needs: deploy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Notify Slack
-        run: |
-          curl -X POST $SLACK_WEBHOOK \
-            -d '{"text": "Deployment complete!"}'
-```
-
----
-
-## Security Considerations
-
-### Managing Secrets
-
-```yaml
-# Bad example
-env:
-  API_KEY: "sk-1234567890"  # Never do this!
-
-# Good example
-env:
-  API_KEY: ${{ secrets.API_KEY }}
-```
-
-Manage in GitHub Settings → Secrets.
-
-### Limiting Permissions
-
-```yaml
-- name: Claude with limited permissions
-  run: |
-    claude -p "Analyze this" \
-      --allowedTools "Read,Glob,Grep"  # Read-only
-```
-
----
-
-## Cost Optimization
-
-### Process Only Changed Files
-
-```yaml
-- name: Get changed files
-  id: changed
-  run: |
-    echo "files=$(git diff --name-only HEAD~1)" >> $GITHUB_OUTPUT
-
-- name: Review only changed files
-  run: |
-    claude -p "Review only these files: ${{ steps.changed.outputs.files }}"
-```
-
-### Use Caching
-
-```yaml
-- name: Cache dependencies
-  uses: actions/cache@v3
-  with:
-    path: node_modules
-    key: ${{ hashFiles('package-lock.json') }}
-```
-
----
-
-## Practice: CI/CD Pipeline
-
-### Basic Tasks
-
-```
-# 1. Set up GitHub Actions
-> Create a CI/CD workflow for this project
-
-# 2. Auto testing
-> Run tests on every push
-
-# 3. Auto deployment
-> Auto-deploy to Vercel when merged to main
-```
-
-### Extra Challenges
-
-```
-> Add a workflow that auto-reviews code when PR is opened
-
-> Send Slack notification on deploy success/failure
-
-> Auto-check for dependency updates daily
-```
-
----
-
-## Mini Project: Automation Pipeline
-
-Build a fully automated development pipeline.
-
-### Goals
-
-- Automate entire development cycle
-- Production-level CI/CD experience
-
-### Build It
-
-```
-> Create a complete CI/CD pipeline.
-> - Auto-test when PR is opened
-> - Claude code review
-> - Auto-deploy when merged to main
-> - Slack notification
-```
-
-### Additional Automation Ideas
-
-```
-> Daily automated dependency vulnerability scan
-
-> Weekly code quality report generation
-
-> Automatic release notes writing
-```
-
-### Advanced Challenges (For Experts)
-
-```
-> Set up canary deployment (only some traffic to new version)
-
-> Set up automatic rollback (auto-rollback on high error rate)
-
-> Multi-environment deployment (dev → staging → prod)
-
-> Integrate feature flag system
-```
-
----
-
-## Advanced: Using AI as Part of Your System
-
-So far, we have used Claude Code interactively. But the real power comes when it becomes **part of an automated system**.
-
-### One-off Tasks vs Systems
-
-| One-off | System |
-|---------|--------|
-| "Fix this bug" | Auto code review on every PR |
-| "Write a commit message" | Meaningful messages generated on every commit |
-| "Write tests" | Tests auto-supplemented on code changes |
-
-Using headless mode (`-p` flag), you can integrate Claude into scripts and CI pipelines.
-
-### Building Feedback Loops
-
-The real value of automation is that **improvements accumulate**.
-
-1. Claude performs code review
-2. Discovers the same pattern of mistakes repeating
-3. Add that rule to CLAUDE.md
-4. Future reviews catch that mistake proactively
-
-The system gets smarter over time. Quality improves just by refining prompts and settings, without code changes.
-
-### Eliminating Repetitive Work with MCP
-
-If you are constantly copying the same information and pasting it to Claude, you can automate it with MCP servers.
-
-For example:
-- Fetching task details from issue tracker
-- Checking database schema
-- Sharing results to Slack channel
-
-When these tasks are automatically connected, you can focus only on the truly important decisions.
-
-### Growing as a Developer
-
-To use Claude Code effectively, you ultimately need **good development habits**:
-
-- Defining requirements clearly
-- Breaking work into appropriate sizes
-- Verifying results and providing feedback
-- Automating repeating patterns
-
-AI tools let you execute these habits faster—they do not replace the habits themselves. As you work with AI and develop these capabilities, you grow alongside the tools as they evolve.
 
 ---
 
 ## Summary
 
 What you learned in this chapter:
-- [x] Extending Claude with MCP
-- [x] CI/CD concepts and setup
-- [x] Using GitHub Actions
-- [x] Headless mode
-- [x] Auto-deploy pipelines
-- [x] Using AI as part of systems
+- [x] CLAUDE.md 3-tier system (project/root/user)
+- [x] settings.json detailed options
+- [x] Permission management (auto-approve/deny)
+- [x] Environment-specific settings strategy
+- [x] Project-specific custom settings
 
-In the next chapter, we bring together everything you have learned.
+**Key point**: Good configuration reduces repetitive work and prevents mistakes.
 
-[Chapter 20: Mastery](../Chapter20/README.md)
+In the next chapter, you'll learn more powerful automation with Hooks and Commands.
+
+Proceed to [Chapter 20: Hooks & Commands](../Chapter20/README.md).

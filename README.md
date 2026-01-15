@@ -2,7 +2,25 @@
 
 > A systematic learning curriculum for AI-native development
 
-**Built with [Claude Code](https://github.com/anthropics/claude-code)** | **English** | [한국어](./README.ko.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Chapters](https://img.shields.io/badge/Chapters-25-blue.svg)](#curriculum-structure)
+[![Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-blueviolet.svg)](https://github.com/anthropics/claude-code)
+
+**English** | [한국어](./README.ko.md)
+
+---
+
+## Quick Start
+
+```bash
+# Install Claude Code
+npm install -g @anthropic-ai/claude-code
+
+# Run Claude Code
+claude
+```
+
+Ready? Start with [Chapter 01: What is AI Coding?](./Chapter01/README.md)
 
 ---
 
@@ -74,12 +92,13 @@ No coding experience required. We proceed step by step from the beginning.
 
 ## Learning Outcomes
 
-After completing 20 chapters, you will be able to:
+After completing 25 chapters, you will be able to:
 
 - **Build a portfolio website** and deploy it
 - **Create simple apps** (TODO app, games, etc.)
 - **Build automation tools** (file organizer, data processor)
 - **Implement AI services** (document summarizer, translator)
+- **Configure advanced workflows** (Hooks, Skills, MCP, CI/CD)
 
 ---
 
@@ -126,19 +145,24 @@ Build more practical projects.
 
 | Chapter | Topic | Description | Link |
 |---------|-------|-------------|------|
-| 15 | Building AI Tools | Chatbot, summarizer, translator | [EN](./Chapter15/README.md) / [KO](./Chapter15/README.ko.md) |
-| 16 | Data Processing | CSV, JSON, automation | [EN](./Chapter16/README.md) / [KO](./Chapter16/README.ko.md) |
-| 17 | API Integration | Weather app, Pokemon Pokedex | [EN](./Chapter17/README.md) / [KO](./Chapter17/README.ko.md) |
+| 15 | CLI Tools | Building command-line tools | [EN](./Chapter15/README.md) / [KO](./Chapter15/README.ko.md) |
+| 16 | Chatbot | Building an AI chatbot | [EN](./Chapter16/README.md) / [KO](./Chapter16/README.ko.md) |
+| 17 | Full-stack App | Complete web application | [EN](./Chapter17/README.md) / [KO](./Chapter17/README.ko.md) |
 
-### Part 5: Advanced & Mastery (Chapter 18-20)
+### Part 5: Advanced (Chapter 18-25)
 
-Learn advanced Claude Code features.
+Learn advanced Claude Code features and become a master.
 
 | Chapter | Topic | Description | Link |
 |---------|-------|-------------|------|
-| 18 | Advanced Features | Hooks, Skills, subagents | [EN](./Chapter18/README.md) / [KO](./Chapter18/README.ko.md) |
-| 19 | Automation | MCP, CI/CD | [EN](./Chapter19/README.md) / [KO](./Chapter19/README.ko.md) |
-| 20 | Mastery | Summary, next steps | [EN](./Chapter20/README.md) / [KO](./Chapter20/README.ko.md) |
+| 18 | Architecture | How Claude Code works internally | [EN](./Chapter18/README.md) / [KO](./Chapter18/README.ko.md) |
+| 19 | Advanced Config | CLAUDE.md 3-tier, settings.json | [EN](./Chapter19/README.md) / [KO](./Chapter19/README.ko.md) |
+| 20 | Hooks & Commands | Automation triggers, custom commands | [EN](./Chapter20/README.md) / [KO](./Chapter20/README.ko.md) |
+| 21 | Agents & Skills | Specialized AI assistants | [EN](./Chapter21/README.md) / [KO](./Chapter21/README.ko.md) |
+| 22 | MCP Integration | Connect external services | [EN](./Chapter22/README.md) / [KO](./Chapter22/README.ko.md) |
+| 23 | CI/CD Automation | GitHub Actions, auto deployment | [EN](./Chapter23/README.md) / [KO](./Chapter23/README.ko.md) |
+| 24 | Team Collaboration | Team workflows, onboarding | [EN](./Chapter24/README.md) / [KO](./Chapter24/README.ko.md) |
+| 25 | Mastery | Summary, final project | [EN](./Chapter25/README.md) / [KO](./Chapter25/README.ko.md) |
 
 ---
 
@@ -220,27 +244,6 @@ Tips from the Claude Code team and experienced developers.
 The more specific you are, the better the results.
 
 </details>
-
----
-
-## Getting Started
-
-### Requirements
-
-- A computer (Mac, Windows, Linux)
-- Internet connection
-
-### Installation and Launch
-
-```bash
-# Install Claude Code
-npm install -g @anthropic-ai/claude-code
-
-# Run Claude Code
-claude
-```
-
-Start with [Chapter 01: What is AI Coding?](./Chapter01/README.md).
 
 ---
 

@@ -114,7 +114,7 @@ Code can be generated in web chats like ChatGPT or Claude.ai, but there are limi
 
 ## Learning Outcomes
 
-After completing 20 chapters, you will be able to:
+After completing 25 chapters, you will be able to:
 
 - Create and deploy a **portfolio website**
 - Build **simple apps** (TODO app, games, etc.)

@@ -1,472 +1,425 @@
-# Chapter 18: Advanced Features
+# Chapter 18: Understanding the Architecture
 
 **English** | [한국어](./README.ko.md)
 
 ## What You Will Learn
 
-- Using slash commands
-- Automation with Hooks
-- Using Skills
+- How Claude Code works under the hood
+- Understanding the tool system
+- Using this knowledge to make better requests
 
 ---
 
-## Mastering Slash Commands
+## Why Understand the Architecture?
 
-This section covers all available slash commands.
+Thinking of Claude Code as "magic" has limitations. Understanding how it works gives you:
 
-### Basic Commands
-
-| Command | Function |
-|---------|----------|
-| `/help` | View help |
-| `/clear` | Clear conversation |
-| `/compact` | Summarize conversation (save tokens) |
-
-### Status Commands
-
-| Command | Function |
-|---------|----------|
-| `/status` | Check current status |
-| `/cost` | Check costs |
-
-### Configuration Commands
-
-| Command | Function |
-|---------|----------|
-| `/config` | Open settings |
-| `/model` | Change model |
-| `/permissions` | Set permissions |
-
-### Memory Commands
-
-| Command | Function |
-|---------|----------|
-| `/memory` | Manage memory |
-| `/init` | Initialize project settings |
+- **More accurate requests**: Predict which tools will be used
+- **Problem solving**: Figure out why something isn't working
+- **Efficient usage**: Reduce unnecessary operations
 
 ---
 
-## Commonly Used Slash Commands
+## Claude Code's Overall Structure
 
-### /compact - Compress Conversation
-
-Long conversations use lots of tokens. Compress with `/compact`.
+### At a Glance
 
 ```
-> /compact
+┌─────────────────────────────────────────────────────────────────┐
+│                        You (Terminal)                            │
+└─────────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                       Claude Code CLI                            │
+│  ┌───────────────┐  ┌───────────────┐  ┌───────────────────┐    │
+│  │ Input Handler │  │ Tool Engine   │  │  Output Renderer  │    │
+│  └───────────────┘  └───────────────┘  └───────────────────┘    │
+└─────────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    Anthropic API (Claude)                        │
+│               Models: opus / sonnet / haiku available            │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-Claude summarizes the conversation so far.
-Context is preserved while tokens are saved.
+**Key point**: Claude doesn't run directly on your computer. It communicates through the API, and only tool execution happens locally.
 
-### /clear - Start Fresh
+### API Communication Cycle
 
-```
-> /clear
-```
-
-Starts a completely new conversation.
-Forgets all previous content.
-
-### /config - Change Settings
+Let's see what happens when you make a request:
 
 ```
-> /config
+ [1] Your request                     [2] Sent to API
+      │                                 │
+      ▼                                 ▼
+┌──────────┐    Message + Tool Defs   ┌─────────────┐
+│ CLI      │ ─────────────────────▶ │ Anthropic   │
+│ Client   │                        │ API         │
+└──────────┘                        └─────────────┘
+      ▲                                 │
+      │     Response (text + tool call) │
+      └─────────────────────────────────┘
+                    [3]
+
+ [4] Tool executed locally            [5] Results back to API
+      │                                 │
+      ▼                                 ▼
+┌──────────────────┐              ┌─────────────┐
+│ Bash, Read, etc. │ ───────────▶ │ Claude      │
+│ executed         │              │ decides next│
+└──────────────────┘              └─────────────┘
 ```
 
-You can change Claude Code settings:
-- Model selection
-- Permission settings
-- Theme change
+### Why Does This Matter?
+
+```
+> Show me all files in this folder
+```
+
+When you make this request:
+1. Claude uses `Glob` tool to list files → 1 API round trip
+2. Receives results and decides next action → 2 API round trips
+3. Uses `Read` if needed to view contents → 3 API round trips
+
+**One request = multiple API round trips**. Being specific reduces round trips and speeds things up.
 
 ---
 
-## Hooks: The Beginning of Automation
+## The Tool System
 
-Hooks are scripts that run automatically when certain events occur.
+Claude Code uses 18 built-in tools.
 
-### What Are Hooks?
+### Tool Categories
 
-For example:
-- When saving a file → Auto-format
-- When committing → Auto-run tests
-- When Claude edits code → Auto-lint
-
-### Setting Up Hooks
-
-Configure in `.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Edit",
-        "command": "echo 'Claude is about to modify a file'"
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit",
-        "command": "npm run lint --fix"
-      }
-    ]
-  }
-}
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              Tool Execution Layer                            │
+│                                                                             │
+│  File Operations ───────────────────────────────────────────────────────    │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐              │
+│  │  Read   │ │  Write  │ │  Edit   │ │  Glob   │ │  Grep   │              │
+│  │ read    │ │ create  │ │ modify  │ │ search  │ │ content │              │
+│  │ files   │ │ files   │ │ files   │ │ files   │ │ search  │              │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘              │
+│                                                                             │
+│  Execution ─────────────────────────────────────────────────────────────    │
+│  ┌─────────┐ ┌─────────────────┐                                           │
+│  │  Bash   │ │     Task        │                                           │
+│  │ run     │ │ (subagents)     │                                           │
+│  │ commands│ │                 │                                           │
+│  └─────────┘ └─────────────────┘                                           │
+│                                                                             │
+│  Web ───────────────────────────────────────────────────────────────────    │
+│  ┌─────────┐ ┌─────────┐                                                   │
+│  │WebFetch │ │WebSearch│                                                   │
+│  │fetch URL│ │web      │                                                   │
+│  │         │ │search   │                                                   │
+│  └─────────┘ └─────────┘                                                   │
+│                                                                             │
+│  Other ─────────────────────────────────────────────────────────────────    │
+│  ┌─────────┐ ┌─────────┐ ┌───────────────┐ ┌───────────────┐              │
+│  │TodoWrite│ │  Skill  │ │ EnterPlanMode │ │AskUserQuestion│              │
+│  │task mgmt│ │run skill│ │  plan mode    │ │ ask user      │              │
+│  └─────────┘ └─────────┘ └───────────────┘ └───────────────┘              │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Common Hooks
+### Tool Execution Flow
 
-#### Auto-format After File Edit
+When a tool is called, it's processed like this:
 
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit",
-        "command": "prettier --write \"${file}\""
-      }
-    ]
-  }
-}
+```
+    Claude Response
+         │
+         ▼
+  ┌──────────────┐
+  │ Parse        │
+  │ Response     │
+  │ (text +      │
+  │  tool calls) │
+  └──────┬───────┘
+         │
+    ┌────┴────┐
+    ▼         ▼
+┌────────┐ ┌────────┐
+│ Text   │ │ Tool   │
+│ Output │ │ Execute│
+└────────┘ └───┬────┘
+               │
+         ┌─────┴─────┐
+         ▼           ▼
+    ┌────────┐  ┌────────┐
+    │ Success│  │ Failure│
+    │ Result │  │ Error  │
+    └───┬────┘  └───┬────┘
+        │           │
+        └─────┬─────┘
+              ▼
+    ┌─────────────────┐
+    │ Send result to  │
+    │ API (next turn) │
+    └─────────────────┘
 ```
 
-#### Run Tests Before Commit
+### Why Does This Matter?
 
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash(git commit*)",
-        "command": "npm test"
-      }
-    ]
-  }
-}
+**Different tools are used based on how you request:**
+
+```
+# Uses Glob (fast)
+> How many tsx files are in the src folder?
+
+# Uses Bash (unnecessarily complex)
+> Use find command to count tsx files in src folder
 ```
 
-### Types of Hooks
-
-| Hook | When It Runs |
-|------|-------------|
-| `PreToolUse` | Before tool use |
-| `PostToolUse` | After tool use |
-| `Notification` | When notification occurs |
-| `Stop` | When Claude stops |
+For tasks where Claude Code has dedicated tools, requesting those tools is more efficient.
 
 ---
 
-## Skills: Extension Features
+## The Subagent System
 
-Skills are ways to add new capabilities to Claude Code.
+Complex tasks are split into multiple "subagents."
 
-### Using Built-in Skills
-
-Claude Code includes built-in Skills:
+### Subagent Architecture
 
 ```
-> /commit
-```
-Automatically analyzes changes and writes commit message.
-
-```
-> /review-pr
-```
-Reviews a PR for you.
-
-### Creating Custom Skills
-
-Add a markdown file to the `.claude/commands/` folder:
-
-```markdown
-# .claude/commands/deploy.md
-
-Deploys the project.
-
-## Steps
-1. Run build
-2. Verify tests
-3. Deploy to Vercel
-4. Check results
-
-## Commands
-- npm run build
-- npm test
-- vercel --prod
+                          ┌─────────────────┐
+                          │   Main Agent    │
+                          │ (talks with you)│
+                          └────────┬────────┘
+                                   │
+                    ┌──────────────┼──────────────┐
+                    │              │              │
+                    ▼              ▼              ▼
+         ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+         │   Task 1     │ │   Task 2     │ │   Task 3     │
+         │  (explore)   │ │  (analyze)   │ │  (execute)   │
+         └──────────────┘ └──────────────┘ └──────────────┘
 ```
 
-Now you can use the `/deploy` command!
+### Subagent Types
 
-### Skills Examples
+| Type | Purpose | Available Tools | Characteristics |
+|------|---------|----------------|-----------------|
+| `Explore` | Codebase exploration | Read, Glob, Grep | Read-only |
+| `Plan` | Planning | Read, Glob, Grep | Read-only |
+| `Bash` | Command specialist | Bash only | Git operations etc. |
+| `general-purpose` | Complex tasks | All tools | All-purpose |
 
-#### Code Review Request
-
-```markdown
-# .claude/commands/review.md
-
-Please review the code in this file.
-
-## Check for
-- Potential bugs
-- Performance issues
-- Security vulnerabilities
-- Readability
-
-## Output format
-Each issue as:
-- Location: Line number
-- Problem: Description
-- Suggestion: Improvement
-```
-
-#### Test Generation
-
-```markdown
-# .claude/commands/gen-tests.md
-
-Generates test file for the current file.
-
-## Rules
-- Filename: originalfile.test.ts
-- Tests for all functions
-- Include edge cases
-- Use Jest
-```
-
----
-
-## Subagents
-
-For complex tasks, Claude uses multiple "subagents."
-
-### What Are Subagents?
-
-The main Claude delegates specific tasks to specialized agents:
-
-- **Explore agent**: Codebase analysis
-- **Plan agent**: Work planning
-- **Execute agent**: Code writing
-
-### Using Subagents
-
-When you request large tasks, subagents work automatically:
+### Parallel vs Sequential Execution
 
 ```
-> Analyze this entire project
-> Find performance improvement points
-> Create a refactoring plan
+Parallel Execution (independent tasks):
+─────────────────────────────────────────────
+    ┌──────────┐     ┌──────────┐     ┌──────────┐
+    │ Agent A  │     │ Agent B  │     │ Agent C  │
+    │ (search1)│     │ (search2)│     │ (search3)│
+    └────┬─────┘     └────┬─────┘     └────┬─────┘
+         │                │                │
+         └────────────────┼────────────────┘
+                          │
+                          ▼
+                   ┌──────────────┐
+                   │ Merge Results│
+                   └──────────────┘
+
+Sequential Execution (dependent tasks):
+─────────────────────────────────────────────
+    ┌──────────┐     ┌──────────┐     ┌──────────┐
+    │ Agent A  │ ──▶ │ Agent B  │ ──▶ │ Agent C  │
+    │ (analyze)│     │ (uses A  │     │ (uses B  │
+    │          │     │  result) │     │  result) │
+    └──────────┘     └──────────┘     └──────────┘
 ```
 
-Claude:
-1. Uses explore agent to analyze project
-2. Uses plan agent to create improvement plan
-3. Combines results and presents them
+### Why Does This Matter?
 
----
+**Large tasks are automatically split:**
 
-## Advanced Configuration
-
-### Full settings.json Example
-
-```json
-{
-  "model": "claude-sonnet-4-20250514",
-  "language": "english",
-  "permissions": {
-    "autoApprove": ["Read", "Glob", "Grep"],
-    "denyByDefault": false
-  },
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit",
-        "command": "prettier --write \"${file}\""
-      }
-    ]
-  },
-  "customInstructions": "Always respond in English and add comments to code."
-}
+```
+> Analyze this entire project and create a refactoring plan
 ```
 
-### Auto-approve Permissions
+Internally:
+1. `Explore` agent analyzes project structure
+2. `Plan` agent creates the plan
+3. Main agent synthesizes results
 
-Auto-approve frequently used safe tools:
+**Splitting tasks yourself gives more control:**
 
-```json
-{
-  "permissions": {
-    "autoApprove": [
-      "Read",
-      "Glob",
-      "Grep",
-      "WebFetch"
-    ]
-  }
-}
 ```
+# All at once (agent splits automatically)
+> Analyze project and refactor
 
-### Custom Instructions
-
-```json
-{
-  "customInstructions": "When writing code, always use TypeScript strict mode and add JSDoc comments to all functions."
-}
+# Step by step (more precise control)
+> First, just analyze the project structure
+> (after reviewing)
+> Create a refactoring plan for this part
+> (after reviewing plan)
+> OK, execute it
 ```
 
 ---
 
-## Practice: Your Own Workflow
+## Model Selection
 
-### Basic Tasks
-
-```
-# 1. Create Custom Skill
-> Add your own skill to .claude/commands/ folder
-
-# 2. Set Up Hook
-> Configure auto-format hook after file edits
-
-# 3. Optimize Permissions
-> Set frequently used tools to auto-approve
-```
-
-### Extra Challenges
-
-```
-> Create a deployment automation Skill
-> Test + build + deploy in one go
-
-> Create a daily report generation Hook
-> Auto-summarize when work day ends
-```
-
----
-
-## Advanced: Understanding How AI Agents Work
-
-To get more from AI agents like Claude Code, understanding how they work helps.
-
-### Complex Tasks Through Tool Composition
-
-Claude Code performs complex tasks by **combining basic tools** like file reading, editing, and command execution. When you say "make a website," internally it:
-
-1. Checks the file system (what kind of project)
-2. Creates/modifies necessary files
-3. Runs build commands
-4. Verifies results
-
-These steps are composed together.
-
-Understanding this structure explains why smaller requests are more accurate—you can verify each tool worked correctly along the way.
-
-### Handling Unexpected Requests
-
-When basic tools are well-equipped, Claude can solve problems in ways you might not have anticipated. Tasks like "convert all images in this folder to WebP" are not predefined, but can be accomplished by combining existing tools.
-
-This is why Claude Code is more than a simple code generator.
-
----
-
-## Advanced: Managing Conversation Context
-
-### Quality Drops as Conversations Get Long
-
-AI models have limits on how much information they can process at once. As conversations lengthen, earlier content may not be remembered well, and overall context comprehension can blur.
-
-`/compact` summarizes the conversation, but if quality has already degraded, the effect is limited.
-
-### Separate Conversations by Topic
-
-Handling auth, DB, and frontend in one conversation mixes contexts. Starting new conversations per topic lets each task stay focused.
-
-### Conversation Reset Technique
-
-When you feel quality has dropped:
-
-1. Save current progress to a file (progress.md, etc.)
-2. Reset conversation with `/clear`
-3. Have Claude read the saved file to restore context
-
-CLAUDE.md is preserved after `/clear`, so project rules remain.
-
----
-
-## Advanced: Model Selection
-
-Claude Code lets you choose between different models.
+Claude Code supports multiple models.
 
 | Model | Characteristics | When to Use |
-|-------|----------------|-------------|
-| Sonnet | Fast and cost-effective | Clear tasks, simple implementation, refactoring |
-| Opus | Deep reasoning, higher cost | Complex design decisions, architecture discussions |
+|-------|-----------------|-------------|
+| **Opus** | Smartest, expensive | Complex design, hard bugs |
+| **Sonnet** | Balanced performance | General tasks (default) |
+| **Haiku** | Fast and cheap | Simple tasks, repetitive work |
 
-**Practical tip**: Use a more powerful model for planning, a faster model for implementation. This balances cost and quality.
+### Practical Strategy
 
 ```
+# Planning phase: smart model
 > /model opus
 > How should I design this system?
 
-(after plan is set)
+# Implementation phase: fast model
 > /model sonnet
 > Build it according to the plan above
 ```
 
+Adjust the **cost vs quality tradeoff** based on the situation.
+
 ---
 
-## Advanced: When You Get Stuck
+## Context Management
 
-### Start Fresh
+### Quality Drops as Conversations Get Long
 
-If the conversation is tangled, `/clear` may be the fastest solution. A clean state is often better than accumulated confusion.
+Claude has limits on how much information it can process at once. As conversations lengthen:
+- Earlier content is poorly remembered
+- Overall context comprehension blurs
+- Response quality degrades
 
-### Narrow the Scope
+### Solutions
 
-If a large task is not working, break it down.
-
+**1. Compress with /compact**
 ```
-# Not working
-> Build the entire payment system
-
-# Step by step
-> Just make the payment button UI first
+> /compact
 ```
+Summarizes the conversation to save tokens.
 
-### Show with Examples
-
-If explaining with words is difficult, show an example of the desired result. Claude recognizes patterns well.
-
+**2. Separate conversations by topic**
 ```
-> Response format should be like this:
-> { "status": "ok", "data": [...] }
-```
+# Doing everything in one conversation (contexts mix)
+> Make auth feature
+> Also modify DB schema
+> Also make frontend form
 
-### Approach from a Different Angle
-
-If repeating the same request does not work, express the problem differently.
-
-```
-# Not working
-> Fix the state change logic
-
-# Different approach
-> Reimplement this as a state machine pattern
+# Separating by topic (more focused)
+> /clear
+> Let's focus on auth. Make the backend API first.
 ```
 
-Changing perspective often leads to sudden success.
+**3. Use CLAUDE.md**
+
+CLAUDE.md is preserved after `/clear`. Put project rules here and context survives even when starting fresh conversations.
+
+---
+
+## Permissions and Security
+
+### Security Policy Flow
+
+```
+  User Request
+       │
+       ▼
+┌──────────────┐    No        ┌──────────────┐
+│ Dangerous    │ ────────────▶ │ Execute      │
+│ operation?   │               │ directly     │
+└──────┬───────┘               └──────────────┘
+       │ Yes
+       ▼
+┌──────────────┐    Deny      ┌──────────────┐
+│ Request user │ ────────────▶ │ Cancel       │
+│ approval     │               │ operation    │
+└──────┬───────┘               └──────────────┘
+       │ Approve
+       ▼
+┌──────────────┐
+│ Execute in   │
+│ sandbox      │
+└──────────────┘
+```
+
+### Why Does It Ask for Approval?
+
+Claude Code requests approval before potentially dangerous operations:
+- File modification/deletion
+- Command execution
+- External API calls
+
+### Auto-approve Settings
+
+Auto-approve frequently used safe tools:
+
+```json
+// settings.json
+{
+  "permissions": {
+    "autoApprove": ["Read", "Glob", "Grep"]
+  }
+}
+```
+
+**Caution**: Be careful with `Edit`, `Write`, `Bash`.
+
+### Sandbox Mode
+
+Bash commands run in a sandbox by default. This protects your system while working.
+
+---
+
+## Practical Tips
+
+### 1. Mention Tools Explicitly
+
+```
+# Implicit (Claude must infer)
+> How is error handling done in this project?
+
+# Explicit (faster)
+> Use grep to search for "catch" keyword and show error handling patterns
+```
+
+### 2. One Thing at a Time
+
+```
+# Multiple tasks at once (can cause confusion)
+> Create file, write tests, and commit
+
+# Step by step (more accurate)
+> Create the file first
+> (after checking) Write tests
+> (after checking) Commit
+```
+
+### 3. Verify Before Proceeding
+
+If Claude modified a file, verify the result before moving to the next step. You can immediately fix anything that's wrong.
 
 ---
 
 ## Summary
 
 What you learned in this chapter:
-- [x] Mastering slash commands
-- [x] Automation with Hooks
-- [x] Creating and using Skills
-- [x] Understanding subagents
-- [x] Advanced configuration
+- [x] Claude Code's overall architecture and API communication flow
+- [x] 18 built-in tools system
+- [x] How subagents work and parallel execution
+- [x] Model selection and context management
+- [x] Permissions and security policies
 
-In the next chapter, we cover more powerful automation tools: MCP and CI/CD.
+**Key point**: Claude Code isn't magic—it's a system. Understanding the system helps you use it better.
 
-[Chapter 19: Automation](../Chapter19/README.md)
+In the next chapter, you'll learn how to customize this system.
+
+Proceed to [Chapter 19: Advanced Configuration](../Chapter19/README.md).

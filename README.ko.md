@@ -2,7 +2,25 @@
 
 > AI 네이티브 개발을 위한 체계적인 학습 커리큘럼
 
-**[Claude Code](https://github.com/anthropics/claude-code) 기반** | [English](./README.md) | **한국어**
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Chapters](https://img.shields.io/badge/챕터-25개-blue.svg)](#커리큘럼-구조)
+[![Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-blueviolet.svg)](https://github.com/anthropics/claude-code)
+
+[English](./README.md) | **한국어**
+
+---
+
+## 빠른 시작
+
+```bash
+# Claude Code 설치
+npm install -g @anthropic-ai/claude-code
+
+# Claude Code 실행
+claude
+```
+
+준비됐나요? [Chapter 01: AI 코딩이란?](./Chapter01/README.ko.md)부터 시작하세요!
 
 ---
 
@@ -74,12 +92,13 @@
 
 ## 학습 성과
 
-20개 챕터를 완료하면 다음을 할 수 있습니다:
+25개 챕터를 완료하면 다음을 할 수 있습니다:
 
 - **포트폴리오 웹사이트** 제작 및 배포
 - **간단한 앱** (TODO 앱, 게임 등) 개발
 - **자동화 도구** (파일 정리, 데이터 처리) 구축
 - **AI 서비스** (문서 요약기, 번역기) 구현
+- **고급 워크플로우** (Hooks, Skills, MCP, CI/CD) 구성
 
 ---
 
@@ -126,19 +145,24 @@ Claude Code의 핵심 기능을 익힙니다.
 
 | Chapter | 주제 | 설명 | 링크 |
 |---------|------|------|------|
-| 15 | AI 도구 만들기 | 챗봇, 요약기, 번역기 | [EN](./Chapter15/README.md) / [KO](./Chapter15/README.ko.md) |
-| 16 | 데이터 처리 | CSV, JSON, 자동화 | [EN](./Chapter16/README.md) / [KO](./Chapter16/README.ko.md) |
-| 17 | API 연동 | 날씨 앱, 포켓몬 도감 | [EN](./Chapter17/README.md) / [KO](./Chapter17/README.ko.md) |
+| 15 | CLI 도구 만들기 | 커맨드라인 도구 개발 | [EN](./Chapter15/README.md) / [KO](./Chapter15/README.ko.md) |
+| 16 | 챗봇 만들기 | AI 챗봇 구현 | [EN](./Chapter16/README.md) / [KO](./Chapter16/README.ko.md) |
+| 17 | 풀스택 앱 만들기 | 완성형 웹 애플리케이션 | [EN](./Chapter17/README.md) / [KO](./Chapter17/README.ko.md) |
 
-### Part 5: 고급 & 마스터 (Chapter 18-20)
+### Part 5: 고급 (Chapter 18-25)
 
-Claude Code의 고급 기능을 학습합니다.
+Claude Code의 고급 기능을 학습하고 마스터가 됩니다.
 
 | Chapter | 주제 | 설명 | 링크 |
 |---------|------|------|------|
-| 18 | 고급 기능 | Hooks, Skills, 서브에이전트 | [EN](./Chapter18/README.md) / [KO](./Chapter18/README.ko.md) |
-| 19 | 자동화 | MCP, CI/CD | [EN](./Chapter19/README.md) / [KO](./Chapter19/README.ko.md) |
-| 20 | 마스터 | 종합 정리, 다음 단계 | [EN](./Chapter20/README.md) / [KO](./Chapter20/README.ko.md) |
+| 18 | 아키텍처 이해 | Claude Code 내부 동작 원리 | [EN](./Chapter18/README.md) / [KO](./Chapter18/README.ko.md) |
+| 19 | 설정 심화 | CLAUDE.md 3단계, settings.json | [EN](./Chapter19/README.md) / [KO](./Chapter19/README.ko.md) |
+| 20 | Hooks & Commands | 자동화 트리거, 커스텀 명령어 | [EN](./Chapter20/README.md) / [KO](./Chapter20/README.ko.md) |
+| 21 | Agents & Skills | 전문화된 AI 어시스턴트 | [EN](./Chapter21/README.md) / [KO](./Chapter21/README.ko.md) |
+| 22 | MCP 연동 | 외부 서비스 연결 | [EN](./Chapter22/README.md) / [KO](./Chapter22/README.ko.md) |
+| 23 | CI/CD 자동화 | GitHub Actions, 자동 배포 | [EN](./Chapter23/README.md) / [KO](./Chapter23/README.ko.md) |
+| 24 | 팀 협업 | 팀 워크플로우, 온보딩 | [EN](./Chapter24/README.md) / [KO](./Chapter24/README.ko.md) |
+| 25 | 마스터 | 종합 정리, 최종 프로젝트 | [EN](./Chapter25/README.md) / [KO](./Chapter25/README.ko.md) |
 
 ---
 
@@ -220,27 +244,6 @@ Claude Code 팀과 숙련된 개발자들의 팁입니다.
 구체적으로 작성할수록 좋은 결과가 나옵니다.
 
 </details>
-
----
-
-## 시작하기
-
-### 필요 사항
-
-- 컴퓨터 (Mac, Windows, Linux)
-- 인터넷 연결
-
-### 설치 및 실행
-
-```bash
-# Claude Code 설치
-npm install -g @anthropic-ai/claude-code
-
-# Claude Code 실행
-claude
-```
-
-[Chapter 01: AI 코딩이란?](./Chapter01/README.ko.md)부터 시작하세요.
 
 ---
 
