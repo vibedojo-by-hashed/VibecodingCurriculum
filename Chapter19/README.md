@@ -1,678 +1,1198 @@
-# Chapter 19: Advanced Configuration
+# Chapter 19: Backend Basics - Server and Database
 
 **English** | [한국어](./README.ko.md)
 
+---
+
+## Ask Questions
+
+If you have any questions while learning, ask on Discord!
+
+[![Discord](https://img.shields.io/badge/Discord-Ask%20Questions-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite-link)
+
+---
+
+## Previous Chapter Review
+
+In [Chapter 18: Building Chatbots](../Chapter18/README.md), we built Discord and Slack bots. We learned event-driven programming and external API integration.
+
+In this chapter, we'll learn how to build the **backend** of web services. In the next chapter, we'll connect it to a frontend to create a complete full-stack app!
+
+---
+
 ## What You Will Learn
 
-- CLAUDE.md 3-tier configuration system
-- settings.json detailed options
-- Permission management and custom settings
+- Understanding the roles of frontend and backend
+- Building a web server with Express
+- REST API design and implementation
+- Storing data with SQLite
+- CRUD operations (Create, Read, Update, Delete)
 
 ---
 
-## Why do you need this?
+## Why Do You Need a Backend?
 
-**Real-world scenario**: Every time you start Claude Code, you type "Use TypeScript, follow our team conventions, don't use any type..." This gets tiring and you sometimes forget.
+Think about the apps we've built so far:
+- Refresh the browser? -> Data disappears
+- Access from a different device? -> No data
+- Multiple people use it? -> Can't share data
 
-Configuration files solve this by remembering your rules once and applying them every time.
+**With a backend:**
+- Data is permanently stored on the server
+- Access the same data from any device
+- Multiple users can have their own data
+- Securely handle logic that requires security
 
-### Simple Analogy: Your Phone Settings
-
-Think of configuration like your phone settings:
-- **Default ringtone** = Claude's default behavior
-- **Custom ringtone** = Your personal CLAUDE.md
-- **Work profile** = Project-specific settings
-
-You set it once, and it just works every time. No need to repeat yourself!
+> **Beginner Tip**: An app with only frontend is like "a house without a foundation." It looks nice, but it can't keep data for long. The backend is the foundation of that house!
 
 ---
 
-## JSON Basics (For Beginners)
+## Simple Analogy: Understanding Through a Restaurant
 
-Many Claude Code settings use JSON format. Here's a quick primer:
+Let's compare a web application to a restaurant:
+
+```
++------------------------------------------------------------------+
+|                   Restaurant = Web Application                     |
++------------------------------------------------------------------+
+|                                                                    |
+|  Dining Area (Frontend)              Kitchen (Backend)             |
+|  ---------------------               ----------------              |
+|  - Space customers see               - Where actual cooking happens|
+|  - Menu, tables, decor               - Chefs, recipes, cooking     |
+|  - Waiter takes orders               - Customers can't enter       |
+|                                         (security)                 |
+|                                                                    |
+|  Order Slip = API Request            Pantry = Database             |
+|  -------------------                 ----------------              |
+|  "One tomato pasta please"           - All ingredients organized   |
+|  -> POST /api/orders                 - Retrieved when needed       |
+|     { menu: "pasta" }                - Inventory management        |
+|                                                                    |
++------------------------------------------------------------------+
+```
+
+When ordering food:
+1. **Customer (user)** -> Orders from waiter (frontend)
+2. **Waiter (frontend)** -> Delivers order slip (API request) to kitchen (backend)
+3. **Kitchen (backend)** -> Gets ingredients from pantry (database)
+4. **Kitchen (backend)** -> Completes dish and hands to waiter (API response)
+5. **Waiter (frontend)** -> Serves food to customer
+
+> **Important**: Just as customers shouldn't go directly into the kitchen, the frontend should never access the database directly. Always go through the backend to maintain security!
+
+---
+
+## Frontend vs Backend Comparison
+
+| Category | Frontend | Backend |
+|----------|----------|---------|
+| **Location** | Browser (user's computer) | Server (remote computer) |
+| **Role** | Display UI, handle user input | Data processing, business logic |
+| **Languages** | HTML, CSS, JavaScript | JavaScript (Node.js), Python, Java, etc. |
+| **Security** | Code is exposed to users | Code is hidden from users |
+| **Data** | Temporary storage (lost on refresh) | Permanent storage (database) |
+
+```
++------------------------------------------------------------------+
+|              Frontend Only vs With Backend Comparison              |
++------------------------------------------------------------------+
+|                                                                    |
+|  Frontend Only                       With Backend                  |
+|  -------------                       ------------                  |
+|                                                                    |
+|  +--------------+                   +--------------+               |
+|  |   Browser    |                   |   Browser    |               |
+|  |              |                   |  (React etc) |               |
+|  | localStorage |                   +--------------+               |
+|  |  (temporary) |                         |                        |
+|  +--------------+                         | API request/response   |
+|        |                                  v                        |
+|        | Refresh                   +--------------+                |
+|        v = Partial data            |    Server    |                |
+|        | Other device              |  (Express)   |                |
+|        v = No data                 +--------------+                |
+|                                          |                         |
+|                                          v                         |
+|                                   +--------------+                 |
+|                                   |   Database   |                 |
+|                                   |   (SQLite)   |                 |
+|                                   +--------------+                 |
+|                                   Accessible from anywhere         |
+|                                                                    |
++------------------------------------------------------------------+
+```
+
+---
+
+## Setting Up the Development Environment
+
+Before starting backend development, let's install what we need.
+
+### Step 1: Create Project Folder
+
+```bash
+# Create project folder
+mkdir my-first-backend
+cd my-first-backend
+
+# Create package.json (initialize Node.js project)
+npm init -y
+```
+
+> **What is npm init -y?** It automatically creates the configuration file (package.json) for a Node.js project with default values. The `-y` means answering "yes" to all questions.
+
+### Step 2: Install Required Packages
+
+```bash
+npm install express better-sqlite3
+```
+
+Packages being installed:
+- **express**: Framework for easily building web servers
+- **better-sqlite3**: Library for using SQLite database
+
+### Step 3: Folder Structure
+
+```
+my-first-backend/
+├── package.json      # Project configuration
+├── package-lock.json # Package version lock
+├── node_modules/     # Installed packages
+├── index.js          # Main server file (we'll create this)
+└── database.db       # Database file (auto-generated)
+```
+
+---
+
+## Part 1: Creating the Simplest Server
+
+### Hello World Server
+
+```javascript
+// index.js - The simplest web server in the world
+
+// 1. Import Express library
+const express = require('express')
+
+// 2. Create Express app
+const app = express()
+
+// 3. Respond "Hello World!" when accessing "/" path
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
+
+// 4. Start server (listen on port 3001)
+app.listen(3001, () => {
+  console.log('Server running at http://localhost:3001!')
+})
+```
+
+### Try Running It
+
+```bash
+node index.js
+```
+
+Access `http://localhost:3001` in your browser and you'll see "Hello World!"
+
+> **What is a Port?** Think of it as a "door number" for your computer. Requests coming through door 3001 are handled by our server. We usually use numbers between 3000-9000 to avoid conflicts with other programs.
+
+### Practice Problem 1-1: Greeting Server
+
+Modify the code above to:
+1. Respond "Hello!" when accessing `/hello` path
+2. Respond "Goodbye!" when accessing `/bye` path
+
+<details>
+<summary>See Answer</summary>
+
+```javascript
+const express = require('express')
+const app = express()
+
+app.get('/', (req, res) => {
+  res.send('This is the main page')
+})
+
+app.get('/hello', (req, res) => {
+  res.send('Hello!')
+})
+
+app.get('/bye', (req, res) => {
+  res.send('Goodbye!')
+})
+
+app.listen(3001, () => {
+  console.log('Server running at http://localhost:3001!')
+})
+```
+
+</details>
+
+---
+
+## Part 2: Exchanging Data with JSON
+
+Real APIs exchange data in **JSON** format, not plain text.
 
 ### What is JSON?
 
-JSON (JavaScript Object Notation) is a simple way to store data. It looks like this:
+JSON (JavaScript Object Notation) is a format for representing data:
 
 ```json
 {
-  "name": "value",
-  "number": 42,
-  "list": ["item1", "item2"],
-  "nested": {
-    "inner": "value"
-  }
+  "name": "John Doe",
+  "age": 25,
+  "hobbies": ["reading", "gaming", "exercise"]
 }
 ```
 
-### Key Rules
+### Responding with JSON
 
-1. **Curly braces `{}`** wrap objects (key-value pairs)
-2. **Square brackets `[]`** wrap lists (arrays)
-3. **Keys must be in double quotes** `"like this"`
-4. **Commas separate items** but NO comma after the last item
-5. **No comments allowed** (unlike JavaScript)
+```javascript
+// index.js
+const express = require('express')
+const app = express()
 
-### Common Mistakes
+// Respond with JSON
+app.get('/api/user', (req, res) => {
+  res.json({
+    id: 1,
+    name: 'John Doe',
+    email: 'john@example.com'
+  })
+})
 
-```json
-// BAD - trailing comma
-{
-  "name": "value",  // <-- error here!
-}
+// Multiple data (array)
+app.get('/api/users', (req, res) => {
+  res.json([
+    { id: 1, name: 'John Doe' },
+    { id: 2, name: 'Jane Smith' },
+    { id: 3, name: 'Bob Wilson' }
+  ])
+})
 
-// GOOD - no trailing comma
-{
-  "name": "value"
-}
-
-// BAD - single quotes
-{
-  'name': 'value'
-}
-
-// GOOD - double quotes
-{
-  "name": "value"
-}
+app.listen(3001, () => {
+  console.log('Server running: http://localhost:3001')
+})
 ```
 
----
+### Testing
 
-## Your First Config (Start Here!)
+Access `http://localhost:3001/api/users` in your browser to see JSON data.
 
-Before diving into all the options, let's create a minimal working config:
-
-### Step 1: Create CLAUDE.md in Your Project
-
-Create a file called `CLAUDE.md` in your project root:
-
-```markdown
-# Project Rules
-
-This is a TypeScript project. Use strict types.
-```
-
-That's it! Claude will now read this file and follow your rules.
-
-### Step 2: Create Your Personal Settings
-
-Create the settings folder and file:
+Or test with curl in the terminal:
 
 ```bash
-mkdir -p ~/.claude
-touch ~/.claude/settings.json
+curl http://localhost:3001/api/users
 ```
 
-Add this minimal config:
-
-```json
-{
-  "permissions": {
-    "autoApprove": ["Read", "Glob", "Grep"]
-  }
-}
-```
-
-Now safe read-only tools won't ask for permission every time.
-
-### Step 3: Verify It Works
-
-```
-> What's in my CLAUDE.md?
-```
-
-Claude should be able to read it and tell you the contents.
+> **res.send() vs res.json()**:
+> - `res.send('text')`: Plain text response
+> - `res.json(object)`: JSON format response (automatically sets Content-Type header)
 
 ---
 
-## Why Understand Configuration?
+## Part 3: Understanding HTTP Methods
 
-Claude Code works well with defaults. But understanding configuration gives you:
+APIs use **HTTP methods** to distinguish what operation to perform.
 
-- **Consistent work**: No need to repeat the same rules every time
-- **Safe usage**: Prevent dangerous actions in advance
-- **Custom environment**: Build your own workflow
+### CRUD and HTTP Methods
 
----
+| Action | CRUD | HTTP Method | Example | Description |
+|--------|------|-------------|---------|-------------|
+| Create | Create | **POST** | `POST /api/todos` | Add new todo |
+| Read | Read | **GET** | `GET /api/todos` | Get todo list |
+| Update | Update | **PUT/PATCH** | `PATCH /api/todos/1` | Modify todo #1 |
+| Delete | Delete | **DELETE** | `DELETE /api/todos/1` | Delete todo #1 |
 
-## CLAUDE.md 3-Tier System
-
-Claude Code reads CLAUDE.md files from 3 levels.
-
-### Hierarchy Structure
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    CLAUDE.md Priority                            │
-└─────────────────────────────────────────────────────────────────┘
-
-[1] Project Level (Highest Priority)
-    ./CLAUDE.md
-    └── Rules specific to current project
-
-[2] Root Level (Medium Priority)
-    ~/.claude/CLAUDE.md
-    └── Personal rules applied to all projects
-
-[3] User Level (Lowest Priority)
-    System defaults
-    └── Claude Code default behavior
-```
-
-### Why Does This Matter?
-
-**When you need different rules per project:**
-
-```markdown
-# Project A's CLAUDE.md
-This project uses TypeScript + React.
-Tests are written with Jest.
-
-# Project B's CLAUDE.md
-This project uses Python + FastAPI.
-Tests are written with pytest.
-```
-
-**Common rules go in root level:**
-
-```markdown
-# ~/.claude/CLAUDE.md
-All commit messages are written in English.
-Always check for security vulnerabilities during code review.
-```
-
----
-
-## CLAUDE.md Writing Guide
-
-### Characteristics of Good CLAUDE.md
-
-```markdown
-# Project Overview
-This project is a user authentication service.
-
-# Tech Stack
-- Backend: Express.js + TypeScript
-- Database: PostgreSQL
-- ORM: Prisma
-
-# Coding Conventions
-- Function names: camelCase
-- File names: kebab-case
-- Types: PascalCase
-
-# Common Commands
-- npm run dev: Start dev server
-- npm test: Run tests
-- npm run lint: Check lint
-
-# Important Files
-- src/config/: Environment settings
-- src/middleware/: Auth, logging middleware
-- prisma/schema.prisma: DB schema
-```
-
-### Effective Request Tips
-
-```markdown
-# Instead of this
-"Handle errors well"
-
-# Be specific like this
-## Error Handling Rules
-- All API responses use { success, data, error } format
-- HTTP error codes: only 400/401/403/404/500
-- Error logs recorded with winston
-```
-
----
-
-## settings.json Detailed Configuration
-
-### File Location
+### Understanding Through Analogy
 
 ```
-~/.claude/settings.json
++------------------------------------------------------------------+
+|                  HTTP Methods = Library Operations                 |
++------------------------------------------------------------------+
+|                                                                    |
+|  GET = "Please show me this book"                                  |
+|     -> Brings and shows the book (no data change)                  |
+|                                                                    |
+|  POST = "Please register a new book"                               |
+|     -> Adds a new book to the library                              |
+|                                                                    |
+|  PATCH = "Please change this book's status to 'borrowed'"          |
+|     -> Modifies only part of the book's information                |
+|                                                                    |
+|  DELETE = "Please dispose of this book"                            |
+|     -> Removes the book from the library                           |
+|                                                                    |
++------------------------------------------------------------------+
 ```
 
-### Full Structure
+### Using All Methods
 
-```json
-{
-  "permissions": {
-    "autoApprove": [],
-    "deny": []
-  },
-  "model": {
-    "default": "sonnet",
-    "preferredForPlanning": "opus"
-  },
-  "behavior": {
-    "autoCompact": true,
-    "compactThreshold": 80000
-  },
-  "output": {
-    "format": "markdown",
-    "verbosity": "normal"
+```javascript
+const express = require('express')
+const app = express()
+
+// Middleware for parsing JSON request body
+app.use(express.json())
+
+// Temporary data storage (will replace with database later)
+let todos = [
+  { id: 1, text: 'Go shopping', completed: false },
+  { id: 2, text: 'Exercise', completed: true }
+]
+let nextId = 3
+
+// ===================================================================
+// GET: Retrieve all todos
+// ===================================================================
+app.get('/api/todos', (req, res) => {
+  res.json(todos)
+})
+
+// ===================================================================
+// GET: Retrieve specific todo (using URL parameter)
+// ===================================================================
+app.get('/api/todos/:id', (req, res) => {
+  const id = parseInt(req.params.id)  // Extract id from URL
+  const todo = todos.find(t => t.id === id)
+
+  if (!todo) {
+    return res.status(404).json({ error: 'Todo not found' })
   }
-}
-```
 
-### Permission Settings
+  res.json(todo)
+})
 
-```json
-{
-  "permissions": {
-    // Tools to auto-approve
-    "autoApprove": [
-      "Read",      // File reading
-      "Glob",      // File search
-      "Grep",      // Content search
-      "WebFetch"   // URL fetching
-    ],
+// ===================================================================
+// POST: Add new todo
+// ===================================================================
+app.post('/api/todos', (req, res) => {
+  const { text } = req.body  // Extract text from request body
 
-    // Patterns to always block
-    "deny": [
-      "rm -rf",
-      "DROP TABLE",
-      "force push"
-    ]
+  if (!text) {
+    return res.status(400).json({ error: 'Please enter todo content' })
   }
-}
-```
 
-### Why Does This Matter?
-
-**Reduce approval fatigue:**
-
-Auto-approving read-only tools means no need to press "y" every time.
-
-```json
-{
-  "permissions": {
-    "autoApprove": ["Read", "Glob", "Grep"]
+  const newTodo = {
+    id: nextId++,
+    text: text,
+    completed: false
   }
-}
-```
 
-**Block dangerous commands:**
+  todos.push(newTodo)
+  res.status(201).json(newTodo)  // 201: Created
+})
 
-Block commands that shouldn't be run by mistake.
+// ===================================================================
+// PATCH: Update todo (partial)
+// ===================================================================
+app.patch('/api/todos/:id', (req, res) => {
+  const id = parseInt(req.params.id)
+  const todo = todos.find(t => t.id === id)
 
-```json
-{
-  "permissions": {
-    "deny": [
-      "rm -rf /",
-      "DROP DATABASE",
-      "git push --force origin main"
-    ]
+  if (!todo) {
+    return res.status(404).json({ error: 'Todo not found' })
   }
-}
-```
 
----
-
-## Model Settings
-
-### Specify Default Model
-
-```json
-{
-  "model": {
-    "default": "sonnet"
+  // Update only fields present in request body
+  if (req.body.text !== undefined) {
+    todo.text = req.body.text
   }
-}
-```
-
-### Model Strategy by Task
-
-```json
-{
-  "model": {
-    "default": "sonnet",
-    "preferredForPlanning": "opus",
-    "preferredForSimpleTasks": "haiku"
+  if (req.body.completed !== undefined) {
+    todo.completed = req.body.completed
   }
-}
-```
 
-### Why Does This Matter?
+  res.json(todo)
+})
 
-**Auto-adjust cost and quality:**
+// ===================================================================
+// DELETE: Delete todo
+// ===================================================================
+app.delete('/api/todos/:id', (req, res) => {
+  const id = parseInt(req.params.id)
+  const index = todos.findIndex(t => t.id === id)
 
-- Complex planning: Opus (quality first)
-- General work: Sonnet (balanced)
-- Simple tasks: Haiku (speed first)
-
-```
-> /model opus
-> Design this system architecture
-
-> /model haiku
-> Add logging to this function
-```
-
----
-
-## Output Settings
-
-### Format Settings
-
-```json
-{
-  "output": {
-    "format": "markdown",
-    "codeBlockStyle": "fenced",
-    "verbosity": "normal"
+  if (index === -1) {
+    return res.status(404).json({ error: 'Todo not found' })
   }
-}
+
+  todos.splice(index, 1)  // Remove from array
+  res.json({ success: true, message: 'Deleted' })
+})
+
+app.listen(3001, () => {
+  console.log('Server running: http://localhost:3001')
+})
 ```
 
-### Verbosity Control
-
-```json
-{
-  "output": {
-    // "minimal": essentials only
-    // "normal": default
-    // "verbose": detailed explanations
-    "verbosity": "normal"
-  }
-}
-```
-
----
-
-## Environment-Specific Settings
-
-### Development Environment
-
-```json
-// ~/.claude/settings.json (for development)
-{
-  "permissions": {
-    "autoApprove": ["Read", "Glob", "Grep", "Edit", "Write", "Bash"]
-  },
-  "behavior": {
-    "sandbox": false
-  }
-}
-```
-
-### Production Environment
-
-```json
-// ~/.claude/settings.json (for production)
-{
-  "permissions": {
-    "autoApprove": ["Read", "Glob", "Grep"],
-    "deny": ["rm", "DROP", "DELETE", "force"]
-  },
-  "behavior": {
-    "sandbox": true
-  }
-}
-```
-
-### Why Does This Matter?
-
-**Safety level matching the environment:**
-
-- Development: Auto-approve many things for fast work
-- Production: Strict limits to prevent mistakes
-
----
-
-## Project-Specific Settings
-
-### Using .claude/ Folder
-
-```
-my-project/
-├── .claude/
-│   ├── settings.json    # Project-specific settings
-│   └── templates/       # Frequently used prompts
-├── CLAUDE.md           # Project rules
-└── src/
-```
-
-### Project-Specific settings.json
-
-```json
-// my-project/.claude/settings.json
-{
-  "permissions": {
-    "autoApprove": ["Read", "Glob", "Grep"],
-    "deny": ["npm publish"]
-  }
-}
-```
-
----
-
-## Practical Configuration Examples
-
-### Frontend Project
-
-```markdown
-# CLAUDE.md
-## Project
-React + TypeScript + Tailwind CSS
-
-## Conventions
-- Components are functional
-- State management with Zustand
-- Styles use Tailwind classes
-
-## Testing
-- Test files: *.test.tsx
-- Use React Testing Library
-
-## Forbidden
-- No any type
-- No inline styles
-```
-
-```json
-// .claude/settings.json
-{
-  "permissions": {
-    "autoApprove": ["Read", "Glob", "Grep"],
-    "deny": [": any", "style={{"]
-  }
-}
-```
-
-### Backend Project
-
-```markdown
-# CLAUDE.md
-## Project
-Express + TypeScript + Prisma
-
-## API Rules
-- RESTful design
-- Response: { success, data, error }
-- Auth: JWT Bearer tokens
-
-## Security
-- Watch for SQL injection
-- Input validation required
-- No logging sensitive info
-
-## DB
-- Migration: prisma migrate
-- Seed: prisma db seed
-```
-
-```json
-// .claude/settings.json
-{
-  "permissions": {
-    "deny": [
-      "DROP TABLE",
-      "DELETE FROM",
-      "console.log(password",
-      "console.log(token"
-    ]
-  }
-}
-```
-
-### Full-Stack Project
-
-```markdown
-# CLAUDE.md
-## Structure
-- frontend/: Next.js
-- backend/: NestJS
-- shared/: Shared types
-
-## Dev Servers
-- frontend: npm run dev (port 3000)
-- backend: npm run start:dev (port 4000)
-
-## Environment Variables
-- .env.local: Local config (not in git)
-- .env.example: Template
-```
-
----
-
-## Configuration Debugging
-
-### Check Current Settings
-
-```
-> /config
-```
-
-Shows currently applied settings.
-
-### When Settings Don't Work
-
-1. **Check file location**: `~/.claude/settings.json`
-2. **Check JSON syntax**: commas, quotes, etc.
-3. **Restart Claude Code**: May be needed after changes
+### Testing with curl
 
 ```bash
-# Validate JSON syntax
-cat ~/.claude/settings.json | jq .
+# GET: Retrieve all todos
+curl http://localhost:3001/api/todos
+
+# GET: Retrieve todo #1
+curl http://localhost:3001/api/todos/1
+
+# POST: Add new todo
+curl -X POST http://localhost:3001/api/todos \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Study"}'
+
+# PATCH: Mark todo #1 as completed
+curl -X PATCH http://localhost:3001/api/todos/1 \
+  -H "Content-Type: application/json" \
+  -d '{"completed": true}'
+
+# DELETE: Delete todo #2
+curl -X DELETE http://localhost:3001/api/todos/2
 ```
 
----
+> **req.params vs req.body**:
+> - `req.params`: Values in URL (e.g., the 1 in `/api/todos/1`)
+> - `req.body`: JSON data in request body
 
-## Try it yourself
+### Practice Problem 3-1: Memo API
 
-### Exercise 1: Create Your First CLAUDE.md
+Using the todos API as reference, create a memos API:
+- `GET /api/memos` - Get all memos
+- `POST /api/memos` - Add new memo (title, content fields)
+- `DELETE /api/memos/:id` - Delete memo
 
-1. Navigate to a project folder
-2. Create a `CLAUDE.md` file with your project rules
-3. Start Claude Code and ask "What are the rules for this project?"
+<details>
+<summary>See Answer</summary>
 
-### Exercise 2: Set Up Auto-Approve
+```javascript
+const express = require('express')
+const app = express()
+app.use(express.json())
 
-1. Create `~/.claude/settings.json`
-2. Add auto-approve for read-only tools
-3. Try searching for files - notice you don't need to press 'y' anymore!
+let memos = []
+let nextId = 1
 
-### Exercise 3: Add a Deny Pattern
+app.get('/api/memos', (req, res) => {
+  res.json(memos)
+})
 
-Add a pattern to block dangerous commands:
+app.post('/api/memos', (req, res) => {
+  const { title, content } = req.body
 
-```json
-{
-  "permissions": {
-    "deny": ["rm -rf"]
+  if (!title) {
+    return res.status(400).json({ error: 'Please enter a title' })
   }
-}
+
+  const newMemo = {
+    id: nextId++,
+    title,
+    content: content || '',
+    createdAt: new Date().toISOString()
+  }
+
+  memos.push(newMemo)
+  res.status(201).json(newMemo)
+})
+
+app.delete('/api/memos/:id', (req, res) => {
+  const id = parseInt(req.params.id)
+  const index = memos.findIndex(m => m.id === id)
+
+  if (index === -1) {
+    return res.status(404).json({ error: 'Memo not found' })
+  }
+
+  memos.splice(index, 1)
+  res.json({ success: true })
+})
+
+app.listen(3001, () => {
+  console.log('Server running!')
+})
 ```
 
-Try asking Claude to delete something with `rm -rf` - it should be blocked!
+</details>
 
 ---
 
-## If it doesn't work?
+## Part 4: Connecting to a Database
 
-### Problem: CLAUDE.md is not being read
+Until now, we've stored data in variables (memory). If you restart the server, the data disappears. Now let's use a **database** for permanent storage.
 
-**Possible causes:**
-1. File is not named exactly `CLAUDE.md` (case-sensitive)
-2. File is in the wrong location
-3. File has encoding issues
+### What is SQLite?
 
-**Solutions:**
-- Check the file name: `ls -la CLAUDE.md`
-- Make sure it's in the project root (where you run `claude`)
-- Verify content: `cat CLAUDE.md`
+SQLite is a lightweight file-based database:
+- No separate installation needed (works with just one file)
+- Suitable for small projects
+- Great for learning
 
-### Problem: settings.json changes not applied
+```
++------------------------------------------------------------------+
+|                    Database = Excel File                          |
++------------------------------------------------------------------+
+|                                                                    |
+|  Store data in "table" format like Excel                          |
+|                                                                    |
+|  +----------------------------------------------------------+     |
+|  | todos table                                               |     |
+|  +------+----------------+------------+---------------------+|     |
+|  | id   | text           | completed  | created_at          ||     |
+|  +------+----------------+------------+---------------------+|     |
+|  | 1    | Go shopping    | 0          | 2025-01-17 10:00    ||     |
+|  | 2    | Exercise       | 1          | 2025-01-17 11:00    ||     |
+|  | 3    | Study          | 0          | 2025-01-17 12:00    ||     |
+|  +------+----------------+------------+---------------------+|     |
+|                                                                    |
+|  - id: Unique number identifying each row (auto-increment)        |
+|  - text: Todo content                                              |
+|  - completed: Completion status (0=incomplete, 1=complete)        |
+|  - created_at: Creation time                                       |
+|                                                                    |
++------------------------------------------------------------------+
+```
 
-**Possible causes:**
-1. Invalid JSON syntax
-2. File in wrong location
-3. Claude Code needs restart
+### Connecting to SQLite
 
-**Solutions:**
-- Validate JSON: `cat ~/.claude/settings.json | jq .`
-- Check location: must be `~/.claude/settings.json`
-- Restart Claude Code
+```javascript
+// index.js
+const express = require('express')
+const Database = require('better-sqlite3')
 
-### Problem: Auto-approve not working
+const app = express()
+app.use(express.json())
 
-**Possible causes:**
-1. Tool name spelled wrong (case-sensitive)
-2. JSON syntax error
+// ===================================================================
+// Database connection
+// ===================================================================
+const db = new Database('todos.db')  // Create/connect to todos.db file
 
-**Solutions:**
-- Check exact tool names: `Read`, `Glob`, `Grep`, `Edit`, `Write`, `Bash`
-- Validate JSON format
+// ===================================================================
+// Create table (create if doesn't exist)
+// ===================================================================
+db.exec(`
+  CREATE TABLE IF NOT EXISTS todos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    text TEXT NOT NULL,
+    completed INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )
+`)
+
+console.log('Database connected!')
+```
+
+> **SQL Syntax Explanation**:
+> - `CREATE TABLE IF NOT EXISTS`: Only create table if it doesn't exist
+> - `INTEGER PRIMARY KEY AUTOINCREMENT`: Auto-incrementing unique number
+> - `TEXT NOT NULL`: String, required
+> - `DEFAULT 0`: Use default value 0 if not provided
+
+### CRUD with Database
+
+Now let's modify the API to use database instead of memory:
+
+```javascript
+// index.js - Complete code
+const express = require('express')
+const Database = require('better-sqlite3')
+
+const app = express()
+app.use(express.json())
+
+// Database connection
+const db = new Database('todos.db')
+
+// Create table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS todos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    text TEXT NOT NULL,
+    completed INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )
+`)
+
+// ===================================================================
+// GET: Retrieve all todos
+// ===================================================================
+app.get('/api/todos', (req, res) => {
+  try {
+    // SQL query: Get all rows sorted by newest first
+    const todos = db.prepare(
+      'SELECT * FROM todos ORDER BY created_at DESC'
+    ).all()
+
+    res.json(todos)
+  } catch (error) {
+    console.error('Query error:', error)
+    res.status(500).json({ error: 'Failed to load data' })
+  }
+})
+
+// ===================================================================
+// GET: Retrieve specific todo
+// ===================================================================
+app.get('/api/todos/:id', (req, res) => {
+  try {
+    const id = req.params.id
+
+    // SQL query: Get one row matching id
+    const todo = db.prepare(
+      'SELECT * FROM todos WHERE id = ?'
+    ).get(id)
+
+    if (!todo) {
+      return res.status(404).json({ error: 'Todo not found' })
+    }
+
+    res.json(todo)
+  } catch (error) {
+    console.error('Query error:', error)
+    res.status(500).json({ error: 'Failed to load data' })
+  }
+})
+
+// ===================================================================
+// POST: Add new todo
+// ===================================================================
+app.post('/api/todos', (req, res) => {
+  const { text } = req.body
+
+  // Input validation
+  if (!text || typeof text !== 'string') {
+    return res.status(400).json({ error: 'Please enter todo content' })
+  }
+
+  if (text.trim().length === 0) {
+    return res.status(400).json({ error: 'Empty content cannot be added' })
+  }
+
+  if (text.length > 500) {
+    return res.status(400).json({ error: 'Please enter within 500 characters' })
+  }
+
+  try {
+    // SQL query: Insert new row
+    const result = db.prepare(
+      'INSERT INTO todos (text) VALUES (?)'
+    ).run(text.trim())
+
+    // Query and return the just-added data
+    const newTodo = db.prepare(
+      'SELECT * FROM todos WHERE id = ?'
+    ).get(result.lastInsertRowid)
+
+    res.status(201).json(newTodo)
+  } catch (error) {
+    console.error('Add error:', error)
+    res.status(500).json({ error: 'Failed to add todo' })
+  }
+})
+
+// ===================================================================
+// PATCH: Update todo
+// ===================================================================
+app.patch('/api/todos/:id', (req, res) => {
+  const id = req.params.id
+  const { text, completed } = req.body
+
+  try {
+    // First check if the todo exists
+    const existing = db.prepare(
+      'SELECT * FROM todos WHERE id = ?'
+    ).get(id)
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Todo not found' })
+    }
+
+    // Determine fields to update
+    const newText = text !== undefined ? text.trim() : existing.text
+    const newCompleted = completed !== undefined ? (completed ? 1 : 0) : existing.completed
+
+    // SQL query: Update row
+    db.prepare(
+      'UPDATE todos SET text = ?, completed = ? WHERE id = ?'
+    ).run(newText, newCompleted, id)
+
+    // Return updated data
+    const updated = db.prepare(
+      'SELECT * FROM todos WHERE id = ?'
+    ).get(id)
+
+    res.json(updated)
+  } catch (error) {
+    console.error('Update error:', error)
+    res.status(500).json({ error: 'Failed to update' })
+  }
+})
+
+// ===================================================================
+// DELETE: Delete todo
+// ===================================================================
+app.delete('/api/todos/:id', (req, res) => {
+  const id = req.params.id
+
+  try {
+    // SQL query: Delete row
+    const result = db.prepare(
+      'DELETE FROM todos WHERE id = ?'
+    ).run(id)
+
+    // 404 if no rows deleted
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Todo not found' })
+    }
+
+    res.json({ success: true, message: 'Deleted' })
+  } catch (error) {
+    console.error('Delete error:', error)
+    res.status(500).json({ error: 'Failed to delete' })
+  }
+})
+
+// ===================================================================
+// Start server
+// ===================================================================
+const PORT = 3001
+
+app.listen(PORT, () => {
+  console.log('=========================================')
+  console.log(`Server running at http://localhost:${PORT}!`)
+  console.log('=========================================')
+  console.log('')
+  console.log('API Endpoints:')
+  console.log('   GET    /api/todos     - Get all todos')
+  console.log('   GET    /api/todos/:id - Get specific todo')
+  console.log('   POST   /api/todos     - Add new todo')
+  console.log('   PATCH  /api/todos/:id - Update todo')
+  console.log('   DELETE /api/todos/:id - Delete todo')
+  console.log('')
+})
+```
+
+### Key SQL Commands
+
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `SELECT` | Query data | `SELECT * FROM todos` |
+| `INSERT` | Add data | `INSERT INTO todos (text) VALUES ('Go shopping')` |
+| `UPDATE` | Modify data | `UPDATE todos SET completed = 1 WHERE id = 1` |
+| `DELETE` | Delete data | `DELETE FROM todos WHERE id = 1` |
+
+> **`?` Placeholder**: In SQL, `?` marks where a value will be inserted later. This prevents SQL Injection attacks!
+
+### Practice Problem 4-1: Add Statistics API
+
+Add the following API:
+- `GET /api/todos/stats` - Return statistics
+  - Total count
+  - Completed count
+  - Incomplete count
+
+<details>
+<summary>Hint</summary>
+
+Use SQL's `COUNT` function:
+```sql
+SELECT COUNT(*) as total FROM todos
+SELECT COUNT(*) as completed FROM todos WHERE completed = 1
+```
+
+</details>
+
+<details>
+<summary>See Answer</summary>
+
+```javascript
+// Note: This route must be defined before /api/todos/:id!
+// Otherwise 'stats' will be interpreted as :id.
+
+app.get('/api/todos/stats', (req, res) => {
+  try {
+    const total = db.prepare(
+      'SELECT COUNT(*) as count FROM todos'
+    ).get().count
+
+    const completed = db.prepare(
+      'SELECT COUNT(*) as count FROM todos WHERE completed = 1'
+    ).get().count
+
+    res.json({
+      total,
+      completed,
+      incomplete: total - completed
+    })
+  } catch (error) {
+    console.error('Stats query error:', error)
+    res.status(500).json({ error: 'Failed to load statistics' })
+  }
+})
+```
+
+</details>
 
 ---
 
-## Common mistakes
+## Part 5: Error Handling and Validation
 
-1. **Trailing commas in JSON**
-   ```json
-   // BAD
-   { "autoApprove": ["Read",] }
+**Error handling** is important for building stable APIs.
 
-   // GOOD
-   { "autoApprove": ["Read"] }
-   ```
+### HTTP Status Codes
 
-2. **Wrong file location**
-   - Settings: `~/.claude/settings.json` (NOT `~/settings.json`)
-   - Project rules: `./CLAUDE.md` in project root
+| Code | Meaning | When to Use |
+|------|---------|-------------|
+| 200 | OK | Success |
+| 201 | Created | New resource created successfully |
+| 400 | Bad Request | Invalid request (input error) |
+| 404 | Not Found | Resource not found |
+| 500 | Internal Server Error | Server internal error |
 
-3. **Case sensitivity**
-   - `CLAUDE.md` is not the same as `claude.md`
-   - `Read` is not the same as `read`
+### Input Validation Example
 
-4. **Being too restrictive**
-   - Denying too many patterns can make Claude useless
-   - Start permissive, add restrictions as needed
+```javascript
+app.post('/api/todos', (req, res) => {
+  const { text } = req.body
 
-5. **Forgetting project-specific needs**
-   - What works for one project might break another
-   - Use project-level `.claude/settings.json` for exceptions
+  // 1. Check required value
+  if (!text) {
+    return res.status(400).json({
+      error: 'Please enter todo content',
+      field: 'text'
+    })
+  }
+
+  // 2. Check type
+  if (typeof text !== 'string') {
+    return res.status(400).json({
+      error: 'Todo content must be a string',
+      field: 'text'
+    })
+  }
+
+  // 3. Check length
+  const trimmed = text.trim()
+  if (trimmed.length === 0) {
+    return res.status(400).json({
+      error: 'Empty content cannot be added',
+      field: 'text'
+    })
+  }
+
+  if (trimmed.length > 500) {
+    return res.status(400).json({
+      error: 'Please enter within 500 characters',
+      field: 'text',
+      maxLength: 500,
+      currentLength: trimmed.length
+    })
+  }
+
+  // All validation passed -> Save data
+  try {
+    const result = db.prepare(
+      'INSERT INTO todos (text) VALUES (?)'
+    ).run(trimmed)
+
+    res.status(201).json({
+      id: result.lastInsertRowid,
+      text: trimmed,
+      completed: 0
+    })
+  } catch (error) {
+    console.error('DB error:', error)
+    res.status(500).json({ error: 'Server error occurred' })
+  }
+})
+```
+
+### Catching Errors with try-catch
+
+```javascript
+app.get('/api/todos', (req, res) => {
+  try {
+    // Code that runs normally
+    const todos = db.prepare('SELECT * FROM todos').all()
+    res.json(todos)
+  } catch (error) {
+    // If error occurs, comes here
+    console.error('Error occurred:', error)
+    res.status(500).json({ error: 'Server error occurred' })
+  }
+})
+```
+
+> **Important**: Without `try-catch`, the server could crash when errors occur! Add error handling to all APIs.
+
+---
+
+## Part 6: Understanding Middleware
+
+Middleware is a **function that executes between request and response**.
+
+```
++------------------------------------------------------------------+
+|                    Middleware Flow                                 |
++------------------------------------------------------------------+
+|                                                                    |
+|  Request -> [Middleware1] -> [Middleware2] -> [Route Handler] -> Response |
+|                                                                    |
+|  Example:                                                          |
+|  POST /api/todos                                                   |
+|       |                                                            |
+|       v                                                            |
+|  [express.json()]  <- JSON parsing                                 |
+|       |                                                            |
+|       v                                                            |
+|  [logRequest()]    <- Log recording                                |
+|       |                                                            |
+|       v                                                            |
+|  [app.post handler] <- Actual processing                           |
+|       |                                                            |
+|       v                                                            |
+|  Send response                                                     |
+|                                                                    |
++------------------------------------------------------------------+
+```
+
+### Commonly Used Middleware
+
+```javascript
+const express = require('express')
+const app = express()
+
+// ===================================================================
+// 1. JSON parsing middleware (built-in)
+// ===================================================================
+app.use(express.json())
+// -> Automatically parses JSON in request body and puts it in req.body
+
+// ===================================================================
+// 2. Request logging middleware (custom)
+// ===================================================================
+app.use((req, res, next) => {
+  const timestamp = new Date().toISOString()
+  console.log(`[${timestamp}] ${req.method} ${req.url}`)
+  next()  // Pass to next middleware
+})
+
+// ===================================================================
+// 3. Error handling middleware (4 parameters)
+// ===================================================================
+app.use((err, req, res, next) => {
+  console.error('Error occurred:', err)
+  res.status(500).json({ error: 'Server error occurred' })
+})
+```
+
+> **What is next()?** A function that passes control to the next middleware. If you don't call `next()`, the request stops there!
+
+---
+
+## Mini Quiz
+
+### Quiz 1: HTTP Methods
+
+Which HTTP method is used when adding new data?
+
+A) GET
+B) POST
+C) PATCH
+D) DELETE
+
+<details>
+<summary>See Answer</summary>
+
+**Answer: B) POST**
+
+- GET: Query data
+- POST: Create new data
+- PATCH: Modify part of data
+- DELETE: Delete data
+
+</details>
+
+### Quiz 2: Status Codes
+
+What status code should be returned when accessing a non-existent resource?
+
+A) 200
+B) 201
+C) 400
+D) 404
+
+<details>
+<summary>See Answer</summary>
+
+**Answer: D) 404**
+
+- 200: OK (success)
+- 201: Created (creation success)
+- 400: Bad Request (invalid request)
+- 404: Not Found
+
+</details>
+
+### Quiz 3: SQL Commands
+
+Which SQL command is used to modify data?
+
+A) SELECT
+B) INSERT
+C) UPDATE
+D) DELETE
+
+<details>
+<summary>See Answer</summary>
+
+**Answer: C) UPDATE**
+
+- SELECT: Query
+- INSERT: Add
+- UPDATE: Modify
+- DELETE: Delete
+
+</details>
+
+### Quiz 4: Middleware
+
+In the following code, what is the role of `next()`?
+
+```javascript
+app.use((req, res, next) => {
+  console.log('log')
+  next()
+})
+```
+
+A) Sends response
+B) Passes control to next middleware
+C) Throws an error
+D) Cancels request
+
+<details>
+<summary>See Answer</summary>
+
+**Answer: B) Passes control to next middleware**
+
+If `next()` is not called, the request stops at that middleware and no response is sent.
+
+</details>
+
+---
+
+## Practice Assignments
+
+### Basic Assignment: Complete Memo API
+
+Build a memo API with the following features:
+
+**Database Schema:**
+```sql
+CREATE TABLE memos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  content TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+)
+```
+
+**API Endpoints:**
+- `GET /api/memos` - Get all memos
+- `GET /api/memos/:id` - Get specific memo
+- `POST /api/memos` - Add new memo (title required, content optional)
+- `PATCH /api/memos/:id` - Update memo
+- `DELETE /api/memos/:id` - Delete memo
+
+**Additional Features (Challenge):**
+- `GET /api/memos/search?q=keyword` - Search by title or content
+
+### Advanced Assignment: Bookmark API
+
+Build an API for saving URL bookmarks:
+
+**Schema:**
+```sql
+CREATE TABLE bookmarks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  url TEXT NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+)
+```
+
+**API:**
+- Basic CRUD + search functionality
+
+---
+
+## Glossary
+
+| Term | Description |
+|------|-------------|
+| **API** | Method/rules for programs to communicate with each other |
+| **REST API** | API design style using URLs and HTTP methods |
+| **Express** | Node.js web server framework |
+| **SQLite** | Lightweight file-based database |
+| **CRUD** | Acronym for Create, Read, Update, Delete |
+| **Middleware** | Function that executes between request and response |
+| **HTTP Method** | Request types like GET, POST, PUT, PATCH, DELETE |
+| **Status Code** | Numbers indicating response result like 200, 404, 500 |
+| **JSON** | Format for representing data |
+| **Query** | Command/question sent to database |
+
+---
+
+## Next Chapter Preview
+
+In [Chapter 20: Building Full-Stack Apps - Frontend Integration and Authentication](../Chapter20/README.md), we'll:
+- Connect React frontend with backend
+- Configure CORS
+- Implement authentication system (JWT)
+- Prepare for deployment
+
+We'll connect the backend API created in this chapter to an actual interface and build a complete full-stack app!
 
 ---
 
 ## Summary
 
-What you learned in this chapter:
-- [x] CLAUDE.md 3-tier system (project/root/user)
-- [x] settings.json detailed options
-- [x] Permission management (auto-approve/deny)
-- [x] Environment-specific settings strategy
-- [x] Project-specific custom settings
+1. **Backend** handles data storage and business logic
+2. **Express** makes it easy to build web servers
+3. **HTTP methods** distinguish CRUD operations: GET (read), POST (create), PATCH (update), DELETE (delete)
+4. **SQLite** provides permanent data storage
+5. **Error handling** and **input validation** are essential!
+6. **Middleware** handles common logic
 
-**Key point**: Good configuration reduces repetitive work and prevents mistakes.
+Now that you've learned backend basics, let's connect it to a frontend in the next chapter!
 
-In the next chapter, you'll learn more powerful automation with Hooks and Commands.
+---
 
-Proceed to [Chapter 20: Hooks & Commands](../Chapter20/README.md).
+## Learn More
+
+### Recommended Resources
+
+**Official Documentation:**
+- [Express.js Official Guide](https://expressjs.com/) - Express framework documentation
+- [MDN HTTP Overview](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview) - Understanding HTTP protocol
+- [SQLite Documentation](https://www.sqlite.org/docs.html) - SQLite official documentation
+
+**Video Resources:**
+- [Express.js Tutorial (YouTube)](https://www.youtube.com/results?search_query=express.js+tutorial+beginner)
+- [REST API Design (YouTube)](https://www.youtube.com/results?search_query=rest+api+design+tutorial)
+- [SQL Basics (YouTube)](https://www.youtube.com/results?search_query=sql+tutorial+beginner)
+
+**Reading Materials:**
+- [REST API Design Guide](https://restfulapi.net/) - RESTful API design principles
+- [HTTP Status Code Reference](https://httpstatuses.com/) - Complete status code guide
+- [API Security Best Practices](https://owasp.org/www-project-api-security/) - OWASP API security guide
+
+**Related Tools:**
+- [Postman](https://www.postman.com/) - API testing tool
+- [Insomnia](https://insomnia.rest/) - REST client
+- [DB Browser for SQLite](https://sqlitebrowser.org/) - SQLite GUI tool
+- [Thunder Client](https://www.thunderclient.com/) - VS Code API testing extension

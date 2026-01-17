@@ -1,600 +1,878 @@
-# Chapter 14: Mini Games
+# Chapter 14: Deployment
 
 **English** | [한국어](./README.ko.md)
 
+---
+
+## Ask Questions
+
+If you have questions while learning, ask on Discord!
+
+[![Discord](https://img.shields.io/badge/Discord-Ask_Questions-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite-link)
+
+---
+
 ## What You Will Learn
 
-- Making games with Claude
-- JavaScript game logic
-- Completing fun projects
+- What deployment is and why it matters
+- Free deployment with Vercel (frontend)
+- Backend deployment with Railway
+- Automatic deployment and CI/CD concepts
+- Connecting custom domains
+- Deployment troubleshooting
+
+---
+
+## Connection to Previous Chapters
+
+In Chapter 13, you created a beautiful portfolio website. But right now, **only you can see it**.
+
+```
+Current state:
+👤 Me → 💻 My Computer → 🌐 localhost:3000
+          ↑
+       (Only works here)
+```
+
+It's like cooking a delicious meal and eating it alone in a locked room. Now it's time to open the door!
 
 ---
 
 ## Why Do You Need This?
 
-Games aren't just for fun (though they ARE fun). Making games teaches you programming concepts in the most engaging way possible.
+### Real-World Scenarios Where You Need Deployment
 
-**Real-world scenarios where game-building skills help:**
+| Scenario | Without Deployment | After Deployment |
+|----------|-------------------|------------------|
+| **Job application** | "My portfolio... I'll show you later" | "Here's my portfolio: portfolio.vercel.app" |
+| **Client meeting** | Need to schedule screen-share meeting | Instant verification with one link |
+| **Team collaboration** | "Come to my computer to see it" | "Test it at this URL" |
+| **Collecting feedback** | Send screenshots and explain | "Try it yourself and give feedback" |
 
-- **Learning programming**: Variables, loops, conditions, functions - games use them ALL
-- **Portfolio wow-factor**: A playable game impresses way more than static pages
-- **User engagement**: Interactive elements keep visitors on your site longer
-- **Problem-solving**: Game logic sharpens your coding brain
-- **Interviews**: "I built a game" is a great conversation starter
+> Until you deploy, your project **"doesn't exist"** to the outside world.
 
-> Every game mechanic is a programming concept in disguise. Score tracking? That's state management. Hit detection? That's conditional logic. Game loops? That's event handling.
+### Simple Analogy: From Recipe to Restaurant
 
-### Simple Analogy: Games as the Gym for Coders
+```
+Recipe development (localhost)
+→ Practicing cooking in home kitchen
+→ Only I can eat
+→ Others can't see my cooking
 
-Learning to code by building utilities is like exercising by doing housework - effective, but boring.
+Restaurant opening (deployment)
+→ Store opens!
+→ Anyone can come taste the food
+→ Get real customer feedback
+```
 
-Making games is like going to the gym - you're still exercising (learning), but it's actually enjoyable. And just like the gym, you get stronger (better at coding) while having fun.
+`localhost:3000` = Your kitchen (only you can eat)
+`yoursite.vercel.app` = Your restaurant (anyone can visit)
+
+> **Beginner Tip**: Deployment is "putting my work on the internet." Just like uploading a video to YouTube, you upload your website.
 
 ---
 
-## Try It Yourself: The Simplest Game
+## Try It Yourself: Deploy in 5 Minutes
 
-Before building complex games, let's make sure the basics work. Here's the simplest possible game:
+Before diving deep, let's prove how easy this is.
+
+### Prerequisites
+
+1. **GitHub account**: Sign up at [github.com](https://github.com)
+2. **Vercel account**: [vercel.com](https://vercel.com) (sign up with GitHub)
+3. **Project from Chapter 13**: Portfolio website
+
+### 5-Minute Deployment
 
 ```
-> Create a button that shows a counter.
-> Every click increases the counter by 1.
-> That's the whole game.
+# Step 1: Upload to GitHub
+> Initialize git, create a GitHub repository called "my-first-deploy",
+> and push all files. Make it public.
 ```
 
-Click it a few times. Congratulations, you just made a "clicker game" - the same genre as Cookie Clicker that has millions of players! Everything else is just adding features to this foundation.
+```
+# Step 2: Connect Vercel
+1. Go to vercel.com
+2. Click "New Project"
+3. Select GitHub repository (my-first-deploy)
+4. Click "Deploy"
+
+# Step 3: Wait (1-2 minutes)
+
+# Step 4: Done!
+🎉 https://my-first-deploy-abc123.vercel.app
+```
+
+If it worked, you now have a live website! **Share the link with a friend right now.**
+
+> **Pro tip**: It's okay if it fails. This chapter covers troubleshooting in detail.
 
 ---
 
-## Why Games?
+## What is Deployment?
 
-Making games is one of the most engaging ways to learn programming.
+Deployment is **putting code from your computer onto an internet server so anyone can access it**.
 
-Games incorporate all aspects of development:
-- Rendering on screen (HTML/CSS)
-- Handling user input (keyboard, mouse)
-- Processing logic (JavaScript)
-- Managing state (score, level)
-
-**Game request tips:**
+### Before vs After Deployment
 
 ```
-> Make a number guessing game. Range 1-100.
-> Show attempt count, and display a congratulations message if solved within 10 tries.
+Before deployment:
+┌──────────────┐
+│  My Computer │  → localhost:3000
+│  (Local)     │     ↑ Only I can access
+└──────────────┘
+
+After deployment:
+┌──────────────┐     ┌──────────────┐
+│  My Computer │  →  │ Cloud Server │  → mysite.vercel.app
+│  (Local)     │     │  (Vercel)    │     ↑ Anyone in the world can access
+└──────────────┘     └──────────────┘
 ```
 
-Describe game rules and desired features specifically for more polished results.
+| State | Address | Who Can See It |
+|-------|---------|----------------|
+| Before | `http://localhost:3000` | Only me |
+| After | `https://my-site.vercel.app` | Anyone in the world |
+
+### What You Get After Deployment
+
+- **Public URL**: A link you can share with anyone
+- **HTTPS**: Secure connection (lock icon)
+- **24/7 Access**: Site works even when your computer is off
+- **Global Access**: Fast loading from anywhere in the world
 
 ---
 
-## Game 1: Number Guessing
+## Comparing Deployment Services
 
-Start with the simplest game.
+### Static Sites (Frontend)
 
-### Game Description
+| Service | Free Tier | Features | Recommended For |
+|---------|-----------|----------|-----------------|
+| **Vercel** | Unlimited | Easiest, Next.js optimized | Beginners, React |
+| **Netlify** | Unlimited | Similar to Vercel, form features | Vercel alternative |
+| **GitHub Pages** | Unlimited | GitHub integration, static only | Simple sites |
+| **Cloudflare Pages** | Unlimited | Fast, edge computing | Performance focus |
 
-- Computer picks a number between 1-100
-- Player guesses until correct
-- Hints: "Higher" / "Lower"
+### Backend/Full-Stack
 
-### Building
+| Service | Free Tier | Features | Recommended For |
+|---------|-----------|----------|-----------------|
+| **Railway** | $5 credit/month | Easy, DB support | Node.js, Python |
+| **Render** | 750 hours/month | Various languages | General backends |
+| **Fly.io** | Free tier | Docker-based, global | Advanced users |
+| **Supabase** | Free tier | PostgreSQL + API | BaaS needs |
+
+### Which Should You Choose?
 
 ```
-> Make a number guessing game.
-> Guess a number between 1 and 100.
-> Show hints too.
+                    What did you build?
+                         │
+           ┌─────────────┴─────────────┐
+           ▼                           ▼
+    HTML/CSS/JS only              Need server/API
+    (Static site)                 (Has backend)
+           │                           │
+           ▼                           ▼
+    ┌─────────────┐           ┌─────────────┐
+    │   Vercel    │           │   Railway   │
+    │ (Recommend!)│           │ (Recommend!)│
+    └─────────────┘           └─────────────┘
 ```
 
-### Example Result
+> **Beginner Tip**: Start with Vercel for everything. Add Railway later when you need a backend.
 
-```html
-<div id="game">
-    <h1>Number Guessing</h1>
-    <p>Guess a number between 1 and 100!</p>
+---
 
-    <input type="number" id="guess" placeholder="Enter number">
-    <button onclick="checkGuess()">Check</button>
+## Vercel: The Easiest Deployment
 
-    <p id="result"></p>
-    <p>Attempts: <span id="attempts">0</span></p>
-</div>
+Vercel is the most popular service for frontend deployment.
+
+### Why Vercel?
+
+- **Free**: Completely free for personal projects
+- **Easy**: Just a few clicks
+- **Fast**: Global CDN for fast loading
+- **Auto HTTPS**: Automatic security certificate
+- **Auto Deploy**: Updates automatically when you git push
+- **Preview**: Creates test URLs for each PR
+
+### Prerequisites
+
+1. GitHub account
+2. Vercel account (sign up with GitHub recommended)
+3. Project to deploy
+
+---
+
+## Detailed Vercel Deployment Guide
+
+### Step 1: Upload Code to GitHub
+
 ```
+> Upload this project to GitHub.
+> Repository name: my-portfolio.
+> Make it public.
+```
+
+**Actual conversation example:**
+
+```
+User: Upload this project to GitHub. Repository name is my-portfolio
+
+Claude: I'll upload to GitHub.
+
+[Running: git init]
+[Running: git add .]
+[Running: git commit -m "Initial commit"]
+[Running: gh repo create my-portfolio --public]
+[Running: git push -u origin main]
+
+✅ GitHub repository created!
+URL: https://github.com/yourusername/my-portfolio
+
+Now connect this repository in Vercel.
+```
+
+### Step 2: Connect Vercel
+
+**On the website:**
+
+1. Go to [vercel.com](https://vercel.com)
+2. "Sign Up" → "Continue with GitHub"
+3. Approve GitHub integration
+4. Click "New Project"
+5. Find `my-portfolio` in repository list
+6. Click "Import"
+7. Check settings (usually defaults are OK)
+8. Click "Deploy"
+
+**Ask Claude to verify:**
+
+```
+> Check if my Vercel deployment settings are correct.
+> This project is pure HTML/CSS/JS.
+```
+
+```
+Claude: Vercel settings for pure HTML/CSS/JS project:
+
+Framework Preset: Other
+Build Command: (leave empty)
+Output Directory: (leave empty or . )
+Install Command: (leave empty)
+
+Deploy with these settings.
+If index.html is in root, it will be recognized automatically.
+```
+
+### Step 3: Deployment Complete
+
+When deployment finishes, you receive addresses:
+
+```
+✅ Deployment complete!
+
+Production: https://my-portfolio-abc123.vercel.app
+Preview: https://my-portfolio-git-main-yourusername.vercel.app
+
+Anyone can view my website at these addresses.
+```
+
+> **Note**: First deployment may take 1-3 minutes. If you see "Building...", just wait.
+
+---
+
+## Automatic Deployment (CI/CD)
+
+Vercel's most powerful feature: **when you modify code, it automatically redeploys**.
+
+### Auto Deployment Flow
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│ Modify Code │ →  │ Git Push    │ →  │ Auto Deploy │
+│ (Local)     │    │ (GitHub)    │    │ (Vercel)    │
+└─────────────┘    └─────────────┘    └─────────────┘
+                                            │
+                                            ▼
+                                    ┌─────────────┐
+                                    │ 1-2 min     │
+                                    │ later       │
+                                    │ New version │
+                                    │ live        │
+                                    └─────────────┘
+```
+
+### Actual Workflow
+
+```
+# 1. Modify code
+> Change the title from "Hello" to "Welcome"
+
+# 2. Commit and push
+> Commit and push the changes
+
+# 3. Auto deployed!
+# Vercel dashboard shows "Building..."
+# 1-2 minutes later, new version is live!
+
+# 4. Verify
+Refresh browser to see changes reflected
+```
+
+### Check Deployment Status
+
+```
+> Check Vercel deployment status
+```
+
+Or check directly in Vercel dashboard:
+- **Production**: Currently live version
+- **Preview**: Test deployment
+- **Building**: Build in progress
+- **Error**: Problem occurred (check logs)
+
+> **Pro tip**: When you create a PR (Pull Request), Vercel automatically creates a preview URL. Very useful for team reviews!
+
+---
+
+## Connecting Custom Domains
+
+Instead of the default address (`xxx.vercel.app`), you can use your own domain.
+
+### Domain Purchase Options
+
+| Service | Features | .com Price (Annual) |
+|---------|----------|---------------------|
+| [Namecheap](https://www.namecheap.com) | Global, cheap | ~$10 |
+| [Google Domains](https://domains.google) | Simple, clean | ~$12 |
+| [Cloudflare](https://www.cloudflare.com) | Free DNS, security | At cost |
+| [GoDaddy](https://www.godaddy.com) | Well-known | ~$12 |
+
+### Connecting Domain to Vercel
+
+**1. Add domain in Vercel:**
+```
+1. Vercel dashboard → Select project
+2. Settings → Domains
+3. Enter domain (e.g., myname.com)
+4. Click "Add"
+```
+
+**2. DNS settings:**
+
+Add the DNS records Vercel provides to your domain registrar:
+
+```
+Type: A
+Name: @
+Value: 76.76.21.21
+
+Type: CNAME
+Name: www
+Value: cname.vercel-dns.com
+```
+
+**3. Verify:**
+```
+> Check if custom domain is connected
+```
+
+> **Note**: DNS propagation can take up to 48 hours. Usually it's done within minutes to hours.
+
+---
+
+## Railway: Backend Deployment
+
+If you need a server (API, database) rather than just a static website, use Railway.
+
+### When Do You Need Railway?
+
+```
+✅ Vercel alone is sufficient:
+- Portfolio site
+- Blog
+- Static landing page
+- Client-side only apps
+
+🔄 Railway is needed:
+- Storing user data (DB)
+- Login/signup features
+- Running API server
+- Server-side logic
+```
+
+### Railway Example: Simple API Server
+
+```
+> Create an Express server.
+> Returns { message: "Hello" } when accessing /api/hello.
+```
+
+**Code Claude creates:**
 
 ```javascript
-let answer = Math.floor(Math.random() * 100) + 1
-let attempts = 0
+// server.js
+const express = require('express');
+const app = express();
 
-function checkGuess() {
-    const guess = parseInt(document.getElementById('guess').value)
-    attempts++
-    document.getElementById('attempts').textContent = attempts
+// Port setting (Railway uses PORT environment variable)
+const PORT = process.env.PORT || 3000;
 
-    if (guess === answer) {
-        document.getElementById('result').textContent =
-            `Correct! You got it in ${attempts} tries!`
-    } else if (guess < answer) {
-        document.getElementById('result').textContent = 'Higher!'
-    } else {
-        document.getElementById('result').textContent = 'Lower!'
-    }
+// API endpoint
+app.get('/api/hello', (req, res) => {
+    res.json({ message: 'Hello' });
+});
+
+// Start server
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+```
+
+```json
+// package.json
+{
+  "name": "my-api",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0"
+  }
 }
 ```
 
-### Improvements
+### Railway Deployment Steps
 
-```
-> Add a restart button
-```
-State reset pattern - core of any game loop
+**1. Sign up for Railway:**
+- Go to [railway.app](https://railway.app)
+- Log in with GitHub
 
+**2. Create project:**
 ```
-> Save high score
+1. Click "New Project"
+2. Select "Deploy from GitHub repo"
+3. Select repository
+4. Deployment starts automatically!
 ```
-`localStorage` based data persistence
 
+**3. Set environment variables (if needed):**
 ```
-> Make it look nice with styling
+1. Project → Variables tab
+2. Click "New Variable"
+3. Name: DATABASE_URL, Value: (connection string)
 ```
-Game UI/UX design fundamentals
+
+**4. Check domain:**
+```
+After deployment, Railway provides URL:
+https://my-api-production-abc123.up.railway.app
+
+Test:
+https://my-api-production-abc123.up.railway.app/api/hello
+→ { "message": "Hello" }
+```
+
+> **Beginner Tip**: Railway gives $5 free credits per month. Enough for simple learning/side projects.
 
 ---
 
-## Game 2: Rock Paper Scissors
+## Mini Quiz
 
-Create this classic game.
+### Quiz 1
+Q: What's the difference between localhost:3000 and yoursite.vercel.app?
 
-### Building
+<details>
+<summary>Show Answer</summary>
 
-```
-> Make a rock paper scissors game.
-> Play against the computer.
-> Show the score too.
-```
+- `localhost:3000`: Only accessible from my computer (for local development)
+- `yoursite.vercel.app`: Published on the internet, accessible by anyone in the world (deployed)
+</details>
 
-### Core Logic
+### Quiz 2
+Q: Why does Vercel automatically deploy when you git push?
 
-```javascript
-function play(playerChoice) {
-    const choices = ['rock', 'paper', 'scissors']
-    const computer = choices[Math.floor(Math.random() * 3)]
+<details>
+<summary>Show Answer</summary>
 
-    if (playerChoice === computer) {
-        return 'Tie!'
-    }
+Because Vercel is "watching" your GitHub repository. When a new commit is pushed, it automatically detects it, builds, and deploys. This is called CI/CD (Continuous Integration/Continuous Deployment).
+</details>
 
-    if (
-        (playerChoice === 'scissors' && computer === 'paper') ||
-        (playerChoice === 'rock' && computer === 'scissors') ||
-        (playerChoice === 'paper' && computer === 'rock')
-    ) {
-        return 'You win!'
-    }
+### Quiz 3
+Q: Which should you use, Vercel or Railway?
 
-    return 'You lose...'
-}
-```
+<details>
+<summary>Show Answer</summary>
 
-### Improvements
+- **Vercel**: Static sites (HTML/CSS/JS, React and other frontend)
+- **Railway**: When you need server/API (Node.js, Python backend, database)
 
-```
-> Show rock paper scissors with emojis
-```
-Unicode/emoji rendering
-
-```
-> Make it best of 5
-```
-Round-based game logic design
-
-```
-> Show win rate statistics
-```
-Game stats and data visualization
+In most cases, start with Vercel and add Railway when you need a backend.
+</details>
 
 ---
 
-## Game 3: Typing Game
+## Practice Exercises
 
-A keyboard practice game.
+### Difficulty 1: First Deployment (Beginner)
 
-### Building
-
-```
-> Make a typing game.
-> Type words as fast as they appear.
-> 30 second time limit.
-> Show the score.
-```
-
-### Core Logic
-
-```javascript
-const words = ['apple', 'banana', 'cherry', 'dog', 'elephant']
-let score = 0
-let timeLeft = 30
-
-function startGame() {
-    showRandomWord()
-    startTimer()
-}
-
-function showRandomWord() {
-    const word = words[Math.floor(Math.random() * words.length)]
-    document.getElementById('word').textContent = word
-}
-
-function checkInput() {
-    const input = document.getElementById('input').value
-    const word = document.getElementById('word').textContent
-
-    if (input === word) {
-        score++
-        document.getElementById('score').textContent = score
-        document.getElementById('input').value = ''
-        showRandomWord()
-    }
-}
-```
-
-### Improvements
+Deploy the portfolio from Chapter 13.
 
 ```
-> Use longer words
+# 1. Upload to GitHub
+> Upload this project to GitHub. Repository name is my-portfolio.
+
+# 2. Connect Vercel
+Go to vercel.com → New Project → Select repository → Deploy
+
+# 3. Check URL
+Open deployed URL in browser
+
+# 4. Share with friend
+Send link to friend and ask them to verify
 ```
-Content management and arrays
+
+**Completion checklist:**
+- [ ] GitHub repository created
+- [ ] Vercel deployment successful
+- [ ] Accessible via public URL
+- [ ] Verified someone else can see it
+
+### Difficulty 2: Auto Deployment Test (Intermediate)
 
 ```
-> Different word lengths for different difficulty levels
+# 1. Modify code
+> Add "Made with Claude Code" to the footer
+
+# 2. Commit and push
+> Commit and push
+
+# 3. Check Vercel dashboard
+Verify build status changes from "Building" to "Ready"
+
+# 4. Check site
+Refresh to verify changes are reflected
 ```
-Difficulty curve design
+
+**Completion checklist:**
+- [ ] Local changes committed
+- [ ] Pushed to GitHub
+- [ ] Vercel started auto build
+- [ ] New version reflected live
+
+### Difficulty 3: Custom Domain (Advanced)
+
+Purchase a domain and connect it.
 
 ```
-> Calculate typing speed (WPM)
+# 1. Purchase domain (optional)
+Buy desired domain from Namecheap, etc.
+
+# 2. Add domain in Vercel
+Settings → Domains → Enter domain
+
+# 3. DNS settings
+Add DNS records Vercel provides at domain registrar
+
+# 4. Verify
+Test access at https://yourdomain.com
 ```
-Time-based performance metrics
+
+**Completion checklist:**
+- [ ] Domain purchased/owned
+- [ ] DNS records configured
+- [ ] HTTPS working
+- [ ] Both www and non-www work
 
 ---
 
-## Game 4: Reaction Time Test
+## Challenge Exercises
 
-A game that measures reaction speed.
-
-### Building
-
+### Challenge 1: Deploy API Server
 ```
-> Make a reaction time test game.
-> Click when the screen turns green.
-> Show reaction time in milliseconds.
+> Create a simple API server.
+> Returns project list JSON on GET /api/projects.
+> Make it deployable to Railway.
 ```
 
-### Core Logic
-
-```javascript
-let startTime
-let waiting = false
-
-function startTest() {
-    const box = document.getElementById('box')
-    box.style.backgroundColor = 'red'
-    box.textContent = 'Wait...'
-
-    // Turn green after random time
-    const delay = Math.random() * 3000 + 1000
-    setTimeout(() => {
-        box.style.backgroundColor = 'green'
-        box.textContent = 'Click!'
-        startTime = Date.now()
-        waiting = true
-    }, delay)
-}
-
-function handleClick() {
-    if (!waiting) return
-
-    const reactionTime = Date.now() - startTime
-    document.getElementById('result').textContent =
-        `Reaction time: ${reactionTime}ms`
-    waiting = false
-}
+### Challenge 2: Connect Frontend + Backend
+```
+> Fetch and display project list from Railway API in the portfolio.
+> Use fetch for API calls.
 ```
 
-### Improvements
-
+### Challenge 3: Environment Variables
 ```
-> Calculate average reaction time (5 tests)
-```
-Statistical aggregation
-
-```
-> Show "Too early!" if clicked before green
-```
-Input validation and edge cases
-
-```
-> Add a leaderboard feature
-```
-Data sorting and leaderboard UI
-
----
-
-## Game 5: Memory Card Game
-
-A card matching game.
-
-### Building
-
-```
-> Make a memory card game.
-> 8 pairs (16 cards).
-> Matched pairs disappear.
-> Show attempt count.
-```
-
-### Core Concept
-
-```javascript
-const emojis = ['🎮', '🎯', '🎨', '🎭', '🎪', '🎫', '🎬', '🎤']
-let cards = [...emojis, ...emojis]  // 2 of each
-
-function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]]
-    }
-    return array
-}
-
-function createBoard() {
-    const shuffled = shuffle(cards)
-    // Create card UI...
-}
-```
-
-### Improvements
-
-```
-> Add card flip animation
-```
-CSS transform-based 3D animation
-
-```
-> Add a timer
-```
-`setInterval` timer implementation
-
-```
-> Show congratulations message when all matched
-```
-Win condition detection and modal UI
-
----
-
-## Game Building Tips
-
-### 1. Start Small
-
-```
-# Bad example
-> Make an RPG game. With character growth, dungeons, and boss fights.
-
-# Good example
-> Make a simple click game first.
-> Score goes up when you click.
-```
-
-### 2. Add One Feature at a Time
-
-```
-# Step 1: Basic
-> Make a jumping character
-
-# Step 2: Obstacles
-> Add obstacles
-
-# Step 3: Collision
-> Game over when hitting obstacles
-
-# Step 4: Score
-> Number of obstacles passed = score
-```
-
-### 3. Improve with Feedback
-
-```
-> Jump is too slow. Make it faster.
-
-> Obstacle spacing is too narrow.
-
-> Background color hurts my eyes. Change it.
+> Manage API URL with environment variables.
+> Use localhost locally, real URL when deployed.
 ```
 
 ---
 
-## Practice: Your Own Game
+## Deployment Troubleshooting
 
-### Basic Task
+### "Git command not found" Error
 
-Pick one of the 5 games above and build it.
-
-### Extra Challenges
+Git isn't installed.
 
 ```
-> Add sound effects to the game
-```
-Web Audio API for sound feedback
-
-```
-> Save high score (localStorage)
-```
-Browser storage for data persistence
-
-```
-> Make it work on mobile too
-```
-Touch events and responsive layout
-
-### Ideas
-
-Try making other games too:
-
-- Whack-a-mole
-- Snake game
-- Pong (tennis)
-- Tic-tac-toe
-- Quiz game
-
-```
-> Make a [game name] game
+> Tell me how to install git on my computer
 ```
 
----
-
-## Publish Your Game
-
-Deploy your game and share it with others.
+### GitHub Push Failed / Authentication Error
 
 ```
-# Upload to GitHub
-> Upload this game to GitHub
-
-# Deploy with Vercel
-# (See Chapter 12)
+> Help me set up GitHub authentication. I'm getting a push error.
 ```
 
-Share the link after deployment.
+Common solutions:
+1. Check GitHub login status
+2. Generate and use Personal Access Token
+3. Set up SSH keys
 
----
+**Actual conversation example:**
 
-## If It Doesn't Work?
+```
+User: git push isn't working. Getting permission denied error.
 
-Game development can be tricky. Here are common issues and fixes:
+Claude: This is a GitHub authentication issue. Solutions:
 
-### Nothing happens when I click
-- Check if the click handler is attached
-- Look for errors in browser console (F12)
-```
-> The button doesn't respond to clicks. Check the event listener.
-```
+1. Personal Access Token method (recommended):
+   - GitHub → Settings → Developer settings
+   - Personal access tokens → Tokens (classic)
+   - Generate new token
+   - Check "repo" permission
+   - Copy token
 
-### Game is too fast or too slow
-Timing issues are common in games:
-```
-> The game runs too fast. Slow it down.
-```
-or
-```
-> The timer doesn't work correctly. Check setInterval usage.
-```
+2. Try push again:
+   Username: (GitHub ID)
+   Password: (paste copied token)
 
-### Score doesn't update on screen
-The variable might update, but the display doesn't:
-```
-> Score increases but the screen doesn't show the new value.
-> Check the display update logic.
+Or you can set up SSH keys. Which method would you like?
 ```
 
-### Game state gets messed up
-Multiple clicks can cause race conditions:
+### Vercel Build Failed
+
 ```
-> I can click the button multiple times when I shouldn't be able to.
-> Add a check to prevent this.
+> Vercel build error: [paste error message]
+> What's wrong and how do I fix it?
 ```
 
-### Animation is choppy
+**Common build errors:**
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `Module not found` | Package missing | `npm install` then push |
+| `Build command failed` | Build script error | Check package.json |
+| `Output directory not found` | Output folder setting wrong | Fix in Vercel settings |
+
+### 404 Error After Deployment
+
 ```
-> The animation is not smooth. Help me optimize it.
+> Deployed site shows 404. Check the file structure.
 ```
 
-### Works on desktop but not mobile
-Touch events are different from click events:
+**Common causes:**
+- Main file not named `index.html`
+- File is in subfolder (not root)
+- Case mismatch (`Index.html` vs `index.html`)
+
+### Styles Look Broken
+
 ```
-> Make this game work on mobile devices with touch input.
+> Deployed site has no styles. Check CSS links.
 ```
+
+**Common causes:**
+- CSS file path is wrong (relative vs absolute path)
+- File name case mismatch
+- CDN connection issue (Tailwind, etc.)
+
+### Environment Variables Not Working
+
+```
+> API key isn't working. Tell me how to check environment variables.
+```
+
+**Checklist:**
+1. Did you add environment variables in Vercel dashboard?
+2. Is the variable name exact? (case-sensitive)
+3. Did you redeploy after adding?
+4. For frontend, need `VITE_` or `NEXT_PUBLIC_` prefix
 
 ---
 
 ## Common Mistakes
 
-Avoid these game development pitfalls!
+### Mistake 1: Committing Sensitive Information
 
-### Mistake 1: Starting too big
-**Wrong approach:**
-```
-> Make a multiplayer battle royale game with 100 players.
-```
-
-**Better approach:**
-```
-> Make a simple game where I click to increase a score.
-```
-Start tiny, add features one by one.
-
-### Mistake 2: Forgetting to reset game state
-After game over, clicking "Play Again" should reset everything:
-```javascript
-// Forgot to reset
-function playAgain() {
-    showGame()  // Oops, score is still from last game!
-}
-
-// Correct
-function playAgain() {
-    score = 0
-    timeLeft = 30
-    updateDisplay()
-    showGame()
-}
-```
-
-### Mistake 3: Using setInterval without clearing it
-This causes multiple timers running at once:
-```javascript
-// Wrong - new timer each click!
-function startGame() {
-    setInterval(tick, 1000)
-}
-
-// Correct - clear old timer first
-let timerId
-function startGame() {
-    if (timerId) clearInterval(timerId)
-    timerId = setInterval(tick, 1000)
-}
-```
-
-### Mistake 4: Not handling edge cases
-What happens when:
-- User clicks before game starts?
-- User clicks after game ends?
-- User refreshes mid-game?
+**Never commit these to GitHub:**
+- API keys
+- Passwords
+- Database connection strings
+- `.env` files
 
 ```
-> Add checks to prevent clicking when the game isn't active.
+> Check if there's any sensitive information in my code before pushing
 ```
 
-### Mistake 5: Hardcoding everything
-Makes it hard to adjust difficulty:
-```javascript
-// Hard to adjust
-if (score > 100) levelUp()
-
-// Better - use variables
-const LEVEL_UP_THRESHOLD = 100
-if (score > LEVEL_UP_THRESHOLD) levelUp()
+**Prevention:**
 ```
+# Add to .gitignore file
+.env
+.env.local
+.env.production
+```
+
+> **Note**: If you accidentally committed secrets, **change the keys immediately**. They remain visible in git history even after deletion!
+
+### Mistake 2: Not Adding node_modules to .gitignore
+
+```
+# ❌ node_modules gets committed
+(Thousands of files uploaded to GitHub)
+(Repository becomes huge)
+(Push/pull becomes very slow)
+
+# ✅ Add to .gitignore
+> Check if node_modules is in .gitignore
+```
+
+### Mistake 3: Using Local Absolute Paths
+
+```html
+<!-- ❌ Wrong - Only works on my computer -->
+<img src="C:/Users/John/project/images/photo.png">
+<link href="D:/projects/style.css">
+
+<!-- ✅ Correct - Use relative paths -->
+<img src="./images/photo.png">
+<link href="./style.css">
+```
+
+### Mistake 4: Not Waiting for Deployment to Finish
+
+```
+❌ Check site immediately after push → See old version
+✅ Verify "Ready" in Vercel dashboard → See new version
+```
+
+Deployments take 1-3 minutes. Be patient.
+
+### Mistake 5: Wrong Build Settings
+
+```
+> What are the correct Vercel build settings for my project?
+```
+
+**Settings by framework:**
+
+| Project Type | Framework Preset | Build Command | Output Directory |
+|--------------|------------------|---------------|------------------|
+| Pure HTML | Other | (empty) | (empty) |
+| React (CRA) | Create React App | `npm run build` | `build` |
+| React (Vite) | Vite | `npm run build` | `dist` |
+| Next.js | Next.js | (auto) | (auto) |
+| Vue | Vue.js | `npm run build` | `dist` |
+
+---
+
+## Deployment Checklist
+
+Verify before deploying:
+
+**Code:**
+- [ ] No errors in code (works locally)
+- [ ] No sensitive information (API keys) in code
+- [ ] .gitignore includes node_modules, .env
+
+**Files:**
+- [ ] Main file is index.html (or follows framework rules)
+- [ ] All image paths are relative
+- [ ] No Korean/special characters in file names
+
+**Settings:**
+- [ ] package.json scripts are correct (if needed)
+- [ ] Environment variables set in Vercel (if needed)
+- [ ] Build settings match framework
+
+**Testing:**
+- [ ] Final check locally
+- [ ] Test all page access after deployment
+- [ ] Check on mobile too
+
+---
+
+## Glossary
+
+| Term | Description |
+|------|-------------|
+| **Deployment** | Publishing code to a server |
+| **CI/CD** | Continuous Integration/Continuous Deployment - automated build and deploy |
+| **Build** | Process of converting code to runnable form |
+| **Static site** | Site made of only HTML/CSS/JS without server logic |
+| **CDN** | Content Delivery Network, serves content quickly via global servers |
+| **Environment variables** | Values set outside code (API keys, etc.) |
+| **Domain** | Website address (e.g., google.com) |
+| **DNS** | System that converts domain names to IP addresses |
+| **HTTPS** | Secure HTTP connection (lock icon) |
+| **SSL/TLS** | Security certificate for HTTPS |
 
 ---
 
 ## Summary
 
 What you learned in this chapter:
-- [x] Simple game logic
-- [x] Handling user input
-- [x] Managing score and state
-- [x] Improving games
+- [x] What deployment is and why it's needed
+- [x] Deploying frontend with Vercel
+- [x] Deploying backend with Railway
+- [x] Automatic deployment (CI/CD) concepts
+- [x] Connecting custom domains
+- [x] Deployment troubleshooting
 
-Congratulations on completing Part 3 (Practical Projects I).
+> **Key point**: You can now share your projects with the world. Deployment isn't the end of development - it's **the beginning of meeting real users**!
 
-The next Part covers more practical projects including AI tools and API integration.
+---
 
-Proceed to [Chapter 15: Building AI Tools](../Chapter15/README.md).
+## Next Chapter Preview
+
+In Chapter 15, you'll learn about **data storage**.
+
+The websites we've made so far are "static." When you refresh, entered content disappears.
+
+In the next chapter:
+- Storing data in browser with localStorage
+- CRUD (Create, Read, Update, Delete) concepts
+- Building a todo list app
+- Database integration basics
+
+Let's build a "real" app that remembers user data!
+
+Proceed to [Chapter 15: Data Storage](../Chapter15/README.md).
+
+---
+
+## Learn More
+
+### Recommended Resources
+
+**Official Documentation:**
+- [Vercel Official Docs](https://vercel.com/docs) - Complete Vercel guide
+- [Netlify Official Docs](https://docs.netlify.com/) - Netlify deployment guide
+- [Railway Official Docs](https://docs.railway.app/) - Railway backend deployment
+
+**Video Resources:**
+- [Vercel Deployment Tutorial (YouTube)](https://www.youtube.com/results?search_query=vercel+deployment+tutorial) - Vercel deployment methods
+- [CI/CD Explained (YouTube)](https://www.youtube.com/results?search_query=ci+cd+explained+beginners) - Automatic deployment concepts
+
+**Reading:**
+- [GitHub Pages Guide](https://pages.github.com/) - Free static hosting
+- [Cloudflare Pages](https://pages.cloudflare.com/) - Fast static hosting
+
+**Related Tools:**
+- [Vercel](https://vercel.com/) - Frontend deployment platform
+- [Netlify](https://www.netlify.com/) - Static site hosting
+- [Railway](https://railway.app/) - Backend deployment platform
+- [Namecheap](https://www.namecheap.com/) - Domain purchase

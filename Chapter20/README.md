@@ -1,750 +1,1698 @@
-# Chapter 20: Hooks & Commands
+# Chapter 20: Building Full-Stack Apps - Frontend Integration and Authentication
 
 **English** | [한국어](./README.ko.md)
 
+---
+
+## Ask Questions
+
+If you have any questions while learning, ask on Discord!
+
+[![Discord](https://img.shields.io/badge/Discord-Ask%20Questions-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite-link)
+
+---
+
+## Previous Chapter Review
+
+In [Chapter 19: Backend Basics](../Chapter19/README.md), we built REST APIs with Express and SQLite.
+
+In this chapter, we'll connect a React frontend and add user authentication to create a **complete full-stack app**!
+
+---
+
 ## What You Will Learn
 
-- Creating automation triggers with Hooks
-- Saving frequently used prompts with Commands
-- Practical automation examples
+- Connecting React with backend API
+- Understanding CORS configuration
+- User authentication system (JWT)
+- Building a complete full-stack Todo app
+- Deployment preparation
 
 ---
 
-## Why do you need this?
+## Part 1: Understanding Frontend-Backend Connection
 
-**Real-world scenario**: Every time you ask Claude to edit a file, you manually run `npm run lint` to check formatting. Every time. That's tedious!
+### Why We Need Two Servers
 
-Hooks and Commands automate the repetitive parts so you can focus on the creative work.
-
-### Simple Analogy: Smart Home Automation
-
-Think of Hooks like smart home rules:
-- **"When I leave home"** (trigger) --> **"Turn off lights"** (action)
-- **"When I open the door"** (trigger) --> **"Turn on AC"** (action)
-
-In Claude Code:
-- **"When Claude edits a file"** (trigger) --> **"Run linter"** (action)
-- **"When I press enter"** (trigger) --> **"Add context"** (action)
-
-Commands are like voice shortcuts: "Hey Siri, start my morning routine" = `/commit`
-
----
-
-## Your First Hook (Start Here!)
-
-Before diving into all the options, let's create one working hook:
-
-### Step 1: Add to settings.json
-
-Add this to your `~/.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit",
-        "command": "echo 'File edited!' >> ~/.claude/hook-log.txt"
-      }
-    ]
-  }
-}
-```
-
-### Step 2: Test It
-
-Ask Claude to edit any file:
+In full-stack development, **two servers** run separately:
 
 ```
-> Add a comment to this file: test.js
++------------------------------------------------------------------+
+|                     Full-Stack App Structure                       |
++------------------------------------------------------------------+
+|                                                                    |
+|  Terminal 1 (Frontend)              Terminal 2 (Backend)           |
+|  --------------------               -----------------              |
+|                                                                    |
+|  +-----------------+                +-----------------+            |
+|  | React Dev Server|    API        |  Express Server  |            |
+|  | localhost:5173  | -----------> | localhost:3001   |            |
+|  |                 |   Request     |                  |            |
+|  | npm run dev     | <----------- | node index.js    |            |
+|  |                 |   Response    |                  |            |
+|  +-----------------+               +--------+---------+            |
+|                                             |                      |
+|                                      +------v------+               |
+|                                      |   SQLite    |               |
+|                                      |  todos.db   |               |
+|                                      +-------------+               |
+|                                                                    |
++------------------------------------------------------------------+
 ```
 
-### Step 3: Check the Log
+> **Beginner Tip**: The frontend server (5173) delivers React code to the browser, and the backend server (3001) processes data. It's like having "front of house staff" and "kitchen staff" at a restaurant!
+
+### What is CORS?
+
+Browsers **block requests from different origins (domains, ports)** by default. This is CORS (Cross-Origin Resource Sharing).
+
+```
++------------------------------------------------------------------+
+|                       CORS Problem Situation                       |
++------------------------------------------------------------------+
+|                                                                    |
+|  localhost:5173 (Frontend)         localhost:3001 (Backend)        |
+|  ----------------------           -----------------------          |
+|                                                                    |
+|  fetch('/api/todos')                                               |
+|        |                                                           |
+|        v                                                           |
+|  X Browser blocks!                                                 |
+|    "Different ports not allowed"                                   |
+|    (5173 != 3001)                                                  |
+|                                                                    |
+|  -----------------------------------------------------------      |
+|                                                                    |
+|  Solution: Add CORS permission on backend                          |
+|                                                                    |
+|  fetch('http://localhost:3001/api/todos')                          |
+|        |                                                           |
+|        v                                                           |
+|  OK Backend responds "Requests from 5173 are OK"                   |
+|     -> Browser allows it                                           |
+|                                                                    |
++------------------------------------------------------------------+
+```
+
+### Configuring CORS
+
+Install and configure the `cors` package on the backend:
 
 ```bash
-cat ~/.claude/hook-log.txt
+npm install cors
 ```
 
-You should see "File edited!" - your hook worked!
+```javascript
+// backend/index.js
+const express = require('express')
+const cors = require('cors')  // Add this
 
-### Step 4: Make It Useful
+const app = express()
 
-Now replace the echo with something practical:
+// CORS configuration
+app.use(cors())  // Allow all origins (for development)
 
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit",
-        "command": "npx prettier --write $FILE_PATH"
-      }
-    ]
-  }
-}
+// Or allow only specific origin (for production)
+app.use(cors({
+  origin: 'http://localhost:5173',  // Frontend URL
+  credentials: true                  // Allow cookies
+}))
+
+app.use(express.json())
+
+// ... rest of API code
 ```
 
-Now every edited file gets auto-formatted!
+> **Security Warning**: `app.use(cors())` allows all origins. It's convenient for development, but in production, allow only specific domains!
 
 ---
 
-## Why Learn Hooks and Commands?
+## Part 2: Creating Project Structure
 
-Configuration alone has limits. Understanding Hooks and Commands gives you:
-
-- **Eliminate repetition**: No need to type the same request every time
-- **Workflow automation**: Auto-process before/after specific actions
-- **Team standardization**: Whole team works the same way
-
----
-
-## Hooks System
-
-Hooks are code that automatically runs when specific events occur.
-
-### Hook Types
-
-Below is the execution flow of the most commonly used hooks:
+### Step 1: Folder Structure
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                   Main Hook Execution Points                     │
-└─────────────────────────────────────────────────────────────────┘
-
- User Input
-      │
-      ▼
-┌──────────────────┐
-│ UserPromptSubmit │ ← When user presses enter
-└────────┬─────────┘
-         │
-         ▼
-┌──────────────────┐
-│   PreToolUse     │ ← Just before tool execution
-└────────┬─────────┘
-         │
-         ▼
-    [Tool Executes]
-         │
-         ▼
-┌──────────────────┐
-│   PostToolUse    │ ← Just after tool execution
-└────────┬─────────┘
-         │
-         ▼
-┌──────────────────┐
-│      Stop        │ ← When response completes
-└──────────────────┘
+todo-fullstack/
+├── backend/                  # Backend (created in previous chapter)
+│   ├── index.js
+│   ├── package.json
+│   └── todos.db
+│
+├── frontend/                 # Frontend (we'll create this)
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── App.css
+│   │   └── main.jsx
+│   ├── package.json
+│   └── vite.config.js
+│
+└── README.md
 ```
 
-### Complete Hook Event List
+### Step 2: Create Frontend Project
 
-Claude Code supports a total of 12 hook events:
+```bash
+# In project root folder
+npm create vite@latest frontend -- --template react
 
-| Hook Event | Description | Uses Matcher |
-|------------|-------------|--------------|
-| `PreToolUse` | Just before tool execution | ✅ |
-| `PostToolUse` | Just after successful tool execution | ✅ |
-| `PostToolUseFailure` | When tool execution fails | ✅ |
-| `PermissionRequest` | When permission dialog is shown | ✅ |
-| `UserPromptSubmit` | When user submits a prompt | ❌ |
-| `Notification` | When Claude Code sends a notification | ❌ |
-| `Stop` | When Claude Code response completes | ❌ |
-| `SessionStart` | When session starts or resumes | ❌ |
-| `SessionEnd` | When session ends | ❌ |
-| `SubagentStart` | When subagent starts | ❌ |
-| `SubagentStop` | When subagent completes | ❌ |
-| `PreCompact` | Just before context compaction | ❌ |
+# Move to frontend folder
+cd frontend
 
-> **Note**: Matcher is a pattern for matching tool names. It is only used with `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, and `PermissionRequest`.
-
-### Hook Configuration File
-
-```json
-// ~/.claude/settings.json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Edit",
-        "command": "echo 'Starting file edit: $FILE_PATH'"
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "command": "echo 'Command execution complete'"
-      }
-    ]
-  }
-}
+# Install dependencies
+npm install
 ```
 
-### Why Does This Matter?
-
-**Auto lint check:**
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit",
-        "command": "npm run lint -- --fix $FILE_PATH"
-      }
-    ]
-  }
-}
-```
-
-Lint runs automatically every time a file is edited.
-
-**Auto testing:**
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit",
-        "command": "npm test -- --related $FILE_PATH"
-      }
-    ]
-  }
-}
-```
-
-Only tests related to the modified file run automatically.
-
----
-
-## Practical Hook Examples
-
-### 1. File Backup
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Edit",
-        "command": "cp $FILE_PATH $FILE_PATH.backup"
-      }
-    ]
-  }
-}
-```
-
-Automatically creates backup before editing files.
-
-### 2. Change Notification
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write",
-        "command": "echo 'New file created: $FILE_PATH' | tee -a ~/.claude/log.txt"
-      }
-    ]
-  }
-}
-```
-
-Logs file creation.
-
-### 3. Security Check
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "command": "if echo '$COMMAND' | grep -q 'rm -rf'; then exit 1; fi"
-      }
-    ]
-  }
-}
-```
-
-Blocks dangerous commands before execution.
-
-### 4. Auto Formatting
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit",
-        "command": "npx prettier --write $FILE_PATH"
-      }
-    ]
-  }
-}
-```
-
-Automatically formats files after editing.
-
----
-
-## Commands System
-
-Commands save frequently used prompts for reuse.
-
-### Commands Folder Structure
-
-```
-.claude/
-└── commands/
-    ├── commit.md       # /commit command
-    ├── review.md       # /review command
-    └── test.md         # /test command
-```
-
-### Simple Command Example
-
-```markdown
-<!-- .claude/commands/commit.md -->
-Analyze current changes and write a meaningful commit message.
-
-- Check changes with git diff
-- Identify change type (feat, fix, refactor, etc.)
-- Write commit message
-- Execute git commit
-```
-
-Usage:
-```
-> /commit
-```
-
-### Command with Variables
-
-```markdown
-<!-- .claude/commands/explain.md -->
-Analyze the $ARGUMENTS code.
-
-1. What this code does
-2. Important logic
-3. Improvements
-```
-
-Usage:
-```
-> /explain src/auth/login.ts
-```
-
-### Including Dynamic Information
-
-```markdown
-<!-- .claude/commands/status.md -->
-Show the current project status.
-
-Current branch: $(git branch --show-current)
-Changed files: $(git status --short)
-
-Based on this info:
-1. Summarize current work status
-2. Suggest next steps
-```
-
-Commands inside `$()` are executed and results are inserted.
-
----
-
-## Practical Command Examples
-
-### 1. Code Review Request
-
-```markdown
-<!-- .claude/commands/review.md -->
-Review the $ARGUMENTS file.
-
-Check for:
-- [ ] Potential bugs
-- [ ] Security vulnerabilities
-- [ ] Performance issues
-- [ ] Code style
-
-Provide specific improvement suggestions.
-```
-
-```
-> /review src/api/users.ts
-```
-
-### 2. Write Tests
-
-```markdown
-<!-- .claude/commands/test.md -->
-Write tests for $ARGUMENTS.
-
-Requirements:
-- Use Jest
-- Unit tests first
-- Include edge cases
-- Test file: *.test.ts
-```
-
-```
-> /test src/utils/validation.ts
-```
-
-### 3. Documentation
-
-```markdown
-<!-- .claude/commands/docs.md -->
-Write documentation for $ARGUMENTS.
-
-Include:
-- Function/class description
-- Parameter descriptions
-- Return values
-- Usage examples
-
-Add to code in JSDoc format.
-```
-
-```
-> /docs src/services/auth.ts
-```
-
-### 4. Refactoring
-
-```markdown
-<!-- .claude/commands/refactor.md -->
-Refactor $ARGUMENTS.
-
-Principles:
-- Improve readability
-- Remove duplication
-- Split functions (under 20 lines)
-- Clear variable names
-
-Show the plan before making changes.
-```
-
-```
-> /refactor src/components/Dashboard.tsx
-```
-
-### 5. Issue → Implementation Workflow
-
-A common pattern in real work. From issue to implementation in one go:
-
-```markdown
-<!-- .claude/commands/ticket.md -->
-Handle issue #$ARGUMENTS.
-
-## 1. Check Issue
-$(gh issue view $ARGUMENTS)
-
-## 2. Create Branch
-Create a feature/$ARGUMENTS branch.
-
-## 3. Implementation Plan
-Analyze the issue and create an implementation plan.
-
-## 4. Implement
-Implement according to the plan.
-
-## 5. Create PR
-Create a PR with the changes.
-```
-
-```
-> /ticket 42
-```
-
-One command handles: check issue → create branch → implement → create PR.
-
----
-
-## Project-Specific Commands
-
-### Frontend Project
-
-```
-.claude/
-└── commands/
-    ├── component.md   # Create component
-    ├── hook.md        # Create custom hook
-    ├── story.md       # Create Storybook story
-    └── style.md       # Add styles
-```
-
-```markdown
-<!-- .claude/commands/component.md -->
-Create a React component named $ARGUMENTS.
-
-Rules:
-- Functional component
-- TypeScript
-- Tailwind CSS
-- Define props types
-
-File: src/components/$ARGUMENTS/$ARGUMENTS.tsx
-```
-
-### Backend Project
-
-```
-.claude/
-└── commands/
-    ├── endpoint.md    # Create API endpoint
-    ├── migration.md   # DB migration
-    ├── seed.md        # Seed data
-    └── validate.md    # Add input validation
-```
-
-```markdown
-<!-- .claude/commands/endpoint.md -->
-Create CRUD API for $ARGUMENTS resource.
-
-Structure:
-- GET /$ARGUMENTS - List
-- GET /$ARGUMENTS/:id - Detail
-- POST /$ARGUMENTS - Create
-- PATCH /$ARGUMENTS/:id - Update
-- DELETE /$ARGUMENTS/:id - Delete
-
-Also create the Prisma model.
+### Step 3: Running Both Simultaneously
+
+Open **two terminals**:
+
+```bash
+# Terminal 1: Backend
+cd backend
+node index.js
+# -> "Server running at http://localhost:3001!"
+
+# Terminal 2: Frontend
+cd frontend
+npm run dev
+# -> "Local: http://localhost:5173"
 ```
 
 ---
 
-## Combining Hooks + Commands
+## Part 3: Minimal Connection Test
 
-### Commit Workflow Automation
+Before building the full app, let's verify that frontend and backend can communicate properly.
 
-```json
-// settings.json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "command": "if echo '$COMMAND' | grep -q 'git commit'; then npm test; fi"
+### Backend: Add Simple API
+
+```javascript
+// Add to backend/index.js
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'Backend is working properly!',
+    timestamp: new Date().toISOString()
+  })
+})
+```
+
+### Frontend: Connection Test
+
+```jsx
+// frontend/src/App.jsx
+import { useState, useEffect } from 'react'
+
+function App() {
+  const [status, setStatus] = useState('Checking connection...')
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    // Call backend API
+    fetch('http://localhost:3001/api/health')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Server response error')
+        }
+        return response.json()
+      })
+      .then(data => {
+        setStatus(`Connected! ${data.message}`)
+      })
+      .catch(err => {
+        setError(`Connection failed: ${err.message}`)
+        setStatus(null)
+      })
+  }, [])
+
+  return (
+    <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
+      <h1>Backend Connection Test</h1>
+      {status && <p style={{ color: 'green' }}>{status}</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+    </div>
+  )
+}
+
+export default App
+```
+
+### Practice Problem 3-1: Connection Check
+
+1. Run both backend and frontend
+2. Access `http://localhost:5173` in your browser
+3. If you see "Backend is working properly!", you're successful!
+
+**If connection fails, check:**
+- Is the backend running? (Check terminal)
+- Did you configure CORS?
+- Are port numbers correct? (Backend 3001, Frontend 5173)
+
+---
+
+## Part 4: Building Complete Todo App
+
+Now let's build the real Todo app!
+
+### Backend: Complete API
+
+Just add CORS to the backend from the previous chapter:
+
+```javascript
+// backend/index.js
+const express = require('express')
+const Database = require('better-sqlite3')
+const cors = require('cors')  // Add this!
+
+const app = express()
+
+// Middleware
+app.use(cors())  // Allow CORS
+app.use(express.json())
+
+// Database
+const db = new Database('todos.db')
+db.exec(`
+  CREATE TABLE IF NOT EXISTS todos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    text TEXT NOT NULL,
+    completed INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )
+`)
+
+// API endpoints (same code from previous chapter)
+app.get('/api/todos', (req, res) => {
+  const todos = db.prepare('SELECT * FROM todos ORDER BY created_at DESC').all()
+  res.json(todos)
+})
+
+app.post('/api/todos', (req, res) => {
+  const { text } = req.body
+  if (!text || !text.trim()) {
+    return res.status(400).json({ error: 'Please enter todo content' })
+  }
+  const result = db.prepare('INSERT INTO todos (text) VALUES (?)').run(text.trim())
+  const newTodo = db.prepare('SELECT * FROM todos WHERE id = ?').get(result.lastInsertRowid)
+  res.status(201).json(newTodo)
+})
+
+app.patch('/api/todos/:id', (req, res) => {
+  const { id } = req.params
+  const existing = db.prepare('SELECT * FROM todos WHERE id = ?').get(id)
+  if (!existing) {
+    return res.status(404).json({ error: 'Todo not found' })
+  }
+  db.prepare('UPDATE todos SET completed = NOT completed WHERE id = ?').run(id)
+  const updated = db.prepare('SELECT * FROM todos WHERE id = ?').get(id)
+  res.json(updated)
+})
+
+app.delete('/api/todos/:id', (req, res) => {
+  const { id } = req.params
+  const result = db.prepare('DELETE FROM todos WHERE id = ?').run(id)
+  if (result.changes === 0) {
+    return res.status(404).json({ error: 'Todo not found' })
+  }
+  res.json({ success: true })
+})
+
+app.listen(3001, () => {
+  console.log('Backend server: http://localhost:3001')
+})
+```
+
+### Frontend: React Todo App
+
+```jsx
+// frontend/src/App.jsx
+import { useState, useEffect } from 'react'
+import './App.css'
+
+// API base URL
+const API_URL = 'http://localhost:3001/api/todos'
+
+function App() {
+  // ===================================================================
+  // State definitions
+  // ===================================================================
+  const [todos, setTodos] = useState([])       // Todo list
+  const [newTodo, setNewTodo] = useState('')   // New todo input
+  const [loading, setLoading] = useState(true) // Loading state
+  const [error, setError] = useState(null)     // Error message
+
+  // ===================================================================
+  // Fetch todo list on page load
+  // ===================================================================
+  useEffect(() => {
+    fetchTodos()
+  }, [])
+
+  // ===================================================================
+  // API call functions
+  // ===================================================================
+
+  // Fetch todo list
+  const fetchTodos = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const response = await fetch(API_URL)
+      if (!response.ok) {
+        throw new Error('Server response error')
       }
-    ]
+
+      const data = await response.json()
+      setTodos(data)
+    } catch (err) {
+      setError('Failed to load todos. Check if backend is running.')
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Add new todo
+  const addTodo = async (e) => {
+    e.preventDefault()
+
+    if (!newTodo.trim()) {
+      setError('Please enter todo content')
+      return
+    }
+
+    try {
+      setError(null)
+
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: newTodo })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Add failed')
+      }
+
+      const todo = await response.json()
+      setTodos([todo, ...todos])  // Add to front of list
+      setNewTodo('')              // Clear input field
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  // Toggle completion status
+  const toggleTodo = async (id) => {
+    try {
+      setError(null)
+
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'PATCH'
+      })
+
+      if (!response.ok) {
+        throw new Error('Status change failed')
+      }
+
+      // Update local state
+      setTodos(todos.map(todo =>
+        todo.id === id
+          ? { ...todo, completed: todo.completed ? 0 : 1 }
+          : todo
+      ))
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  // Delete todo
+  const deleteTodo = async (id) => {
+    if (!window.confirm('Are you sure you want to delete?')) {
+      return
+    }
+
+    try {
+      setError(null)
+
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE'
+      })
+
+      if (!response.ok) {
+        throw new Error('Delete failed')
+      }
+
+      setTodos(todos.filter(todo => todo.id !== id))
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  // ===================================================================
+  // Render screen
+  // ===================================================================
+  return (
+    <div className="app">
+      <h1>Todo List</h1>
+
+      {/* Error message */}
+      {error && (
+        <div className="error">
+          Warning: {error}
+          <button onClick={() => setError(null)}>X</button>
+        </div>
+      )}
+
+      {/* Add todo form */}
+      <form onSubmit={addTodo} className="add-form">
+        <input
+          type="text"
+          value={newTodo}
+          onChange={(e) => setNewTodo(e.target.value)}
+          placeholder="Enter a new todo..."
+          maxLength={500}
+        />
+        <button type="submit" disabled={!newTodo.trim()}>
+          Add
+        </button>
+      </form>
+
+      {/* Loading indicator */}
+      {loading ? (
+        <div className="loading">Loading...</div>
+      ) : (
+        <>
+          {/* Todo list */}
+          <ul className="todo-list">
+            {todos.length === 0 ? (
+              <li className="empty">
+                No todos. Add a new todo!
+              </li>
+            ) : (
+              todos.map(todo => (
+                <li key={todo.id} className={todo.completed ? 'completed' : ''}>
+                  <input
+                    type="checkbox"
+                    checked={!!todo.completed}
+                    onChange={() => toggleTodo(todo.id)}
+                  />
+                  <span className="text">{todo.text}</span>
+                  <button
+                    className="delete"
+                    onClick={() => deleteTodo(todo.id)}
+                  >
+                    Delete
+                  </button>
+                </li>
+              ))
+            )}
+          </ul>
+
+          {/* Statistics */}
+          {todos.length > 0 && (
+            <div className="stats">
+              Total: {todos.length} |
+              Completed: {todos.filter(t => t.completed).length} |
+              Remaining: {todos.filter(t => !t.completed).length}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+export default App
+```
+
+### CSS Styles
+
+```css
+/* frontend/src/App.css */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.app {
+  max-width: 600px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Error message */
+.error {
+  background: #fee;
+  border: 1px solid #fcc;
+  color: #c00;
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.error button {
+  background: none;
+  border: none;
+  color: #c00;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* Input form */
+.add-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.add-form input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.add-form input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.add-form button {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.add-form button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.add-form button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Loading */
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+/* Todo list */
+.todo-list {
+  list-style: none;
+}
+
+.todo-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
+}
+
+.todo-list li:hover {
+  background-color: #f9f9f9;
+}
+
+.todo-list li:last-child {
+  border-bottom: none;
+}
+
+.todo-list li.completed .text {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.todo-list input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.todo-list .text {
+  flex: 1;
+  font-size: 16px;
+}
+
+.todo-list .delete {
+  background: none;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+  color: #c00;
+}
+
+.todo-list .delete:hover {
+  opacity: 1;
+}
+
+.empty {
+  text-align: center;
+  color: #999;
+  padding: 40px;
+  font-style: italic;
+}
+
+/* Statistics */
+.stats {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+  color: #666;
+  font-size: 14px;
+}
+```
+
+### Practice Problem 4-1: Todo App Test
+
+1. Run both backend and frontend
+2. Add a new todo
+3. Mark it as completed with the checkbox
+4. Delete it
+5. Refresh the browser and verify data persists!
+
+---
+
+## Part 5: Understanding async/await
+
+We used `async/await` a lot in API call code. Let's understand what it is.
+
+### Why Do We Need async/await?
+
+When you send a request to a server, it **takes time** to get a response. If you don't wait and execute the next code, problems occur.
+
+```javascript
+// Wrong example - doesn't wait for response
+function badExample() {
+  const response = fetch('/api/todos')  // Start request
+  console.log(response)  // Response hasn't arrived yet!
+  // Result: Promise { <pending> }
+}
+
+// Correct example - using async/await
+async function goodExample() {
+  const response = await fetch('/api/todos')  // Wait for response
+  const data = await response.json()          // Wait for JSON conversion too
+  console.log(data)  // Actual data!
+}
+```
+
+### async/await Rules
+
+1. **await** can only be used **inside an async function**
+2. **await** is placed before functions that return a Promise
+3. The **await** line waits until the result arrives
+
+```javascript
+// async function declaration
+async function fetchData() {
+  // Wait with await
+  const response = await fetch('/api/data')
+  const data = await response.json()
+  return data
+}
+
+// Arrow function version
+const fetchData = async () => {
+  const response = await fetch('/api/data')
+  const data = await response.json()
+  return data
+}
+```
+
+### Error Handling: try-catch
+
+```javascript
+async function fetchWithErrorHandling() {
+  try {
+    const response = await fetch('/api/data')
+
+    // Check for HTTP errors (404, 500, etc.)
+    if (!response.ok) {
+      throw new Error(`HTTP error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    return data
+
+  } catch (error) {
+    // Network error or error thrown above
+    console.error('Error occurred:', error.message)
+    throw error  // Re-throw so caller can handle it
   }
 }
 ```
 
-```markdown
-<!-- .claude/commands/commit.md -->
-Commit the changes.
+> **Beginner Tip**: `async/await` is syntax for "wait and get the result". Like sending a letter and waiting for a reply, you send a request to the server and wait for the response!
 
-1. Check changes with git diff
-2. Run tests (auto-runs via Hook)
-3. Write commit message
-4. Execute commit
+---
+
+## Part 6: Adding User Authentication
+
+Now let's add login functionality. Each user can have their own todo list.
+
+### Why We Need Authentication
+
+```
++------------------------------------------------------------------+
+|                    No Auth vs With Auth                            |
++------------------------------------------------------------------+
+|                                                                    |
+|  No Auth                              With Auth                    |
+|                                                                    |
+|  +-------------+                     +-------------+               |
+|  | All users   |                     |   Alice     | -> Login      |
+|  | shared data |                     |   Bob       | -> Login      |
+|  |             |                     |   Charlie   | -> Login      |
+|  +-------------+                     +-------------+               |
+|        |                                    |                      |
+|        v                                    v                      |
+|  +-------------+                     +-------------+               |
+|  |   Todos:    |                     | Alice's     |               |
+|  | - Shopping  |                     | Todos       |               |
+|  | - Exercise  |                     | - Shopping  |               |
+|  | - Study     |                     +-------------+               |
+|  | (Whose?)    |                     +-------------+               |
+|  +-------------+                     | Bob's Todos |               |
+|                                      | - Exercise  |               |
+|  "Who looked at                      +-------------+               |
+|   my data?"                          "Only I can see               |
+|                                       my data!"                    |
+|                                                                    |
++------------------------------------------------------------------+
 ```
 
-This way:
-1. Run `/commit`
-2. Hook auto-runs tests before commit
-3. Commit proceeds if tests pass
+### JWT (JSON Web Token) Authentication
 
-### File Creation Workflow
+JWT is an encrypted string containing user information.
 
-```json
-// settings.json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write",
-        "command": "npx prettier --write $FILE_PATH && npx eslint --fix $FILE_PATH"
-      }
-    ]
+```
++------------------------------------------------------------------+
+|                      JWT Authentication Flow                       |
++------------------------------------------------------------------+
+|                                                                    |
+|  1. Login Request                                                  |
+|     +--------+    Email + Password     +--------+                  |
+|     |  User  | ----------------------> | Server |                  |
+|     +--------+                         +--------+                  |
+|                                             |                      |
+|  2. Token Issued                            |                      |
+|     +--------+       JWT Token        +----v----+                  |
+|     |  User  | <--------------------- | Server  |                  |
+|     +--------+    "eyJhbGc..."        +---------+                  |
+|         |                                                          |
+|  3. Store Token (Browser)                                          |
+|         v                                                          |
+|     localStorage.setItem('token', 'eyJhbGc...')                    |
+|                                                                    |
+|  4. Include Token in Subsequent Requests                           |
+|     +--------+  Request + "Bearer token"  +--------+               |
+|     |  User  | -------------------------> | Server |               |
+|     +--------+  Authorization header      +--------+               |
+|                                                |                   |
+|  5. Server Validates Token                     |                   |
+|                                          +-----v-----+             |
+|     Valid -> Process request             |Token Check|             |
+|     Invalid -> 401 error                 +-----------+             |
+|                                                                    |
++------------------------------------------------------------------+
+```
+
+### Backend: Add Authentication API
+
+First install required packages:
+
+```bash
+cd backend
+npm install bcrypt jsonwebtoken
+```
+
+```javascript
+// backend/index.js - Adding authentication
+
+const express = require('express')
+const Database = require('better-sqlite3')
+const cors = require('cors')
+const bcrypt = require('bcrypt')      // Password encryption
+const jwt = require('jsonwebtoken')    // JWT tokens
+
+const app = express()
+app.use(cors())
+app.use(express.json())
+
+// WARNING: In production, use environment variables!
+const JWT_SECRET = 'your-super-secret-key-change-in-production'
+
+const db = new Database('todos.db')
+
+// Create tables
+db.exec(`
+  -- Users table
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    name TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );
+
+  -- Todos table (with user_id)
+  CREATE TABLE IF NOT EXISTS todos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    text TEXT NOT NULL,
+    completed INTEGER DEFAULT 0,
+    user_id INTEGER NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+  )
+`)
+
+// ===================================================================
+// Auth Middleware - Used for protected routes
+// ===================================================================
+function authMiddleware(req, res, next) {
+  // Extract token from Authorization header
+  const authHeader = req.headers.authorization
+  const token = authHeader?.split(' ')[1]  // "Bearer token" -> "token"
+
+  if (!token) {
+    return res.status(401).json({ error: 'Login required' })
   }
+
+  try {
+    // Verify token
+    const decoded = jwt.verify(token, JWT_SECRET)
+    req.userId = decoded.userId
+    req.userEmail = decoded.email
+    next()
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Session expired' })
+    }
+    return res.status(401).json({ error: 'Invalid token' })
+  }
+}
+
+// ===================================================================
+// Registration API
+// ===================================================================
+app.post('/api/register', async (req, res) => {
+  const { email, password, name } = req.body
+
+  // Input validation
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Please enter email and password' })
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters' })
+  }
+
+  // Check for duplicate email
+  const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email)
+  if (existing) {
+    return res.status(409).json({ error: 'Email already registered' })
+  }
+
+  try {
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    // Save user
+    const result = db.prepare(
+      'INSERT INTO users (email, password, name) VALUES (?, ?, ?)'
+    ).run(email, hashedPassword, name || email.split('@')[0])
+
+    res.status(201).json({
+      message: 'Registration complete',
+      userId: result.lastInsertRowid
+    })
+  } catch (error) {
+    console.error('Registration error:', error)
+    res.status(500).json({ error: 'Registration failed' })
+  }
+})
+
+// ===================================================================
+// Login API
+// ===================================================================
+app.post('/api/login', async (req, res) => {
+  const { email, password } = req.body
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Please enter email and password' })
+  }
+
+  // Find user
+  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email)
+
+  // If user doesn't exist or password is wrong
+  if (!user || !await bcrypt.compare(password, user.password)) {
+    return res.status(401).json({ error: 'Email or password is incorrect' })
+  }
+
+  // Generate JWT token
+  const token = jwt.sign(
+    { userId: user.id, email: user.email },
+    JWT_SECRET,
+    { expiresIn: '7d' }  // Expires in 7 days
+  )
+
+  res.json({
+    message: 'Login successful',
+    token,
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name
+    }
+  })
+})
+
+// ===================================================================
+// Protected APIs - Require authentication
+// ===================================================================
+
+// Get own todo list
+app.get('/api/todos', authMiddleware, (req, res) => {
+  const todos = db.prepare(
+    'SELECT * FROM todos WHERE user_id = ? ORDER BY created_at DESC'
+  ).all(req.userId)
+
+  res.json(todos)
+})
+
+// Add new todo (as own)
+app.post('/api/todos', authMiddleware, (req, res) => {
+  const { text } = req.body
+
+  if (!text || !text.trim()) {
+    return res.status(400).json({ error: 'Please enter todo content' })
+  }
+
+  const result = db.prepare(
+    'INSERT INTO todos (text, user_id) VALUES (?, ?)'
+  ).run(text.trim(), req.userId)
+
+  const newTodo = db.prepare('SELECT * FROM todos WHERE id = ?')
+    .get(result.lastInsertRowid)
+
+  res.status(201).json(newTodo)
+})
+
+// Toggle completion (own only)
+app.patch('/api/todos/:id', authMiddleware, (req, res) => {
+  const { id } = req.params
+
+  // Check if it's own todo
+  const todo = db.prepare(
+    'SELECT * FROM todos WHERE id = ? AND user_id = ?'
+  ).get(id, req.userId)
+
+  if (!todo) {
+    return res.status(404).json({ error: 'Todo not found' })
+  }
+
+  db.prepare('UPDATE todos SET completed = NOT completed WHERE id = ?').run(id)
+
+  const updated = db.prepare('SELECT * FROM todos WHERE id = ?').get(id)
+  res.json(updated)
+})
+
+// Delete (own only)
+app.delete('/api/todos/:id', authMiddleware, (req, res) => {
+  const { id } = req.params
+
+  const result = db.prepare(
+    'DELETE FROM todos WHERE id = ? AND user_id = ?'
+  ).run(id, req.userId)
+
+  if (result.changes === 0) {
+    return res.status(404).json({ error: 'Todo not found' })
+  }
+
+  res.json({ success: true })
+})
+
+app.listen(3001, () => {
+  console.log('Server running: http://localhost:3001')
+})
+```
+
+> **What is bcrypt?** A library that converts passwords into "hashes". A hash is an encrypted string that can't be reversed to the original. Even if the database is hacked, the actual passwords remain protected!
+
+### Frontend: Add Login Feature
+
+```jsx
+// frontend/src/App.jsx - With authentication
+import { useState, useEffect } from 'react'
+import './App.css'
+
+const API_URL = 'http://localhost:3001/api'
+
+function App() {
+  // ===================================================================
+  // State
+  // ===================================================================
+  const [user, setUser] = useState(null)           // Logged in user
+  const [todos, setTodos] = useState([])           // Todo list
+  const [newTodo, setNewTodo] = useState('')       // New todo
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Login/Registration form state
+  const [isLoginMode, setIsLoginMode] = useState(true)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
+
+  // ===================================================================
+  // Auto-login if token exists
+  // ===================================================================
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    const savedUser = localStorage.getItem('user')
+
+    if (token && savedUser) {
+      setUser(JSON.parse(savedUser))
+    }
+    setLoading(false)
+  }, [])
+
+  // Load todo list after login
+  useEffect(() => {
+    if (user) {
+      fetchTodos()
+    }
+  }, [user])
+
+  // ===================================================================
+  // Authenticated API call helper
+  // ===================================================================
+  const authFetch = async (url, options = {}) => {
+    const token = localStorage.getItem('token')
+
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    // Logout on token expiry
+    if (response.status === 401) {
+      logout()
+      throw new Error('Session expired. Please login again.')
+    }
+
+    return response
+  }
+
+  // ===================================================================
+  // Auth functions
+  // ===================================================================
+
+  // Register
+  const register = async (e) => {
+    e.preventDefault()
+    setError(null)
+
+    try {
+      const response = await fetch(`${API_URL}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error)
+      }
+
+      // Registration success -> Switch to login mode
+      setIsLoginMode(true)
+      setError(null)
+      alert('Registration complete. Please login!')
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  // Login
+  const login = async (e) => {
+    e.preventDefault()
+    setError(null)
+
+    try {
+      const response = await fetch(`${API_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error)
+      }
+
+      // Save token and user info
+      localStorage.setItem('token', data.token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+      setUser(data.user)
+
+      // Clear form
+      setEmail('')
+      setPassword('')
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  // Logout
+  const logout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    setUser(null)
+    setTodos([])
+  }
+
+  // ===================================================================
+  // Todo API functions
+  // ===================================================================
+
+  const fetchTodos = async () => {
+    try {
+      const response = await authFetch(`${API_URL}/todos`)
+      const data = await response.json()
+      setTodos(data)
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  const addTodo = async (e) => {
+    e.preventDefault()
+    if (!newTodo.trim()) return
+
+    try {
+      const response = await authFetch(`${API_URL}/todos`, {
+        method: 'POST',
+        body: JSON.stringify({ text: newTodo })
+      })
+
+      if (!response.ok) throw new Error('Add failed')
+
+      const todo = await response.json()
+      setTodos([todo, ...todos])
+      setNewTodo('')
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  const toggleTodo = async (id) => {
+    try {
+      await authFetch(`${API_URL}/todos/${id}`, { method: 'PATCH' })
+      setTodos(todos.map(t =>
+        t.id === id ? { ...t, completed: t.completed ? 0 : 1 } : t
+      ))
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  const deleteTodo = async (id) => {
+    if (!window.confirm('Delete this todo?')) return
+
+    try {
+      await authFetch(`${API_URL}/todos/${id}`, { method: 'DELETE' })
+      setTodos(todos.filter(t => t.id !== id))
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  // ===================================================================
+  // Loading
+  // ===================================================================
+  if (loading) {
+    return <div className="app"><div className="loading">Loading...</div></div>
+  }
+
+  // ===================================================================
+  // Not logged in -> Login/Register form
+  // ===================================================================
+  if (!user) {
+    return (
+      <div className="app">
+        <h1>Todo List</h1>
+
+        {error && (
+          <div className="error">
+            Warning: {error}
+            <button onClick={() => setError(null)}>X</button>
+          </div>
+        )}
+
+        <form onSubmit={isLoginMode ? login : register} className="auth-form">
+          <h2>{isLoginMode ? 'Login' : 'Register'}</h2>
+
+          {!isLoginMode && (
+            <input
+              type="text"
+              placeholder="Name (optional)"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          )}
+
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+
+          <input
+            type="password"
+            placeholder="Password (6+ characters)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+          />
+
+          <button type="submit">
+            {isLoginMode ? 'Login' : 'Register'}
+          </button>
+
+          <p className="switch-mode">
+            {isLoginMode ? "Don't have an account? " : 'Already have an account? '}
+            <button
+              type="button"
+              onClick={() => {
+                setIsLoginMode(!isLoginMode)
+                setError(null)
+              }}
+            >
+              {isLoginMode ? 'Register' : 'Login'}
+            </button>
+          </p>
+        </form>
+      </div>
+    )
+  }
+
+  // ===================================================================
+  // Logged in -> Todo app
+  // ===================================================================
+  return (
+    <div className="app">
+      <header className="header">
+        <h1>{user.name || user.email}'s Todos</h1>
+        <button onClick={logout} className="logout-btn">Logout</button>
+      </header>
+
+      {error && (
+        <div className="error">
+          Warning: {error}
+          <button onClick={() => setError(null)}>X</button>
+        </div>
+      )}
+
+      <form onSubmit={addTodo} className="add-form">
+        <input
+          type="text"
+          value={newTodo}
+          onChange={(e) => setNewTodo(e.target.value)}
+          placeholder="Enter a new todo..."
+        />
+        <button type="submit" disabled={!newTodo.trim()}>Add</button>
+      </form>
+
+      <ul className="todo-list">
+        {todos.length === 0 ? (
+          <li className="empty">No todos</li>
+        ) : (
+          todos.map(todo => (
+            <li key={todo.id} className={todo.completed ? 'completed' : ''}>
+              <input
+                type="checkbox"
+                checked={!!todo.completed}
+                onChange={() => toggleTodo(todo.id)}
+              />
+              <span className="text">{todo.text}</span>
+              <button className="delete" onClick={() => deleteTodo(todo.id)}>
+                Delete
+              </button>
+            </li>
+          ))
+        )}
+      </ul>
+
+      {todos.length > 0 && (
+        <div className="stats">
+          Total: {todos.length} | Completed: {todos.filter(t => t.completed).length}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default App
+```
+
+### Additional CSS
+
+```css
+/* Add to frontend/src/App.css */
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.logout-btn {
+  padding: 8px 16px;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.logout-btn:hover {
+  background: #d32f2f;
+}
+
+/* Auth form */
+.auth-form {
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.auth-form h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.auth-form input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.auth-form button[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.switch-mode {
+  text-align: center;
+  margin-top: 15px;
+  color: #666;
+}
+
+.switch-mode button {
+  background: none;
+  border: none;
+  color: #667eea;
+  cursor: pointer;
+  font-weight: 600;
 }
 ```
 
-```markdown
-<!-- .claude/commands/feature.md -->
-Create the $ARGUMENTS feature.
+### Practice Problem 6-1: Authentication Test
 
-After file creation, Hook automatically:
-- Prettier formatting
-- ESLint fixes
-
-Trust this automation and write code.
-```
+1. Register a new account
+2. Login
+3. Add some todos
+4. Logout and login with a different account
+5. Verify that the previous account's todos are not visible!
 
 ---
 
-## Sharing Commands with Team
+## Part 7: Deployment Preparation
 
-### Commit to Git
+The app is complete, let's prepare for deployment.
 
+### Environment Variables
+
+Secrets and configuration values should not be written directly in code!
+
+```bash
+# Create backend/.env file
+JWT_SECRET=your-super-secret-key-at-least-32-characters-long
+PORT=3001
 ```
-my-project/
-├── .claude/
-│   └── commands/     # Team shared Commands
-│       ├── commit.md
-│       ├── review.md
-│       └── deploy.md
-├── CLAUDE.md
-└── src/
+
+```javascript
+// Modify backend/index.js
+require('dotenv').config()  // Add at the top
+
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-dev-key'
+const PORT = process.env.PORT || 3001
 ```
 
-Committing `.claude/commands/` to git lets the whole team use the same Commands.
-
-### Document in README
-
-```markdown
-# Team Commands
-
-## Available Commands
-
-- `/commit` - Commit changes
-- `/review <file>` - Code review
-- `/deploy` - Deploy to staging
-- `/hotfix <issue>` - Emergency fix
+```bash
+# Install dotenv package
+npm install dotenv
 ```
+
+> **Important**: Add the `.env` file to `.gitignore` so it doesn't get uploaded to Git!
+
+### Recommended Deployment Platforms
+
+| Service | Use Case | Free |
+|---------|----------|------|
+| **Vercel** | Frontend | Free |
+| **Netlify** | Frontend | Free |
+| **Railway** | Backend | $5/month credit |
+| **Render** | Backend | Free (limited) |
+| **Fly.io** | Backend | Free (limited) |
+
+### Pre-Deployment Checklist
+
+- [ ] Environment variables configured (.env)
+- [ ] Sensitive files added to .gitignore
+- [ ] CORS configured (allow only frontend domain)
+- [ ] Frontend build test (`npm run build`)
+- [ ] Backend error logging configured
 
 ---
 
-## Try it yourself
+## Mini Quiz
 
-### Exercise 1: Create a Simple Hook
+### Quiz 1: CORS
 
-Create a hook that logs every time Claude runs a Bash command:
+Why does a CORS error occur?
 
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "command": "echo 'Bash command executed' >> ~/.claude/bash-log.txt"
-      }
-    ]
-  }
-}
+A) Server is off
+B) URL is wrong
+C) Frontend and backend have different origins (ports)
+D) JSON format is wrong
+
+<details>
+<summary>See Answer</summary>
+
+**Answer: C) Frontend and backend have different origins (ports)**
+
+Browsers block requests from different origins (domains, ports) by default for security.
+When frontend (5173) and backend (3001) have different ports, CORS errors occur.
+
+</details>
+
+### Quiz 2: JWT
+
+Where is the JWT token stored?
+
+A) Database
+B) Server memory
+C) Browser localStorage
+D) URL parameters
+
+<details>
+<summary>See Answer</summary>
+
+**Answer: C) Browser localStorage**
+
+JWT tokens are stored in the browser's localStorage after login.
+They are included in the Authorization header for subsequent API requests.
+
+</details>
+
+### Quiz 3: API Calls
+
+What's wrong with this code?
+
+```javascript
+const response = await fetch('/api/todos', {
+  method: 'POST',
+  body: JSON.stringify({ text: 'Hello' })
+})
 ```
 
-### Exercise 2: Create Your First Command
+A) fetch usage is wrong
+B) await is used incorrectly
+C) Content-Type header is missing
+D) No problem
 
-1. Create the commands folder: `mkdir -p .claude/commands`
-2. Create a file `.claude/commands/hello.md`:
+<details>
+<summary>See Answer</summary>
 
-```markdown
-Say hello and tell me what project I'm working on.
-Look at the folder structure and give me a brief summary.
-```
+**Answer: C) Content-Type header is missing**
 
-3. Use it: `> /hello`
+When sending JSON, you must add the `'Content-Type': 'application/json'` header.
+Without this header, the server's `req.body` will be undefined.
 
-### Exercise 3: Command with Variables
-
-Create `.claude/commands/explain.md`:
-
-```markdown
-Explain the $ARGUMENTS file in simple terms.
-What does it do? What are the key functions?
-```
-
-Use it: `> /explain src/index.ts`
+</details>
 
 ---
 
-## If it doesn't work?
+## Practice Assignments
 
-### Problem: Hook not triggering
+### Basic Assignment: Extend to Memo App
 
-**Possible causes:**
-1. Wrong matcher name (case-sensitive)
-2. JSON syntax error
-3. Hook added to wrong section
+Extend the Todo app into a memo app:
+- Memos with title and content
+- Memo editing feature
+- Memo search feature
 
-**Solutions:**
-- Check matcher names: `Edit`, `Write`, `Bash`, `Read`, etc.
-- Validate JSON: `cat ~/.claude/settings.json | jq .`
-- Make sure hooks are inside `"hooks": { }` section
+### Advanced Assignment: Additional Features
 
-### Problem: Hook command fails silently
-
-**Possible causes:**
-1. Command not found
-2. Permission denied
-3. Wrong file path
-
-**Solutions:**
-- Test command manually in terminal first
-- Check if command exists: `which npm`, `which npx`
-- Use absolute paths when possible
-
-### Problem: Command not found
-
-**Possible causes:**
-1. File not in `.claude/commands/` folder
-2. File extension is not `.md`
-3. Folder is in wrong location
-
-**Solutions:**
-- Check folder exists: `ls -la .claude/commands/`
-- Make sure file ends with `.md`
-- Commands folder should be in project root or `~/.claude/`
-
-### Problem: $ARGUMENTS not working
-
-**Possible causes:**
-1. Using wrong variable name
-2. Not providing arguments when calling
-
-**Solutions:**
-- Use exactly `$ARGUMENTS` (case-sensitive)
-- Provide arguments: `/explain src/file.ts` not just `/explain`
+Add the following features:
+- Category/tag classification
+- Due date setting
+- Priority marking (stars)
 
 ---
 
-## Common mistakes
+## Glossary
 
-1. **Wrong hook timing**
-   - `PreToolUse`: Before the tool runs (can block it)
-   - `PostToolUse`: After the tool runs (for follow-up actions)
-   - Mixing these up causes unexpected behavior
+| Term | Description |
+|------|-------------|
+| **Full-stack** | Developing both frontend and backend |
+| **CORS** | Security mechanism that controls resource sharing from different origins |
+| **JWT** | JSON Web Token, encrypted token containing user authentication info |
+| **bcrypt** | Library for securely hashing passwords |
+| **async/await** | Syntax that allows writing asynchronous code synchronously |
+| **Authorization header** | HTTP header that contains authentication information |
+| **localStorage** | Browser storage for persisting data |
 
-2. **Forgetting to escape special characters**
-   ```json
-   // BAD - unescaped quotes
-   "command": "echo "hello""
+---
 
-   // GOOD - use single quotes
-   "command": "echo 'hello'"
-   ```
+## Next Chapter Preview
 
-3. **Commands that hang**
-   - If your hook command waits for input, Claude Code will hang
-   - Always use non-interactive commands
+In [Chapter 21: Understanding Architecture](../Chapter21/README.md), we'll learn:
+- How Claude Code works internally
+- Tools and sub-agents
+- Context management
 
-4. **Overcomplicating hooks**
-   - Start simple, add complexity gradually
-   - One hook doing one thing is easier to debug
-
-5. **Not testing commands manually first**
-   - Always run your command in terminal first
-   - If it doesn't work there, it won't work in a hook
+Now that you've mastered full-stack development, let's understand Claude Code more deeply!
 
 ---
 
 ## Summary
 
-What you learned in this chapter:
-- [x] Hooks system (Pre/Post ToolUse, UserPromptSubmit, Stop)
-- [x] Reusing prompts with Commands
-- [x] Using variables and dynamic information
-- [x] Combining Hooks + Commands
-- [x] Sharing Commands with team
+1. **Full-stack apps** communicate via API between frontend and backend
+2. **CORS** configuration allows requests from different origins
+3. **async/await** handles asynchronous API calls
+4. **JWT** implements user authentication
+5. **bcrypt** safely stores passwords
+6. **Environment variables** manage secret keys before deployment
 
-**Key point**: Automate repetitive work with Hooks and Commands.
+Congratulations! You can now build complete full-stack apps!
 
-In the next chapter, you'll learn more powerful extensions with Agents and Skills.
+---
 
-Proceed to [Chapter 21: Agents & Skills](../Chapter21/README.md).
+## Learn More
+
+### Recommended Resources
+
+**Official Documentation:**
+- [React Official Docs](https://react.dev/) - React official documentation
+- [Vite Guide](https://vitejs.dev/guide/) - Vite build tool
+- [JWT Introduction](https://jwt.io/introduction) - Understanding JWT tokens
+
+**Video Resources:**
+- [Full-Stack App Tutorial (YouTube)](https://www.youtube.com/results?search_query=fullstack+react+express+tutorial)
+- [React + Express Integration (YouTube)](https://www.youtube.com/results?search_query=react+express+integration+tutorial)
+- [JWT Authentication Tutorial (YouTube)](https://www.youtube.com/results?search_query=jwt+authentication+nodejs+react+tutorial)
+
+**Reading Materials:**
+- [Complete CORS Guide](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) - MDN CORS documentation
+- [JWT Best Practices](https://auth0.com/blog/jwt-authentication-best-practices/) - Auth0 JWT guide
+- [Complete Guide to useEffect](https://overreacted.io/a-complete-guide-to-useeffect/) - useEffect deep dive
+
+**Deployment Platforms:**
+- [Vercel](https://vercel.com/) - Frontend deployment (free)
+- [Netlify](https://www.netlify.com/) - Frontend deployment (free)
+- [Railway](https://railway.app/) - Full-stack deployment
+- [Render](https://render.com/) - Backend deployment (free tier)
+- [Fly.io](https://fly.io/) - Global app deployment

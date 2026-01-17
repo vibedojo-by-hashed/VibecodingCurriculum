@@ -1,12 +1,46 @@
 # Vibecoding Curriculum
 
-> A systematic learning curriculum for AI-native development
+> **The Most Comprehensive Claude Code Learning Curriculum** - From Complete Beginner to AI-Native Developer
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Chapters](https://img.shields.io/badge/Chapters-24-blue.svg)](#curriculum-structure)
+[![Chapters](https://img.shields.io/badge/Chapters-27-blue.svg)](#curriculum-structure)
 [![Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-blueviolet.svg)](https://github.com/anthropics/claude-code)
+[![Beginner Friendly](https://img.shields.io/badge/Beginner-Friendly-green.svg)](#audience)
 
 **English** | [한국어](./README.ko.md)
+
+---
+
+## Why This Curriculum?
+
+This curriculum goes beyond the official Claude Code tutorial to provide:
+
+| Official Tutorial | This Curriculum |
+|-------------------|-----------------|
+| Quick start guide | **27 chapters** of systematic learning |
+| Assumes coding knowledge | **Beginner-friendly** with no prerequisites |
+| Reference documentation | **Hands-on projects** you can actually use |
+| English only | **Bilingual** (English + Korean) |
+| Tool-focused | **Concept + Practice + Real Projects** |
+
+**What makes us different:**
+- **Complete beginner path**: Start from "What is coding?" to building full-stack apps
+- **Progressive complexity**: Each chapter builds on the previous
+- **Real-world projects**: Portfolio sites, games, chatbots, CLI tools, full-stack apps
+- **Learn More sections**: Curated resources (videos, docs, tools) in every chapter
+- **Beginner Tips**: Explains technical concepts in simple terms throughout
+
+---
+
+## 💬 Community
+
+If you have questions while learning, ask on Discord!
+
+[![Discord](https://img.shields.io/badge/Discord-Join_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite-link)
+
+- Questions and Answers
+- Project Sharing
+- Study Groups
 
 ---
 
@@ -20,33 +54,46 @@ npm install -g @anthropic-ai/claude-code
 claude
 ```
 
-Ready? Start with [Chapter 01: What is AI Coding?](./Chapter01/README.md)
+Ready? Start with [Chapter 01: What is AI Coding?](./Chapter01/README.md)!
 
 ---
 
 ## What is Vibecoding?
 
-**Vibecoding** is a new paradigm of developing with AI.
+**Vibecoding** is a new paradigm of developing with AI, coined by Andrej Karpathy (former Tesla AI Director).
 
-- Instead of writing code line by line, **express your intent**
-- Instead of debugging alone, **solve problems through conversation**
-- Use AI as your **pair programmer**
-- **Develop faster** while maintaining quality
+```
+Traditional Coding:
+You → Learn syntax → Write code → Debug → Software
 
-This curriculum teaches vibecoding through Claude Code, Anthropic's official CLI tool.
+Vibecoding:
+You → Express intent → AI writes code → Refine together → Software
+```
+
+### The 3-Step Cycle
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│   1. Express Intent  →  2. Check Result  →  3. Refine  │
+│         ↑                                      │       │
+│         └──────────────────────────────────────┘       │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+1. **Express Intent**: Tell Claude what you want in natural language
+2. **Check Result**: See if it matches your expectations
+3. **Refine**: Give feedback to improve
+
+Repeat until perfect. No syntax memorization needed.
 
 <details>
-<summary><strong>Philosophy of Vibecoding</strong></summary>
+<summary><strong>See Vibecoding in Action</strong></summary>
 
-### Old Way vs Vibecoding
+### Example: Making a Webpage
 
-**Before**, you had to write code line by line yourself. Memorize syntax, fix errors, search endlessly... Learning took years.
-
-**Now it's different.** Tell the AI "make this for me" and the AI writes the code.
-
-### Comparison: Making a Webpage
-
-**Old way:**
+**Traditional coding (hours of learning required):**
 ```html
 <!DOCTYPE html>
 <html>
@@ -62,19 +109,16 @@ This curriculum teaches vibecoding through Claude Code, Anthropic's official CLI
 </body>
 </html>
 ```
-You had to memorize and write all of this yourself.
 
-**Vibecoding:**
+**Vibecoding (30 seconds):**
 ```
-"Make a webpage with a blue heading that says 'Hello'"
+You: Make a webpage with a blue heading that says 'Hello'
+Claude: [creates the file instantly]
+You: Make the heading bigger and center it
+Claude: [updates the file]
 ```
-Say this and the AI generates the code above.
 
-### Why "Vibe"?
-
-"Vibe" means feeling or atmosphere. Even without knowing exact syntax, if you convey the **"feel" of what you want**, the AI understands and implements it.
-
-Traditional coding required you to know everything yourself. Vibecoding means **creating together** with an AI partner.
+The AI handles syntax. You focus on **what** you want, not **how** to code it.
 
 </details>
 
@@ -82,86 +126,215 @@ Traditional coding required you to know everything yourself. Vibecoding means **
 
 ## Audience
 
-- **Complete beginners** learning to code for the first time
-- **Beginning developers** who want to leverage AI tools
-- **Working developers** who want to increase productivity
+| Level | Description | Starting Point |
+|-------|-------------|----------------|
+| **Complete Beginner** | Never coded before | Chapter 01 |
+| **Beginner** | Know basics, want AI tools | Chapter 06 |
+| **Intermediate** | Comfortable with code, want productivity | Chapter 17 |
+| **Advanced** | Want to master Claude Code | Chapter 21 |
 
-No coding experience required. We proceed step by step from the beginning.
+No coding experience required for complete beginners. We start from scratch.
 
 ---
 
 ## Learning Outcomes
 
-After completing 24 chapters, you will be able to:
+### After 27 Chapters, You Can Build:
 
-- **Build a portfolio website** and deploy it
-- **Create simple apps** (TODO app, games, etc.)
-- **Build automation tools** (file organizer, data processor)
-- **Implement AI services** (document summarizer, translator)
-- **Configure advanced workflows** (Hooks, Skills, MCP, CI/CD)
+| Project Type | Examples |
+|--------------|----------|
+| **Websites** | Portfolio, blog, landing page |
+| **Web Apps** | Todo app, dashboard, e-commerce |
+| **Games** | Snake, memory match, reaction games |
+| **CLI Tools** | File organizer, data processor |
+| **Chatbots** | Discord bot, Slack bot |
+| **Full-Stack Apps** | Complete apps with database & auth |
+| **Automation** | CI/CD pipelines, GitHub Actions |
+
+### Skills You'll Gain:
+
+- Effective prompting techniques
+- Code navigation and debugging
+- Git version control
+- Project architecture understanding
+- Team collaboration workflows
+- Advanced Claude Code features (Hooks, Skills, MCP)
+
+---
+
+## 📚 Confused by Terminology?
+
+If you encounter unfamiliar terms, check the [Glossary](./GLOSSARY.md)!
+
+Every chapter also includes **Beginner Tips** that explain technical concepts in simple terms.
 
 ---
 
 ## Curriculum Structure
 
+### Learning Path Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Your Learning Journey                         │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Part 1: Getting Started (Ch.01-05)                             │
+│  "Learn the kitchen tools"                                      │
+│  → What is AI coding? Install Claude Code. Basic commands.      │
+│  🎯 Milestone: First conversation with Claude                   │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Part 2: Core Features (Ch.06-11)                               │
+│  "Learn to cook basic dishes"                                   │
+│  → Prompting, code navigation, Git, project memory              │
+│  🎯 Milestone: Modify existing code confidently                 │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Part 3: Practical Projects I (Ch.12-16)                        │
+│  "Cook your first real meals"                                   │
+│  → Websites, deployment, databases, games                       │
+│  🎯 Milestone: Deploy your portfolio online                     │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Part 4: Practical Projects II (Ch.17-20)                       │
+│  "Host a dinner party"                                          │
+│  → CLI tools, chatbots, backend, full-stack                     │
+│  🎯 Milestone: Build a complete app with auth                   │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Part 5: Advanced (Ch.21-27)                                    │
+│  "Become a master chef"                                         │
+│  → Architecture, Hooks, MCP, CI/CD, team workflows              │
+│  🎯 Milestone: Master-level Claude Code usage                   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Estimated Time
+
+| Pace | Duration |
+|------|----------|
+| 2 hours/day | ~2 weeks |
+| 1 hour/day | ~4 weeks |
+| Weekends only | ~4 weeks |
+
+---
+
 ### Part 1: Getting Started (Chapter 01-05)
 
 Learn basic concepts and how to use Claude Code.
 
-| Chapter | Topic | Description | Link |
-|---------|-------|-------------|------|
-| 01 | What is AI Coding? | Vibecoding concept, Claude Code intro | [EN](./Chapter01/README.md) / [KO](./Chapter01/README.ko.md) |
-| 02 | Installation | Terminal, installation, login | [EN](./Chapter02/README.md) / [KO](./Chapter02/README.ko.md) |
-| 03 | Your First Conversation | Permission modes, shortcuts, slash commands | [EN](./Chapter03/README.md) / [KO](./Chapter03/README.ko.md) |
-| 04 | Working with Files | @mentions, reading/writing files | [EN](./Chapter04/README.md) / [KO](./Chapter04/README.ko.md) |
-| 05 | Terminal Commands | Running commands, running projects | [EN](./Chapter05/README.md) / [KO](./Chapter05/README.ko.md) |
+| Chapter | Topic | What You'll Learn | Link |
+|---------|-------|-------------------|------|
+| 01 | What is AI Coding? | Vibecoding concept, why Claude Code | [Go](./Chapter01/README.md) |
+| 02 | Installation | Terminal basics, install Claude Code | [Go](./Chapter02/README.md) |
+| 03 | First Conversation | Permission modes, shortcuts, slash commands | [Go](./Chapter03/README.md) |
+| 04 | Working with Files | @mentions, create/read/edit files | [Go](./Chapter04/README.md) |
+| 05 | Terminal Commands | Run commands, execute projects | [Go](./Chapter05/README.md) |
 
-### Part 2: Core Features (Chapter 06-10)
+---
+
+### Part 2: Core Features (Chapter 06-11)
 
 Master the core features of Claude Code.
 
-| Chapter | Topic | Description | Link |
-|---------|-------|-------------|------|
-| 06 | Effective Prompting | Good prompts, Plan mode | [EN](./Chapter06/README.md) / [KO](./Chapter06/README.ko.md) |
-| 07 | Exploring Code | Glob, Grep, understanding projects | [EN](./Chapter07/README.md) / [KO](./Chapter07/README.ko.md) |
-| 08 | Editing Code | Explore → Plan → Execute workflow | [EN](./Chapter08/README.md) / [KO](./Chapter08/README.ko.md) |
-| 09 | Git Basics | Commits, branches, PRs | [EN](./Chapter09/README.md) / [KO](./Chapter09/README.ko.md) |
-| 10 | Project Memory | CLAUDE.md, project settings | [EN](./Chapter10/README.md) / [KO](./Chapter10/README.ko.md) |
+| Chapter | Topic | What You'll Learn | Link |
+|---------|-------|-------------------|------|
+| 06 | Project Structure | Navigate folders, understand codebases | [Go](./Chapter06/README.md) |
+| 07 | Context & Memory | How Claude remembers, context management | [Go](./Chapter07/README.md) |
+| 08 | Effective Prompting | Write better prompts, Plan mode | [Go](./Chapter08/README.md) |
+| 09 | Exploring Code | Glob, Grep, find anything | [Go](./Chapter09/README.md) |
+| 10 | Editing Code | Explore → Plan → Execute workflow | [Go](./Chapter10/README.md) |
+| 11 | Git Basics | Commits, branches, pull requests | [Go](./Chapter11/README.md) |
 
-### Part 3: Practical Projects I (Chapter 11-14)
+### 🎉 After Part 2
 
-Build real projects.
+> **Congratulations!** You now have all the fundamental skills.
+>
+> **You can:**
+> - Navigate any codebase
+> - Write effective prompts
+> - Modify existing code
+> - Use Git for version control
+>
+> **Ready to build real things!**
 
-| Chapter | Topic | Description | Link |
-|---------|-------|-------------|------|
-| 11 | Website Development | Building a portfolio site | [EN](./Chapter11/README.md) / [KO](./Chapter11/README.ko.md) |
-| 12 | Deployment | Vercel, Railway | [EN](./Chapter12/README.md) / [KO](./Chapter12/README.ko.md) |
-| 13 | Data Storage | Supabase integration | [EN](./Chapter13/README.md) / [KO](./Chapter13/README.ko.md) |
-| 14 | Mini Games | Building fun games | [EN](./Chapter14/README.md) / [KO](./Chapter14/README.ko.md) |
+---
 
-### Part 4: Practical Projects II (Chapter 15-17)
+### Part 3: Practical Projects I (Chapter 12-16)
 
-Build more practical projects.
+Build real projects and deploy them.
 
-| Chapter | Topic | Description | Link |
-|---------|-------|-------------|------|
-| 15 | CLI Tools | Building command-line tools | [EN](./Chapter15/README.md) / [KO](./Chapter15/README.ko.md) |
-| 16 | Chatbot | Building an AI chatbot | [EN](./Chapter16/README.md) / [KO](./Chapter16/README.ko.md) |
-| 17 | Full-stack App | Complete web application | [EN](./Chapter17/README.md) / [KO](./Chapter17/README.ko.md) |
+| Chapter | Topic | What You'll Build | Link |
+|---------|-------|-------------------|------|
+| 12 | Project Memory | CLAUDE.md for project-specific instructions | [Go](./Chapter12/README.md) |
+| 13 | Website Development | Personal portfolio website | [Go](./Chapter13/README.md) |
+| 14 | Deployment | Deploy to Vercel/Railway | [Go](./Chapter14/README.md) |
+| 15 | Data Storage | Connect to Supabase database | [Go](./Chapter15/README.md) |
+| 16 | Mini Games | Fun browser games | [Go](./Chapter16/README.md) |
 
-### Part 5: Advanced (Chapter 18-24)
+### 🎉 After Part 3
 
-Learn advanced Claude Code features and become a master.
+> **You're now a web developer!**
+>
+> **You've built:**
+> - A portfolio site anyone can visit
+> - Apps that store real data
+> - Games you can share with friends
 
-| Chapter | Topic | Description | Link |
-|---------|-------|-------------|------|
-| 18 | Architecture | How Claude Code works internally | [EN](./Chapter18/README.md) / [KO](./Chapter18/README.ko.md) |
-| 19 | Advanced Config | CLAUDE.md 3-tier, settings.json | [EN](./Chapter19/README.md) / [KO](./Chapter19/README.ko.md) |
-| 20 | Hooks & Commands | Automation triggers, custom commands | [EN](./Chapter20/README.md) / [KO](./Chapter20/README.ko.md) |
-| 21 | Agents & Skills | Specialized AI assistants | [EN](./Chapter21/README.md) / [KO](./Chapter21/README.ko.md) |
-| 22 | MCP Integration | Connect external services | [EN](./Chapter22/README.md) / [KO](./Chapter22/README.ko.md) |
-| 23 | CI/CD Automation | GitHub Actions, auto deployment | [EN](./Chapter23/README.md) / [KO](./Chapter23/README.ko.md) |
-| 24 | Team Collaboration | Team workflows, onboarding | [EN](./Chapter24/README.md) / [KO](./Chapter24/README.ko.md) |
+---
+
+### Part 4: Practical Projects II (Chapter 17-20)
+
+Build more practical, production-ready projects.
+
+| Chapter | Topic | What You'll Build | Link |
+|---------|-------|-------------------|------|
+| 17 | CLI Tools | Command-line utilities | [Go](./Chapter17/README.md) |
+| 18 | Chatbots | Discord/Slack bots | [Go](./Chapter18/README.md) |
+| 19 | Backend Basics | REST API with Express + SQLite | [Go](./Chapter19/README.md) |
+| 20 | Full-Stack Apps | Complete app with auth (JWT) | [Go](./Chapter20/README.md) |
+
+### 🎉 After Part 4
+
+> **You can build production apps!**
+>
+> **You understand:**
+> - Frontend + Backend architecture
+> - Database integration
+> - User authentication
+> - API design
+
+---
+
+### Part 5: Advanced (Chapter 21-27)
+
+Master Claude Code and become a power user.
+
+| Chapter | Topic | What You'll Master | Link |
+|---------|-------|-------------------|------|
+| 21 | Architecture | How Claude Code works internally | [Go](./Chapter21/README.md) |
+| 22 | Advanced Config | CLAUDE.md tiers, settings.json | [Go](./Chapter22/README.md) |
+| 23 | Hooks & Commands | Automation triggers, custom commands | [Go](./Chapter23/README.md) |
+| 24 | Agents & Skills | Specialized AI assistants | [Go](./Chapter24/README.md) |
+| 25 | MCP Integration | Connect external services | [Go](./Chapter25/README.md) |
+| 26 | CI/CD Automation | GitHub Actions, auto deployment | [Go](./Chapter26/README.md) |
+| 27 | Team Collaboration | Team workflows, onboarding | [Go](./Chapter27/README.md) |
+
+### 🎉 After Completing Everything
+
+> **You've become a Vibecoding Master!**
+>
+> **What's next:**
+> - Start your own projects
+> - Contribute to open source
+> - Teach others
+> - Stay updated on AI tools
 
 ---
 
@@ -169,83 +342,84 @@ Learn advanced Claude Code features and become a master.
 
 ### How to Proceed
 
-* Complete chapters **in order**. Skipping may cause difficulty understanding later content.
-* Don't just read—**run the code yourself**.
-* Understanding one chapter **deeply** is more important than skimming through many.
+| Do | Don't |
+|----|-------|
+| ✅ Complete chapters in order | ❌ Skip ahead |
+| ✅ Type and run code yourself | ❌ Just read passively |
+| ✅ Understand deeply before moving on | ❌ Rush through |
+| ✅ Ask Claude when stuck | ❌ Give up after first error |
 
-### When Stuck
+### When You're Stuck
 
-* First, ask Claude. "What is this?", "Why does this happen?"
-* If stuck for more than 24 hours, review previous chapter content.
-* Copy error messages exactly and show them to Claude.
+1. **Ask Claude**: "What is this?", "Why does this error happen?"
+2. **Check the Glossary**: [GLOSSARY.md](./GLOSSARY.md)
+3. **Ask the Community**: [Discord](https://discord.gg/your-invite-link)
+4. **Review previous chapter**: Often the answer is there
 
-<details>
-<summary><strong>Mindset Before Starting</strong></summary>
+### Common Beginner Mistakes
 
-### 1. You Don't Have to Be Perfect
-At first, you might get weird results. Just say it again differently.
-
-### 2. Errors Are Normal
-In coding, errors aren't failures—they're part of the process. AI can fix errors too.
-
-### 3. Start Small
-Don't try to build something amazing right away. Start with "Hello World."
-
-### 4. Ask When Curious
-"What is this?", "Why do it this way?" Just ask the AI and it will explain.
-
-</details>
+| Mistake | Solution |
+|---------|----------|
+| Vague prompts ("fix bug") | Be specific (file, error, context) |
+| Expecting perfection first try | Iterate with feedback |
+| Not reading error messages | Copy-paste to Claude |
+| Skipping chapters | Each chapter builds on previous |
 
 ---
 
 ## Pro Tips
 
-Tips from the Claude Code team and experienced developers.
+From the Claude Code team and experienced developers:
 
-1. **Start in Plan mode** - Press `Shift+Tab` twice. Let Claude plan first.
+### Essential Tips
 
-2. **Specify verification methods** - Have Claude run tests, type checks, etc.
-
-3. **Hold the same bar** - Review AI code like you would human code.
-
-4. **Save CLAUDE.md in Git** - Update it whenever Claude makes mistakes.
-
-5. **Use parallel work** - For complex tasks, use multiple terminals simultaneously.
-
-<details>
-<summary><strong>Additional Tips</strong></summary>
+1. **Start in Plan mode** - `Shift+Tab` twice. Let Claude think first.
+2. **Specify verification** - "Run tests after changes"
+3. **Review AI code** - Same standards as human code
+4. **Commit CLAUDE.md to Git** - Update when Claude makes mistakes
+5. **Use multiple terminals** - Parallel work for complex tasks
 
 ### Claude Code vs Web Chat
 
-| Web Chat (ChatGPT, Claude.ai) | Claude Code |
-|------------------------------|-------------|
-| Copy code and paste into files | Creates and edits files directly |
-| Cannot access local files | Understands your whole project |
-| Run commands yourself | Runs commands for you |
-| Explain context every time | Already knows the situation |
+| Feature | Web Chat | Claude Code |
+|---------|----------|-------------|
+| File access | ❌ Copy-paste | ✅ Direct read/write |
+| Command execution | ❌ Manual | ✅ Automatic |
+| Project context | ❌ Explain each time | ✅ Understands structure |
+| Continuous work | ❌ Session-based | ✅ Persistent |
 
-**Summary**: Web chat is "someone who tells you the recipe," Claude Code is "a chef who cooks for you."
-
-### Writing Effective Prompts
-
-**Bad example:**
-```
-> Fix the bug
-```
-
-**Good example:**
-```
-> Error occurs when clicking the login button in @src/login.js.
-> Error: "Cannot read property 'email' of undefined"
-> Please fix it.
-```
-
-The more specific you are, the better the results.
-
-</details>
+**TL;DR**: Web chat is a consultant. Claude Code is a pair programmer in your terminal.
 
 ---
+
+## What Each Chapter Includes
+
+Every chapter in this curriculum provides:
+
+- **🎯 Clear learning objectives**
+- **⏱️ Estimated time**
+- **📋 Prerequisites**
+- **📝 Step-by-step tutorials**
+- **🔨 Hands-on exercises**
+- **💡 Beginner Tips** - Technical concepts explained simply
+- **❌ Common mistakes** - What to avoid
+- **🆘 Troubleshooting** - When things go wrong
+- **✅ Checklist** - Verify your understanding
+- **📖 Learn More** - Curated videos, docs, and tools
+
+---
+
+## Contributing
+
+Found a typo? Have a suggestion? PRs welcome!
 
 ## License
 
 MIT License
+
+---
+
+<p align="center">
+  <strong>Ready to start your AI-native development journey?</strong><br>
+  <a href="./Chapter01/README.md">Begin Chapter 01 →</a>
+</p>

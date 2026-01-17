@@ -1,520 +1,1684 @@
-# Chapter 16: Building Chatbots
+# Chapter 16: Mini Games
 
 **English** | [한국어](./README.ko.md)
 
-## What You Will Learn
+---
 
-- Building a Discord bot with Claude
-- Progressively extending bot features
-- Applying patterns to Slack bots
+## Ask Questions
+
+If you have any questions during your studies, feel free to ask on Discord!
+
+[![Discord](https://img.shields.io/badge/Discord-Ask%20Questions-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite-link)
 
 ---
 
-## Why Do You Need This?
+## What You'll Learn in This Chapter
 
-**Real-world scenarios where chatbots shine:**
-
-- **Managing your gaming community** - A bot can welcome new members, moderate chat, run polls for game nights
-- **Automating team workflows** - Daily standup reminders, auto-responses to common questions, meeting scheduling
-- **Building engagement** - Mini-games, trivia, points systems that make your server more interactive
-- **Personal productivity** - A bot that reminds you of tasks, saves bookmarks, or tracks your habits
-
-Once you build a chatbot, it works for you **24/7** - even while you sleep!
+- Creating games with Claude
+- Core concepts of JavaScript game logic
+- User input handling and state management
+- Completing fun projects
+- Improving programming skills through game development
 
 ---
 
-## Simple Analogy: Bots are Like Helpful Store Employees
+## Connection to Previous Chapters
 
-Imagine walking into a store:
-- **Without employees**: You have to find everything yourself, figure out where things are
-- **With a helpful employee**: They greet you, answer questions, guide you to what you need
-
-Chatbots work the same way:
-- **Without a bot**: Every question gets asked repeatedly, moderators must be online 24/7
-- **With a bot**: Instant responses, automatic moderation, consistent experience for everyone
-
-The bot is your tireless virtual assistant that never takes breaks!
+In Chapter 15, you learned how to integrate APIs. Now we'll combine all the HTML, CSS, and JavaScript knowledge you've learned to create **games you can actually play**. Games are the ultimate learning projects where all programming concepts converge.
 
 ---
 
-## Why Chatbots?
+## Why Is This Necessary?
 
-Chatbots are projects that produce actually usable results:
-- Use directly in your Discord server
-- Automate tasks in your team's Slack
-- 24/7 automation tools
+Games aren't just about fun. Making games is the most engaging way to learn programming concepts.
 
-**Chatbot request tips:**
+**Real situations where game development skills help:**
 
-```
-> Create a Discord bot.
-> When /hello command is entered, respond with "Hello!",
-> and when /dice command is entered, show a random number between 1-6.
-```
+- **Learning to program**: Variables, loops, conditionals, functions - games use all of them
+- **Portfolio impact**: Playable games are much more impressive than static pages
+- **User engagement**: Interactive elements keep visitors engaged longer
+- **Problem solving**: Game logic sharpens your coding brain
+- **Interviews**: "I built a game" is a great conversation starter
 
-Clearly describe command names, trigger conditions, and response content to get the bot you want.
+> Every game mechanic is a programming concept in disguise. Score tracking? That's state management. Collision detection? That's conditionals. Game loop? That's event handling.
 
----
+### Simple Analogy: Games Are a Gym for Coders
 
-## Project: Building a Discord Bot
+Learning to code by building utilities is like exercising while doing housework - it works, but it's boring.
 
-### Step 1: Preparation (One-time setup)
-
-You need to create a bot in the Discord Developer Portal. Ask Claude:
-
-```
-> I want to create a Discord bot.
-> Show me how to create a bot in Discord Developer Portal
-> and invite it to my server.
-```
-
-Steps Claude will guide you through:
-1. Access Discord Developer Portal
-2. Create new Application
-3. Generate Bot token
-4. Invite to server via OAuth2 URL
-
-**Important**: The token is like a password. Never put it directly in code!
-
-### Step 2: Start the Project
-
-```
-> Create a Discord bot project.
-> Use discord.js,
-> and manage the token with a .env file.
-> Start with just printing a message to console when the bot comes online.
-```
-
-What Claude creates with this request:
-- Project folder structure
-- package.json
-- .env file template
-- Basic bot code
-
-### Step 3: First Command
-
-```
-> Add a /ping command.
-> It should show the bot's response time in milliseconds.
-```
-
-After confirming it works, add the next command:
-
-```
-> Add a /dice command.
-> Accept number of sides as an option (default 6),
-> and show the dice roll result.
-```
-
-**Request tip**: Don't request multiple commands at once. Add and test one at a time.
+Making games is like going to the gym - you're still exercising (learning), but it's actually fun. And like the gym, you get stronger (better at coding) while enjoying yourself.
 
 ---
 
-## Try It Yourself: Minimal Working Example
+## Core Concepts of Game Development
 
-Before building complex features, let's make sure your bot can respond to a simple command:
+There are key concepts you need to understand before making games. Once you understand these, you can make any game.
 
-**1. Create a minimal bot file (`bot.js`):**
+### 1. Game State
+
+Variables that store the "current situation" of the game.
 
 ```javascript
-// bot.js - Simplest possible Discord bot
-require('dotenv').config()
-const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder } = require('discord.js')
-
-const client = new Client({ intents: [GatewayIntentBits.Guilds] })
-
-// When bot is ready
-client.once('ready', () => {
-  console.log(`Bot is online as ${client.user.tag}!`)
-})
-
-// Respond to /ping command
-client.on('interactionCreate', async interaction => {
-  if (!interaction.isChatInputCommand()) return
-
-  if (interaction.commandName === 'ping') {
-    await interaction.reply('Pong! I am alive!')
-  }
-})
-
-// Login with your token
-client.login(process.env.DISCORD_TOKEN)
+// Game state examples
+let score = 0           // Current score
+let lives = 3           // Remaining lives
+let level = 1           // Current level
+let isGameOver = false  // Whether the game is over
+let isPaused = false    // Whether the game is paused
 ```
 
-**2. Create `.env` file (keep this secret!):**
+> **Beginner Tip**: Think of game state as the "memory" of the game. It's all the information needed when you save and load a game.
 
-```
-DISCORD_TOKEN=your_bot_token_here
-```
+### 2. Game Loop
 
-**3. Register the slash command (run once):**
+The repeating structure that keeps the game running.
 
 ```javascript
-// register-commands.js - Run this once to register /ping
-require('dotenv').config()
-const { REST, Routes, SlashCommandBuilder } = require('discord.js')
+// Basic game loop
+function gameLoop() {
+    if (isGameOver) return  // Stop if game is over
 
-const commands = [
-  new SlashCommandBuilder().setName('ping').setDescription('Check if bot is alive')
-].map(cmd => cmd.toJSON())
+    update()    // Update state (character movement, collision detection, etc.)
+    render()    // Draw the screen
 
-const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN)
-
-rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: commands })
-  .then(() => console.log('Commands registered!'))
-  .catch(console.error)
+    requestAnimationFrame(gameLoop)  // Request next frame
+}
 ```
 
-**4. Run it:**
+> **Beginner Tip**: The game loop is similar to a movie. Just like a movie shows 24 images per second, games redraw the screen about 60 times per second. That's why it looks like it's moving.
+
+### 3. Event Handling
+
+Responding to user input (clicks, keyboard).
+
+```javascript
+// Keyboard input handling
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') player.moveLeft()
+    if (e.key === 'ArrowRight') player.moveRight()
+    if (e.key === ' ') player.jump()  // Spacebar
+})
+
+// Mouse click handling
+canvas.addEventListener('click', (e) => {
+    const x = e.clientX
+    const y = e.clientY
+    handleClick(x, y)
+})
+```
+
+> **Pro Tip**: `keydown` fires the moment a key is pressed, `keyup` fires when it's released. To have a character move continuously while a key is held, you need a separate state variable.
+
+### 4. Collision Detection
+
+Checking if two objects are touching.
+
+```javascript
+// Rectangle collision detection (the simplest method)
+function isColliding(rect1, rect2) {
+    return rect1.x < rect2.x + rect2.width &&
+           rect1.x + rect1.width > rect2.x &&
+           rect1.y < rect2.y + rect2.height &&
+           rect1.y + rect1.height > rect2.y
+}
+
+// Usage example
+if (isColliding(player, enemy)) {
+    player.takeDamage()
+}
+```
+
+> **Caution**: Circular object collision detection uses a different formula. Two circles collide when the distance between their centers is less than the sum of their radii.
+
+---
+
+## Try It Yourself: The Simplest Game
+
+Before making complex games, let's verify the basics work. Here's the simplest game:
+
+```
+> Make a button that shows a counter.
+> The counter goes up by 1 each time you click.
+> That's it.
+```
+
+Try clicking it a few times. You just made a "clicker game." The same genre as Cookie Clicker, which has millions of players. Everything else is just adding features to this foundation.
+
+### Extended Clicker Game Example
+
+```
+> Make a game where clicking increases the score.
+> - Level up every 10 points
+> - Higher levels mean more points per click
+> - Nice animations and sound effects
+> - Save the high score
+```
+
+---
+
+## Why Games?
+
+Making games is the most fun way to learn programming.
+
+Games have everything:
+- Drawing on screen (HTML/CSS)
+- Receiving user input (keyboard, mouse)
+- Processing logic (JavaScript)
+- Managing state (score, level)
+
+**Game Request Tips:**
+
+```
+> Make a number guessing game. Range 1~100.
+> Show the number of attempts, and display a congratulations message if guessed within 10 tries.
+```
+
+Describing game rules and desired features specifically leads to more complete games.
+
+> **Beginner Tip**: Start with simple games first. Increase difficulty in order: "Number Guessing" -> "Rock Paper Scissors" -> "Typing Game".
+
+---
+
+## Game 1: Number Guessing
+
+Let's start with the simplest game.
+
+### Game Description
+
+- Computer picks a number between 1-100
+- Player guesses until correct
+- Provides "Higher" / "Lower" hints
+
+### What You'll Learn in This Game
+
+| Concept | Description | Application in Game |
+|---------|-------------|---------------------|
+| Variables | Space to store data | Answer, attempt count |
+| Conditionals | Different actions based on situation | Answer comparison |
+| Functions | Reusable code blocks | Guess checking logic |
+| Events | Responding to user actions | Button clicks |
+| DOM Manipulation | Changing screen content | Displaying results |
+
+### Creating It
+
+```
+> Make a number guessing game.
+> It's a game where you guess a number between 1 and 100.
+> Show hints too.
+```
+
+### Example Result
+
+```html
+<!-- HTML structure -->
+<div id="game">
+    <h1>Guess the Number</h1>
+    <p>Guess a number between 1 and 100!</p>
+
+    <input type="number" id="guess" placeholder="Enter a number" min="1" max="100">
+    <button onclick="checkGuess()">Check</button>
+
+    <p id="result"></p>
+    <p>Attempts: <span id="attempts">0</span></p>
+
+    <!-- Hint area -->
+    <div id="hint-area">
+        <p>Range: <span id="range">1 ~ 100</span></p>
+    </div>
+</div>
+```
+
+```javascript
+// Game state variables
+let answer = Math.floor(Math.random() * 100) + 1  // Random number between 1-100
+let attempts = 0  // Number of attempts
+let minRange = 1  // Minimum range (for hints)
+let maxRange = 100  // Maximum range (for hints)
+
+function checkGuess() {
+    // Get input value
+    const guessInput = document.getElementById('guess')
+    const guess = parseInt(guessInput.value)
+
+    // Validation
+    if (isNaN(guess) || guess < 1 || guess > 100) {
+        document.getElementById('result').textContent = 'Please enter a number between 1 and 100!'
+        document.getElementById('result').style.color = 'orange'
+        return
+    }
+
+    // Increment attempt count
+    attempts++
+    document.getElementById('attempts').textContent = attempts
+
+    const resultEl = document.getElementById('result')
+
+    if (guess === answer) {
+        // Correct!
+        resultEl.textContent = `Correct! You got it in ${attempts} attempts!`
+        resultEl.style.color = 'green'
+
+        // Celebration effect
+        if (attempts <= 5) {
+            resultEl.textContent += ' You\'re a genius!'
+        } else if (attempts <= 7) {
+            resultEl.textContent += ' Excellent!'
+        }
+
+        // Show restart button
+        showRestartButton()
+
+    } else if (guess < answer) {
+        // Go higher
+        resultEl.textContent = 'Go higher!'
+        resultEl.style.color = '#3498db'
+        minRange = Math.max(minRange, guess + 1)
+        updateRange()
+
+    } else {
+        // Go lower
+        resultEl.textContent = 'Go lower!'
+        resultEl.style.color = '#e74c3c'
+        maxRange = Math.min(maxRange, guess - 1)
+        updateRange()
+    }
+
+    // Clear and focus input field
+    guessInput.value = ''
+    guessInput.focus()
+}
+
+function updateRange() {
+    document.getElementById('range').textContent = `${minRange} ~ ${maxRange}`
+}
+
+function showRestartButton() {
+    const btn = document.createElement('button')
+    btn.textContent = 'Play Again'
+    btn.onclick = restartGame
+    document.getElementById('game').appendChild(btn)
+}
+
+function restartGame() {
+    // Reset all state
+    answer = Math.floor(Math.random() * 100) + 1
+    attempts = 0
+    minRange = 1
+    maxRange = 100
+
+    // Update display
+    document.getElementById('attempts').textContent = '0'
+    document.getElementById('result').textContent = ''
+    document.getElementById('range').textContent = '1 ~ 100'
+    document.getElementById('guess').value = ''
+    document.getElementById('guess').focus()
+
+    // Remove restart button
+    const restartBtn = document.querySelector('button:last-child')
+    if (restartBtn.textContent === 'Play Again') {
+        restartBtn.remove()
+    }
+}
+
+// Allow checking with Enter key
+document.getElementById('guess').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        checkGuess()
+    }
+})
+```
+
+> **Beginner Tip**: `Math.floor(Math.random() * 100) + 1` looks complex, right? Let's break it down:
+> - `Math.random()` -> Decimal between 0~0.999...
+> - `* 100` -> Number between 0~99.999...
+> - `Math.floor()` -> Remove decimal (0~99)
+> - `+ 1` -> Adjust to 1~100
+
+### Improving It
+
+```
+> Add a restart button
+```
+State reset pattern - the basics of game loops
+
+```
+> Save the high score
+```
+`localStorage`-based data persistence
+
+```
+> Add nice styling
+```
+Game UI/UX design basics
+
+```
+> Add difficulty selection (Easy: 1-50, Normal: 1-100, Hard: 1-500)
+```
+Configuration-based game logic
+
+### Mini Quiz
+
+1. What range of numbers does `Math.random()` return?
+2. Why do we use `parseInt()`?
+3. What does `attempts++` mean?
+
+<details>
+<summary>View Answers</summary>
+
+1. Decimals from 0 up to (but not including) 1 (e.g., 0.7342...)
+2. To convert the string input value to a number
+3. Same as `attempts = attempts + 1`, incrementing the attempt count by 1
+
+</details>
+
+---
+
+## Game 2: Rock Paper Scissors
+
+Let's make this classic game.
+
+### What You'll Learn in This Game
+
+| Concept | Description | Application in Game |
+|---------|-------------|---------------------|
+| Arrays | Store multiple values in order | List of choices |
+| Random selection | Pick randomly from array | Computer's choice |
+| Complex conditionals | Combining multiple conditions | Win/lose determination |
+| Statistics calculation | Data aggregation | Displaying win rate |
+
+### Creating It
+
+```
+> Make a Rock Paper Scissors game.
+> It's a game where you compete against the computer.
+> Show the score too.
+> Display rock paper scissors with emojis.
+```
+
+### Core Logic (with detailed comments)
+
+```javascript
+// Game state
+let playerWins = 0
+let computerWins = 0
+let draws = 0
+let history = []  // Game history
+
+// Define choices (with emojis)
+const CHOICES = {
+    rock: { name: 'Rock', emoji: '&#9994;', beats: 'scissors' },
+    scissors: { name: 'Scissors', emoji: '&#9996;', beats: 'paper' },
+    paper: { name: 'Paper', emoji: '&#9995;', beats: 'rock' }
+}
+
+function play(playerChoice) {
+    // Computer's random selection
+    const choices = Object.keys(CHOICES)  // ['rock', 'scissors', 'paper']
+    const randomIndex = Math.floor(Math.random() * choices.length)
+    const computerChoice = choices[randomIndex]
+
+    // Determine result
+    let result
+    if (playerChoice === computerChoice) {
+        result = 'draw'
+        draws++
+    } else if (CHOICES[playerChoice].beats === computerChoice) {
+        result = 'win'
+        playerWins++
+    } else {
+        result = 'lose'
+        computerWins++
+    }
+
+    // Save history
+    history.push({
+        player: playerChoice,
+        computer: computerChoice,
+        result: result,
+        timestamp: new Date()
+    })
+
+    // Update display
+    updateDisplay(playerChoice, computerChoice, result)
+    updateStats()
+
+    return result
+}
+
+function updateDisplay(playerChoice, computerChoice, result) {
+    const player = CHOICES[playerChoice]
+    const computer = CHOICES[computerChoice]
+
+    // Display choices
+    document.getElementById('player-choice').textContent = player.emoji
+    document.getElementById('computer-choice').textContent = computer.emoji
+
+    // Result message
+    const resultEl = document.getElementById('result')
+    const messages = {
+        win: 'You win!',
+        lose: 'You lose...',
+        draw: 'It\'s a tie!'
+    }
+    resultEl.textContent = messages[result]
+    resultEl.className = `result-${result}`  // For CSS styling
+}
+
+function updateStats() {
+    const total = playerWins + computerWins + draws
+    const winRate = total > 0 ? ((playerWins / total) * 100).toFixed(1) : 0
+
+    document.getElementById('player-wins').textContent = playerWins
+    document.getElementById('computer-wins').textContent = computerWins
+    document.getElementById('draws').textContent = draws
+    document.getElementById('win-rate').textContent = `${winRate}%`
+}
+
+// Statistics analysis function
+function analyzeHistory() {
+    if (history.length === 0) return null
+
+    // Most frequently selected
+    const playerChoices = history.map(h => h.player)
+    const mostUsed = getMostFrequent(playerChoices)
+
+    // Last 5 games win rate
+    const recent = history.slice(-5)
+    const recentWins = recent.filter(h => h.result === 'win').length
+
+    return {
+        totalGames: history.length,
+        mostUsedChoice: CHOICES[mostUsed].name,
+        recentWinRate: (recentWins / recent.length * 100).toFixed(0)
+    }
+}
+
+function getMostFrequent(arr) {
+    const counts = {}
+    arr.forEach(item => counts[item] = (counts[item] || 0) + 1)
+    return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0]
+}
+```
+
+> **Pro Tip**: Using objects (`CHOICES`) can reduce conditionals. Defining what each choice beats as data makes the code much cleaner.
+
+### Improving It
+
+```
+> Change to best of 5 format
+```
+Round-based game logic design
+
+```
+> Show win rate statistics
+```
+Game statistics and data visualization
+
+```
+> Add animation (brief loading after selection)
+```
+Timing and suspense effects
+
+```
+> Make the computer smarter (analyze player patterns)
+```
+Simple AI logic
+
+### Beginner Tip: Why Use Objects?
+
+```javascript
+// This way has too many conditionals
+if (player === 'scissors' && computer === 'paper') return 'win'
+if (player === 'scissors' && computer === 'rock') return 'lose'
+if (player === 'rock' && computer === 'scissors') return 'win'
+// ... continues ...
+
+// With objects, one line solves it!
+if (CHOICES[player].beats === computer) return 'win'
+```
+
+Well-designed data structures make code simpler.
+
+---
+
+## Game 3: Typing Game
+
+A keyboard practice game.
+
+### What You'll Learn in This Game
+
+| Concept | Description | Application in Game |
+|---------|-------------|---------------------|
+| Timer | Time-based logic | Time limit |
+| String comparison | Text matching verification | Typing validation |
+| Real-time feedback | Immediate response | Typing confirmation |
+| Performance measurement | Speed/accuracy calculation | WPM measurement |
+
+### Creating It
+
+```
+> Make a typing game.
+> A game where you type words quickly when they appear.
+> 30 second time limit.
+> Show score and WPM too.
+```
+
+### Core Logic (with detailed comments)
+
+```javascript
+// Word list (by difficulty)
+const WORDS = {
+    easy: ['apple', 'banana', 'cherry', 'grape', 'melon', 'peach', 'pear', 'plum'],
+    medium: ['programming', 'javascript', 'computer', 'keyboard', 'monitor', 'internet'],
+    hard: ['algorithm', 'database', 'artificial', 'machine', 'blockchain', 'metaverse']
+}
+
+// Game state
+let score = 0
+let timeLeft = 30
+let totalTyped = 0      // Total characters typed
+let correctTyped = 0    // Correctly typed characters
+let currentWord = ''
+let timerId = null
+let difficulty = 'easy'
+let gameStartTime = null
+
+function startGame() {
+    // Clear previous timer if exists
+    if (timerId) clearInterval(timerId)
+
+    // Reset state
+    score = 0
+    timeLeft = 30
+    totalTyped = 0
+    correctTyped = 0
+    gameStartTime = Date.now()
+
+    // Reset display
+    updateDisplay()
+    showRandomWord()
+
+    // Enable and focus input field
+    const input = document.getElementById('input')
+    input.disabled = false
+    input.value = ''
+    input.focus()
+
+    // Start timer
+    timerId = setInterval(() => {
+        timeLeft--
+        document.getElementById('timer').textContent = timeLeft
+
+        // Turn red when 10 seconds or less remain
+        if (timeLeft <= 10) {
+            document.getElementById('timer').classList.add('warning')
+        }
+
+        if (timeLeft <= 0) {
+            endGame()
+        }
+    }, 1000)  // Run every 1 second
+}
+
+function showRandomWord() {
+    const wordList = WORDS[difficulty]
+    const randomIndex = Math.floor(Math.random() * wordList.length)
+    currentWord = wordList[randomIndex]
+
+    document.getElementById('word').textContent = currentWord
+    document.getElementById('word').classList.remove('correct', 'incorrect')
+}
+
+function checkInput(event) {
+    const input = event.target.value
+    totalTyped += 1  // Key input count
+
+    // Real-time feedback: Check if correct so far
+    const wordEl = document.getElementById('word')
+    if (currentWord.startsWith(input)) {
+        wordEl.classList.remove('incorrect')
+        wordEl.classList.add('typing')
+    } else {
+        wordEl.classList.add('incorrect')
+        wordEl.classList.remove('typing')
+    }
+
+    // If completely matching
+    if (input === currentWord) {
+        score++
+        correctTyped += currentWord.length
+
+        // Success effect
+        wordEl.classList.add('correct')
+
+        // Combo bonus
+        if (score > 0 && score % 5 === 0) {
+            timeLeft += 2  // Add 2 seconds every 5 words
+            showBonus('+2 seconds!')
+        }
+
+        updateDisplay()
+
+        // Next word
+        setTimeout(() => {
+            document.getElementById('input').value = ''
+            showRandomWord()
+        }, 100)
+    }
+}
+
+function updateDisplay() {
+    document.getElementById('score').textContent = score
+    document.getElementById('timer').textContent = timeLeft
+}
+
+function endGame() {
+    clearInterval(timerId)
+    timerId = null
+
+    // Disable input
+    document.getElementById('input').disabled = true
+
+    // Calculate WPM (Words Per Minute)
+    const elapsedMinutes = (Date.now() - gameStartTime) / 60000
+    const wpm = Math.round(score / elapsedMinutes)
+
+    // Calculate accuracy
+    const accuracy = totalTyped > 0
+        ? Math.round((correctTyped / totalTyped) * 100)
+        : 0
+
+    // Display results
+    showResults(wpm, accuracy)
+
+    // Save high score
+    saveHighScore(score, wpm)
+}
+
+function showResults(wpm, accuracy) {
+    const resultDiv = document.getElementById('results')
+    resultDiv.innerHTML = `
+        <h2>Game Over!</h2>
+        <p>Score: ${score} words</p>
+        <p>Typing Speed: ${wpm} WPM</p>
+        <p>Accuracy: ${accuracy}%</p>
+        <p>Grade: ${getGrade(wpm)}</p>
+        <button onclick="startGame()">Play Again</button>
+    `
+    resultDiv.style.display = 'block'
+}
+
+function getGrade(wpm) {
+    if (wpm >= 80) return 'Expert'
+    if (wpm >= 60) return 'Advanced'
+    if (wpm >= 40) return 'Intermediate'
+    if (wpm >= 20) return 'Beginner'
+    return 'Novice'
+}
+
+function saveHighScore(score, wpm) {
+    const highScore = localStorage.getItem('typingHighScore') || 0
+    if (score > highScore) {
+        localStorage.setItem('typingHighScore', score)
+        showBonus('New Record!')
+    }
+}
+
+function showBonus(text) {
+    const bonus = document.createElement('div')
+    bonus.className = 'bonus-popup'
+    bonus.textContent = text
+    document.body.appendChild(bonus)
+    setTimeout(() => bonus.remove(), 1000)
+}
+```
+
+> **Caution**: When using `setInterval`, you must clean it up with `clearInterval`. Otherwise, timers will run multiple times when starting the game repeatedly.
+
+### Improving It
+
+```
+> Make word length vary by difficulty
+```
+Difficulty curve design
+
+```
+> Highlight incorrect letters in red
+```
+Real-time feedback UI
+
+```
+> Add a combo system (bonus for consecutive correct answers)
+```
+Motivation mechanics
+
+---
+
+## Game 4: Reaction Speed Test
+
+A game that measures reaction speed.
+
+### What You'll Learn in This Game
+
+| Concept | Description | Application in Game |
+|---------|-------------|---------------------|
+| setTimeout | Delayed execution | Random wait time |
+| Date.now() | Current time in milliseconds | Time measurement |
+| Array methods | reduce, sort, etc. | Average/best record calculation |
+| State machine | Game state transitions | Waiting/Ready/Measuring |
+
+### Creating It
+
+```
+> Make a reaction speed test game.
+> Click when the screen turns green.
+> Show reaction time in milliseconds.
+> Show the average after 5 tests.
+```
+
+### Core Logic (with detailed comments)
+
+```javascript
+// Define game states
+const STATE = {
+    IDLE: 'idle',       // Before start
+    WAITING: 'waiting', // Waiting (red)
+    READY: 'ready',     // Ready (green)
+    RESULT: 'result'    // Showing result
+}
+
+// Game variables
+let state = STATE.IDLE
+let startTime = null
+let timeoutId = null
+let results = []
+const MAX_ROUNDS = 5
+
+function startTest() {
+    // Clear previous timeout
+    if (timeoutId) clearTimeout(timeoutId)
+
+    // State transition: Waiting
+    state = STATE.WAITING
+    const box = document.getElementById('box')
+    box.style.backgroundColor = '#e74c3c'  // Red
+    box.textContent = 'Wait for green...'
+    box.className = 'waiting'
+
+    // Turn green after random time between 1-4 seconds
+    const delay = Math.random() * 3000 + 1000
+    timeoutId = setTimeout(() => {
+        state = STATE.READY
+        box.style.backgroundColor = '#2ecc71'  // Green
+        box.textContent = 'Click!'
+        box.className = 'ready'
+        startTime = Date.now()  // Start timing
+    }, delay)
+}
+
+function handleClick() {
+    const box = document.getElementById('box')
+
+    switch (state) {
+        case STATE.IDLE:
+            // First click: Start game
+            startTest()
+            break
+
+        case STATE.WAITING:
+            // Clicked too early!
+            clearTimeout(timeoutId)
+            state = STATE.RESULT
+            box.style.backgroundColor = '#f39c12'  // Orange
+            box.textContent = 'Too early! Wait until it turns green'
+            box.className = 'too-early'
+
+            // Can start again after 2 seconds
+            setTimeout(() => {
+                state = STATE.IDLE
+                box.textContent = 'Click to try again'
+                box.style.backgroundColor = '#3498db'
+            }, 2000)
+            break
+
+        case STATE.READY:
+            // Normal click: Measure reaction time
+            const reactionTime = Date.now() - startTime
+            state = STATE.RESULT
+            results.push(reactionTime)
+
+            box.style.backgroundColor = '#9b59b6'  // Purple
+            box.textContent = `${reactionTime}ms`
+            box.className = 'result'
+
+            // Analyze results
+            updateResults(reactionTime)
+
+            // Check if 5 rounds completed
+            if (results.length >= MAX_ROUNDS) {
+                showFinalResults()
+            } else {
+                // Next round after 1 second
+                setTimeout(() => {
+                    state = STATE.IDLE
+                    box.textContent = `Round ${results.length + 1}/${MAX_ROUNDS} - Click to start`
+                    box.style.backgroundColor = '#3498db'
+                }, 1000)
+            }
+            break
+
+        case STATE.RESULT:
+            // Ignore while showing result
+            break
+    }
+}
+
+function updateResults(latestTime) {
+    const resultsList = document.getElementById('results-list')
+
+    // Rate the result
+    let rating = ''
+    if (latestTime < 200) rating = 'Lightning!'
+    else if (latestTime < 250) rating = 'Fast!'
+    else if (latestTime < 350) rating = 'Average'
+    else rating = 'Slow'
+
+    // Add result
+    const li = document.createElement('li')
+    li.textContent = `Round ${results.length}: ${latestTime}ms ${rating}`
+    li.className = getTimeClass(latestTime)
+    resultsList.appendChild(li)
+}
+
+function getTimeClass(time) {
+    if (time < 200) return 'excellent'
+    if (time < 250) return 'good'
+    if (time < 350) return 'average'
+    return 'slow'
+}
+
+function showFinalResults() {
+    const box = document.getElementById('box')
+
+    // Calculate statistics
+    const sum = results.reduce((a, b) => a + b, 0)
+    const average = Math.round(sum / results.length)
+    const best = Math.min(...results)
+    const worst = Math.max(...results)
+
+    // Grade based on average
+    let grade = ''
+    if (average < 200) grade = 'Pro gamer level!'
+    else if (average < 250) grade = 'Excellent reflexes!'
+    else if (average < 300) grade = 'Above average!'
+    else if (average < 400) grade = 'Normal'
+    else grade = 'Needs practice'
+
+    box.innerHTML = `
+        <h2>Final Results</h2>
+        <p><strong>Average:</strong> ${average}ms</p>
+        <p><strong>Best:</strong> ${best}ms</p>
+        <p><strong>Worst:</strong> ${worst}ms</p>
+        <p><strong>Grade:</strong> ${grade}</p>
+        <button onclick="resetGame()">Play Again</button>
+    `
+    box.className = 'final-result'
+
+    // Save best record
+    const storedBest = localStorage.getItem('reactionBest') || Infinity
+    if (best < storedBest) {
+        localStorage.setItem('reactionBest', best)
+        box.innerHTML += '<p class="new-record">New Best Record!</p>'
+    }
+}
+
+function resetGame() {
+    results = []
+    state = STATE.IDLE
+    document.getElementById('results-list').innerHTML = ''
+    const box = document.getElementById('box')
+    box.textContent = 'Click to Start'
+    box.style.backgroundColor = '#3498db'
+    box.className = ''
+}
+```
+
+> **Pro Tip**: Using the State Machine pattern allows you to manage complex game logic cleanly. Clearly define what actions are possible in each state.
+
+### Mini Quiz
+
+1. Why do we use `clearTimeout(timeoutId)`?
+2. What does `Date.now()` return?
+3. What does the spread operator `...results` do?
+
+<details>
+<summary>View Answers</summary>
+
+1. To cancel an already set timeout (when clicking too early)
+2. Milliseconds since January 1, 1970 (timestamp)
+3. Spreads the array into individual arguments (`Math.min(...[1,2,3])` is the same as `Math.min(1,2,3)`)
+
+</details>
+
+---
+
+## Game 5: Memory Card Game
+
+A card matching game.
+
+### What You'll Learn in This Game
+
+| Concept | Description | Application in Game |
+|---------|-------------|---------------------|
+| Array shuffling | Fisher-Yates algorithm | Random card placement |
+| DOM creation | Dynamic element generation | Card grid |
+| CSS animation | transform, transition | Card flipping |
+| Asynchronous handling | setTimeout combinations | Match checking delay |
+
+### Creating It
+
+```
+> Make a memory card game.
+> 8 pairs (16 cards).
+> Make matched cards disappear.
+> Show attempt count.
+> Include card flipping animation.
+```
+
+### Core Concepts (with detailed comments)
+
+```javascript
+// Card emojis (8 pairs)
+const EMOJIS = ['dog', 'cat', 'mouse', 'hamster', 'rabbit', 'fox', 'bear', 'panda']
+
+// Game state
+let cards = []
+let flippedCards = []     // Currently flipped cards
+let matchedPairs = 0      // Number of matched pairs
+let attempts = 0          // Number of attempts
+let isLocked = false      // Click lock (while checking match)
+let startTime = null
+let timerId = null
+
+function initGame() {
+    // Reset state
+    matchedPairs = 0
+    attempts = 0
+    flippedCards = []
+    isLocked = false
+    startTime = null
+    if (timerId) clearInterval(timerId)
+
+    // Create card array (each emoji twice)
+    cards = [...EMOJIS, ...EMOJIS]
+
+    // Shuffle cards (Fisher-Yates algorithm)
+    shuffle(cards)
+
+    // Create board
+    createBoard()
+
+    // Update display
+    updateDisplay()
+}
+
+// Fisher-Yates shuffle algorithm
+// The most efficient way to randomly shuffle an array
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        // Random index from 0 to i
+        const j = Math.floor(Math.random() * (i + 1));
+        // Swap two elements (destructuring assignment)
+        [array[i], array[j]] = [array[j], array[i]]
+    }
+    return array
+}
+
+function createBoard() {
+    const board = document.getElementById('board')
+    board.innerHTML = ''  // Remove existing cards
+
+    cards.forEach((emoji, index) => {
+        // Card container
+        const card = document.createElement('div')
+        card.className = 'card'
+        card.dataset.index = index
+        card.dataset.emoji = emoji
+
+        // Card front (emoji)
+        const front = document.createElement('div')
+        front.className = 'card-front'
+        front.textContent = emoji
+
+        // Card back
+        const back = document.createElement('div')
+        back.className = 'card-back'
+        back.textContent = '?'
+
+        card.appendChild(front)
+        card.appendChild(back)
+
+        // Click event
+        card.addEventListener('click', () => flipCard(card))
+
+        board.appendChild(card)
+    })
+}
+
+function flipCard(card) {
+    // Conditions where clicking is not allowed
+    if (isLocked) return                           // Checking match
+    if (card.classList.contains('flipped')) return // Already flipped
+    if (card.classList.contains('matched')) return // Already matched
+    if (flippedCards.length >= 2) return          // 2 or more already flipped
+
+    // Start timer on first click
+    if (!startTime) {
+        startTime = Date.now()
+        timerId = setInterval(updateTimer, 1000)
+    }
+
+    // Flip card
+    card.classList.add('flipped')
+    flippedCards.push(card)
+
+    // Check for match if 2 cards flipped
+    if (flippedCards.length === 2) {
+        attempts++
+        updateDisplay()
+        checkMatch()
+    }
+}
+
+function checkMatch() {
+    const [card1, card2] = flippedCards
+    const emoji1 = card1.dataset.emoji
+    const emoji2 = card2.dataset.emoji
+
+    if (emoji1 === emoji2) {
+        // Match!
+        handleMatch(card1, card2)
+    } else {
+        // No match
+        handleMismatch(card1, card2)
+    }
+}
+
+function handleMatch(card1, card2) {
+    // Mark matched cards
+    card1.classList.add('matched')
+    card2.classList.add('matched')
+
+    matchedPairs++
+    flippedCards = []
+
+    // Sound effect or animation
+    card1.classList.add('success-animation')
+    card2.classList.add('success-animation')
+
+    // All matched?
+    if (matchedPairs === EMOJIS.length) {
+        endGame()
+    }
+}
+
+function handleMismatch(card1, card2) {
+    isLocked = true  // Lock clicks
+
+    // Show briefly then flip back
+    setTimeout(() => {
+        card1.classList.remove('flipped')
+        card2.classList.remove('flipped')
+
+        // Wrong effect
+        card1.classList.add('shake')
+        card2.classList.add('shake')
+        setTimeout(() => {
+            card1.classList.remove('shake')
+            card2.classList.remove('shake')
+        }, 300)
+
+        flippedCards = []
+        isLocked = false  // Unlock clicks
+    }, 1000)
+}
+
+function updateDisplay() {
+    document.getElementById('attempts').textContent = attempts
+    document.getElementById('pairs').textContent = `${matchedPairs}/${EMOJIS.length}`
+}
+
+function updateTimer() {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000)
+    const minutes = Math.floor(elapsed / 60)
+    const seconds = elapsed % 60
+    document.getElementById('timer').textContent =
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+}
+
+function endGame() {
+    clearInterval(timerId)
+
+    const elapsed = Math.floor((Date.now() - startTime) / 1000)
+    const efficiency = ((EMOJIS.length / attempts) * 100).toFixed(0)
+
+    // Display result modal
+    const modal = document.getElementById('result-modal')
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h2>Congratulations!</h2>
+            <p>Time: ${formatTime(elapsed)}</p>
+            <p>Attempts: ${attempts}</p>
+            <p>Efficiency: ${efficiency}%</p>
+            <p>Grade: ${getEfficiencyGrade(efficiency)}</p>
+            <button onclick="initGame(); closeModal()">Play Again</button>
+        </div>
+    `
+    modal.style.display = 'flex'
+}
+
+function formatTime(seconds) {
+    const m = Math.floor(seconds / 60)
+    const s = seconds % 60
+    return `${m}m ${s}s`
+}
+
+function getEfficiencyGrade(efficiency) {
+    if (efficiency >= 90) return 'Perfect!'
+    if (efficiency >= 70) return 'Excellent!'
+    if (efficiency >= 50) return 'Good!'
+    return 'Practicing'
+}
+```
+
+### CSS Animation (Card Flipping)
+
+```css
+/* Card base style */
+.card {
+    width: 80px;
+    height: 80px;
+    position: relative;
+    cursor: pointer;
+    transform-style: preserve-3d;  /* Enable 3D transformation */
+    transition: transform 0.5s;    /* Smooth animation */
+}
+
+/* Flipped state */
+.card.flipped {
+    transform: rotateY(180deg);
+}
+
+/* Common style for card faces */
+.card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;  /* Hide back side */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    border-radius: 8px;
+}
+
+/* Front (emoji) */
+.card-front {
+    background: #3498db;
+    transform: rotateY(180deg);  /* Initially flipped */
+}
+
+/* Back (question mark) */
+.card-back {
+    background: #2c3e50;
+    color: white;
+}
+
+/* Matched cards */
+.card.matched {
+    opacity: 0.6;
+    cursor: default;
+}
+
+/* Success animation */
+@keyframes success {
+    0%, 100% { transform: rotateY(180deg) scale(1); }
+    50% { transform: rotateY(180deg) scale(1.1); }
+}
+
+.card.success-animation {
+    animation: success 0.3s ease;
+}
+
+/* Failure animation (shake) */
+@keyframes shake {
+    0%, 100% { transform: rotateY(180deg) translateX(0); }
+    25% { transform: rotateY(180deg) translateX(-5px); }
+    75% { transform: rotateY(180deg) translateX(5px); }
+}
+
+.card.shake {
+    animation: shake 0.3s ease;
+}
+```
+
+> **Beginner Tip**: `transform-style: preserve-3d` and `backface-visibility: hidden` are the keys to 3D card flipping. Without these properties, both sides would be visible when flipping.
+
+---
+
+## Game Development Tips
+
+### 1. Start Small
+
+```
+# Bad example - requesting too much at once
+> Make an RPG game. With character growth, dungeons, boss battles, inventory,
+> skill system, quests, NPC dialogue.
+
+# Good example - start with the core
+> Make a game where clicking increases the score.
+```
+
+> **Caution**: Requesting complex games all at once confuses Claude, and the results are likely to be incomplete.
+
+### 2. Add One Feature at a Time
+
+```
+# Step 1: Basic
+> Make a jumping character
+
+# Step 2: Obstacles
+> Add obstacles
+
+# Step 3: Collision
+> Game over when hitting obstacles
+
+# Step 4: Score
+> Number of obstacles passed = score
+
+# Step 5: Difficulty
+> Obstacles get faster as score increases
+```
+
+### 3. Improve with Feedback
+
+```
+> The jump is too slow. Make it faster.
+
+> The obstacle spacing is too narrow.
+
+> The background color hurts my eyes. Change it.
+
+> The score text is too small. Make it bigger.
+```
+
+### 4. Debugging Conversations
+
+```
+> It seems like I can jump twice. Check why.
+
+> I get this error in the console: [paste error message]
+
+> It doesn't work on mobile. Check touch events.
+```
+
+---
+
+## Practice Exercises
+
+### Level 1: Basic (Beginner)
+
+Choose one of the 5 games above and make it. Just following along is great!
+
+**Checklist:**
+- [ ] Does the game start and end?
+- [ ] Is the score displayed?
+- [ ] Can you restart?
+
+### Level 2: Application (Intermediate)
+
+Add these features to the basic game:
+
+```
+> Add sound effects to the game
+```
+Sound feedback with Web Audio API
+
+```
+> Save the high score (localStorage)
+```
+Browser storage-based data persistence
+
+```
+> Make it work on mobile too
+```
+Touch events and responsive layout
+
+**Checklist:**
+- [ ] Do sound effects play?
+- [ ] Does the high score persist after refresh?
+- [ ] Can you play on mobile?
+
+### Level 3: Challenge (Advanced)
+
+Create a completely new game:
+
+**Ideas:**
+- Whac-A-Mole: Moles appear at random positions, click for points
+- Snake Game: Control snake with arrow keys, eating food makes it longer
+- Pong: Bounce ball with paddle
+- Tic-Tac-Toe: Compete against computer
+- Quiz Game: Multiple choice questions
+- 2048: Number merging puzzle
+- Minesweeper: Classic puzzle game
+
+```
+> Make a [game name] game.
+> [Brief rules explanation]
+```
+
+---
+
+## Challenge Tasks
+
+### Challenge 1: Game Combo
+
+Combine two or more game elements.
+
+```
+> Make a typing + reaction speed game.
+> Type quickly when a word appears after a random time.
+> Measure both reaction time and typing accuracy.
+```
+
+### Challenge 2: Multiplayer (Local)
+
+2-player game on the same screen:
+
+```
+> Make a 2-player Pong game.
+> Left player uses W/S keys, right player uses arrow keys.
+> First to 5 points wins.
+```
+
+### Challenge 3: AI Battle
+
+Simple computer AI:
+
+```
+> Add AI to the tic-tac-toe game.
+> Easy: Random moves
+> Hard: Always plays optimal moves (minimax algorithm)
+```
+
+---
+
+## Publishing Games to the Web
+
+Deploy your games and share with friends.
+
+### Deploy with GitHub Pages (Free)
 
 ```bash
-npm install discord.js dotenv
-node register-commands.js  # Run once
-node bot.js                # Start the bot
+# 1. Upload game files to GitHub repository
+git add .
+git commit -m "Add my awesome game"
+git push origin main
+
+# 2. Repository Settings > Pages > Source: main branch
+# 3. A few minutes later, access at https://username.github.io/repo-name!
 ```
 
-If you see "Bot is online" and `/ping` works in Discord, you're ready for the full project!
-
----
-
-## Extending Features
-
-### Poll Feature
-
-```
-> Create a /poll command.
-> - Accept a question and 2-4 options
-> - Display in a nice embed
-> - Automatically add emoji reactions to each option
-```
-
-### Reminder Feature
-
-```
-> Create a /remind command.
-> - Input how many minutes until reminder
-> - Input reminder content
-> - When time's up, mention the user and notify them
-```
-
-### Utility
-
-```
-> Create an /avatar command.
-> When a user is selected, show their profile image in large size.
-> If no one is selected, show the requester's own image.
-```
-
----
-
-## Event-based Features
-
-Beyond slash commands, you can react to various events.
-
-### Welcome Message
-
-```
-> When a new member joins the server,
-> send a welcome message to the #welcome channel.
-> Use a nice embed with their profile picture.
-```
-
-### Message Logging
-
-```
-> When a message is deleted, log it to the #logs channel.
-> Show who deleted what message,
-> and exclude bot messages.
-```
-
-### Auto Reactions
-
-```
-> When a message contains "lol",
-> react with the 😂 emoji.
-```
-
----
-
-## Practical Bot Examples
-
-### Server Management Bot
-
-```
-> Create a server management bot with these commands:
->
-> /kick [user] [reason]
-> - Admin only
-> - Kick the user from server
->
-> /clear [count]
-> - Admin only
-> - Delete the last N messages
->
-> /serverinfo
-> - Anyone can use
-> - Show server info (member count, creation date, etc.)
-```
-
-### Mini Economy System
-
-```
-> Create a bot with a mini economy system.
->
-> /balance - Check my balance
-> /daily - Get 100 coins once per day
-> /give [user] [amount] - Send to another user
->
-> Save data in a JSON file.
-> Use user ID as key, balance as value.
-```
-
----
-
-## Extending to Slack Bots
-
-The patterns you learned with Discord apply to Slack too.
-
-### Core Concepts are the Same
-
-| Concept | Discord | Slack |
-|---------|---------|-------|
-| Commands | /ping | /ping |
-| Event reaction | client.on('event') | app.event('event') |
-| Message response | interaction.reply() | say() |
-
-### Starting a Slack Bot
-
-```
-> Create a Slack bot project.
-> Use the Bolt framework,
-> starting with a basic bot that responds to /ping.
-> Also show me how to set up the Slack app.
-```
-
-### Work Automation Examples
-
-```
-> Add these features to the Slack bot:
->
-> /standup command
-> - Open a modal to input today's tasks, yesterday's work, blockers
-> - When submitted, format nicely and post to #standup channel
-```
-
-```
-> When the bot is mentioned, respond automatically.
-> If "meeting room" keyword is present, share meeting room booking link,
-> otherwise respond with "How can I help you?"
-```
-
----
-
-## Deploying Your Bot
-
-If you only run locally, the bot stops when you turn off your computer. Deploy for 24/7 operation.
-
-```
-> Show me how to deploy this Discord bot to Railway.
-> Also how to set environment variables.
-```
-
-### Free Deployment Options
-
-| Service | Features |
-|---------|----------|
-| Railway | $5 free credits/month, easy setup |
-| Render | Free, sleeps when inactive |
-| Fly.io | Has free tier |
-
----
-
-## Debugging Tips
-
-When the bot doesn't respond:
-
-```
-> The bot isn't responding to commands.
-> No errors in console, and the bot shows as online.
-> What could be the problem?
-```
-
-Things Claude will check:
-- If slash commands are registered with Discord
-- Bot permission settings
-- Intents configuration
-- If token is correct
-
----
-
-## Practice
-
-### Basic Task
-
-Create your own Discord bot:
-
-```
-> Create a Discord bot with these features:
->
-> 1. /quote - Show a random quote
-> 2. /choose [options] - Pick one from multiple options
-> 3. /8ball [question] - Random answer like a magic 8-ball
->
-> Start with basic structure and add one at a time.
-```
-
-### Advanced Challenges
-
-```
-> Create a music recommendation bot.
-> When /mood [feeling] command is entered,
-> recommend song genres or vibes matching that mood.
-> (Actual music playback is complex, so just recommendations)
-```
-
-```
-> Create a todo management bot.
-> - /todo add [content] - Add a todo
-> - /todo list - View my todo list
-> - /todo done [number] - Mark as complete
-> - Save data as JSON
-```
-
----
-
-## If It Doesn't Work? Troubleshooting Tips
-
-### Bot is online but doesn't respond to commands
+### Deploy with Vercel (Free)
 
 ```bash
-# Most common issue: Commands aren't registered with Discord
-# Run your register-commands.js script again
-node register-commands.js
+# Install Vercel CLI
+npm install -g vercel
 
-# Wait 1-2 minutes for Discord to propagate the commands
+# Deploy
+vercel
 ```
 
-### "Missing Access" or "Missing Permissions" error
+> **Beginner Tip**: After deploying, share the link with friends. Watching others actually play your game is motivating!
 
-1. Go to Discord Developer Portal > Your App > OAuth2 > URL Generator
-2. Select `bot` and `applications.commands` scopes
-3. Select required permissions (Send Messages, Use Slash Commands, etc.)
-4. Use the generated URL to re-invite the bot to your server
+---
 
-### "Invalid token" error
+## Troubleshooting
 
-```bash
-# Check your .env file
-# Make sure there are no extra spaces or quotes
-DISCORD_TOKEN=your_token_here  # Correct
-DISCORD_TOKEN="your_token_here"  # Wrong - no quotes!
-DISCORD_TOKEN= your_token_here   # Wrong - no space!
+Game development can be tricky. Here are common problems and solutions.
+
+### Clicking doesn't do anything
+
+**Possible causes:**
+1. Event listener not attached
+2. Typo in function name
+3. Script loaded before DOM
+
+**Solution:**
+```javascript
+// Check in browser console (F12)
+console.log('Button:', document.getElementById('myButton'))
+
+// Execute after DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Code here
+})
 ```
 
-### Bot responds locally but not after deployment
-
-```bash
-# Make sure environment variables are set in your hosting platform
-# Railway/Render/Heroku all have their own env var settings
-
-# Test that the token is being read
-console.log('Token exists:', !!process.env.DISCORD_TOKEN)
+```
+> The button doesn't respond to clicks. Check the event listener.
 ```
 
-### Commands take forever to update
+### Game is too fast or too slow
 
-- **Global commands** (applicationCommands): Takes up to 1 hour to update globally
-- **Guild commands** (applicationGuildCommands): Updates instantly but only in that server
+Timing issues are common in games:
 
-Use guild commands during development for faster testing!
+```javascript
+// Adjust setInterval time (milliseconds)
+setInterval(gameLoop, 16)  // About 60fps
+setInterval(gameLoop, 33)  // About 30fps
+
+// Or use requestAnimationFrame (recommended)
+function gameLoop() {
+    update()
+    render()
+    requestAnimationFrame(gameLoop)
+}
+```
+
+### Score doesn't update on screen
+
+Variables change but screen doesn't:
+
+```javascript
+// Wrong example
+score++
+// Forgot to update display!
+
+// Correct example
+score++
+document.getElementById('score').textContent = score
+```
+
+### Game state gets messed up
+
+Multiple clicks can cause race conditions:
+
+```javascript
+// Use a lock variable
+let isProcessing = false
+
+function handleClick() {
+    if (isProcessing) return  // Ignore if already processing
+    isProcessing = true
+
+    // Processing...
+
+    setTimeout(() => {
+        isProcessing = false  // Unlock after completion
+    }, 500)
+}
+```
+
+### Animation is choppy
+
+```javascript
+// Use requestAnimationFrame instead of setInterval
+function animate() {
+    // Update logic
+    requestAnimationFrame(animate)
+}
+```
+
+> **Pro Tip**: `requestAnimationFrame` is called right before the browser draws the next frame, so it's smoother.
+
+### Works on desktop but not on mobile
+
+Touch events are different from click events:
+
+```javascript
+// Support both click and touch
+element.addEventListener('click', handleInput)
+element.addEventListener('touchstart', handleInput)
+
+// Or use pointer events (handles both)
+element.addEventListener('pointerdown', handleInput)
+```
 
 ---
 
 ## Common Mistakes
 
-### 1. Exposing Your Bot Token
+Avoid these game development pitfalls.
 
-```javascript
-// NEVER do this - your token is visible to everyone!
-client.login('MTIzNDU2Nzg5MDEyMzQ1Njc4.XXXXX.YYYYY')
+### Mistake 1: Starting too big
 
-// ALWAYS use environment variables
-client.login(process.env.DISCORD_TOKEN)
+**Bad approach:**
+```
+> Make a multiplayer battle royale game with 100 players.
 ```
 
-If you accidentally commit a token to GitHub, **regenerate it immediately** in the Discord Developer Portal!
-
-### 2. Forgetting to Set Intents
-
-```javascript
-// WRONG - bot won't receive message events
-const client = new Client({ intents: [] })
-
-// CORRECT - specify what events you need
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent  // Required for reading message content
-  ]
-})
+**Good approach:**
+```
+> Make a simple game where clicking increases the score.
 ```
 
-### 3. Not Handling Interaction Responses
+Start very small and add features one at a time.
+
+### Mistake 2: Forgetting to reset game state
+
+After game over, pressing "Play Again" should reset everything:
 
 ```javascript
-// WRONG - crashes if you try to reply twice
-await interaction.reply('First response')
-await interaction.reply('Second response')  // Error!
+// Forgot to reset
+function playAgain() {
+    showGame()  // Oops, score is from the last game!
+}
 
-// CORRECT - use followUp for additional messages
-await interaction.reply('First response')
-await interaction.followUp('Second response')
-
-// Or use editReply for deferred responses
-await interaction.deferReply()
-// ... do some processing ...
-await interaction.editReply('Done!')
+// Correct
+function playAgain() {
+    score = 0
+    timeLeft = 30
+    lives = 3
+    isGameOver = false
+    updateDisplay()
+    showGame()
+}
 ```
 
-### 4. Commands Not Registering
+### Mistake 3: Using setInterval without cleanup
+
+Multiple timers end up running simultaneously:
 
 ```javascript
-// Make sure you have both CLIENT_ID and DISCORD_TOKEN
-// CLIENT_ID is your Application ID from Discord Developer Portal
-Routes.applicationCommands(process.env.CLIENT_ID)
+// Wrong - new timer every click!
+function startGame() {
+    setInterval(tick, 1000)
+}
 
-// Also check you're using the right Routes:
-// - applicationCommands: Global commands (all servers, slow to update)
-// - applicationGuildCommands: Guild commands (one server, instant update)
+// Correct - clean up existing timer first
+let timerId = null
+function startGame() {
+    if (timerId) clearInterval(timerId)
+    timerId = setInterval(tick, 1000)
+}
 ```
 
-### 5. Bot Going Offline After Closing Terminal
+### Mistake 4: Not handling edge cases
 
-Your bot stops when you close the terminal! For 24/7 uptime:
-- Use a hosting service (Railway, Render, Fly.io)
-- Or use a process manager like PM2: `pm2 start bot.js`
+What happens in these cases:
+- Click before game starts?
+- Click after game ends?
+- Refresh during game?
+
+```javascript
+function handleAction() {
+    // Check if game is active
+    if (!isGameActive) return
+    if (isGameOver) return
+
+    // Actual logic
+}
+```
+
+### Mistake 5: Hardcoding everything
+
+Difficulty adjustment becomes hard:
+
+```javascript
+// Hard to adjust
+if (score > 100) levelUp()
+setTimeout(spawn, 1000)
+
+// Better - use variables/constants
+const LEVEL_UP_THRESHOLD = 100
+const SPAWN_INTERVAL = 1000
+
+if (score > LEVEL_UP_THRESHOLD) levelUp()
+setTimeout(spawn, SPAWN_INTERVAL)
+```
+
+> **Beginner Tip**: Defining game "magic numbers" (100, 1000, etc.) as constants makes balance adjustments much easier later.
+
+---
+
+## Terminology
+
+| Term | Meaning |
+|------|---------|
+| Game Loop | Repeating structure that keeps the game running |
+| State | Variables that store the game's current situation |
+| Event Listener | Function that detects user input |
+| Collision Detection | Logic to check if two objects are touching |
+| FPS | Frames Per Second, screen refresh rate |
+| requestAnimationFrame | Browser-optimized animation function |
+| localStorage | Browser space for permanent data storage |
+| Fisher-Yates | Algorithm for randomly shuffling arrays |
+| State Machine | Design pattern for managing state transitions |
+
+---
+
+## Next Chapter Preview
+
+Congratulations! You've completed Part 3 (Practical Projects I).
+
+In the next Part, you'll create more practical tools:
+- **Chapter 17**: Making CLI Tools - Automation tools that run in the terminal
+- **Chapter 18**: Making Chatbots - Discord/Slack bots
+- **Chapter 19**: Making Fullstack Apps - Frontend + Backend + Database
+
+The state management, event handling, and asynchronous logic you learned in game development are the foundation for all projects!
 
 ---
 
 ## Summary
 
 What you learned in this chapter:
-- [x] Starting a Discord bot project
-- [x] Adding slash commands
-- [x] Reacting to events
-- [x] Extending patterns to Slack bots
-- [x] Deploying bots
+- [x] Core game concepts (state, loop, events, collision)
+- [x] Making 5 different types of games
+- [x] Handling user input
+- [x] Managing scores and state
+- [x] CSS animation basics
+- [x] Game improvement and debugging
 
-The core of chatbots is **"when this event happens, respond like this"**. Understanding this pattern lets you build bots on any platform.
-
-When requesting from Claude:
-1. What command/event to react to
-2. What input to receive
-3. What output to produce
-
-Clarify these three things and you can build the bot you want.
-
-In the next chapter, we'll build a full-stack app with both frontend and backend.
-
-Proceed to [Chapter 17: Building Full-Stack Apps](../Chapter17/README.md).
+[Continue to Chapter 17: Building CLI Tools](../Chapter17/README.md)

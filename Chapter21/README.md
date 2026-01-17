@@ -1,665 +1,705 @@
-# Chapter 21: Agents & Skills
+# Chapter 21: Understanding Architecture
 
 **English** | [한국어](./README.ko.md)
 
+---
+
+## Ask Questions
+
+If you have any questions while learning, ask on Discord!
+
+[![Discord](https://img.shields.io/badge/Discord-Ask%20Questions-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite-link)
+
+---
+
+## Previous Chapter Review
+
+In [Chapter 20: Building Full-Stack Apps](../Chapter20/README.md), we connected a React frontend with a backend and implemented JWT authentication.
+
+Congratulations! If you've made it this far, you now have **the skills to build complete apps**.
+
+### Before Moving to Part 5
+
+Let's take a moment to look back. So far we have:
+
+```
+Part 1-3: Claude Code basics
+    |
+Part 4: Building real apps (CLI tools, chatbots, full-stack apps)
+    |
+Part 5: Using it better (starting now!)
+```
+
+Through Part 4, we focused on **"what can you build with Claude Code"**.
+
+In Part 5, we'll learn **"how to use Claude Code more effectively"**.
+
+### Why Should You Understand Architecture?
+
+When driving a car, you don't need to know how the engine works. But if you understand how the engine operates:
+- You can guess what's wrong when you hear strange sounds
+- You can understand driving techniques that improve fuel efficiency
+- You can accurately explain the problem to a mechanic when something breaks
+
+Claude Code is the same. If you understand how it works internally:
+- You can understand why some requests are fast and others are slow
+- You can understand request methods that save costs
+- You can solve problems yourself when they occur
+
+> **Beginner Tip**: This chapter might feel a bit technical. But don't worry! We'll explain every concept with easy analogies. It's okay if you don't understand 100%. Even just knowing the general principles will help you use Claude Code better.
+
+---
+
 ## What You Will Learn
 
-- Creating specialized helpers with Agents
-- Automating specific tasks with Skills
-- Practical usage examples
+- How Claude Code works
+- Understanding the tool system
+- Using this knowledge to make better requests
 
 ---
 
-## Why do you need this?
+## Why Is This Needed?
 
-**Real-world scenario**: You want different "personalities" for different tasks. When reviewing code, you want Claude to act like a strict senior developer. When debugging, you want a patient teacher. Commands alone can't give Claude a persistent identity.
+**Real situation**: You requested "find all TypeScript files in this project and fix the errors" but it took a long time and cost a lot. Why? Because you don't understand how it works internally.
 
-Agents and Skills solve this by letting you define roles and automated workflows.
+If you understand the architecture:
+- You can know which requests are fast and which are slow
+- You can debug when problems occur
+- You can save costs with efficient requests
 
-### Simple Analogy: Employees vs Job Procedures
+### Easy Analogy: Restaurant Kitchen
 
-Think of it this way:
-- **Agents** are like hiring different employees for different jobs
-  - Security guard: Always watches for threats
-  - Documentation writer: Explains things clearly
-  - Code reviewer: Finds bugs and suggests improvements
-
-- **Skills** are like standard operating procedures
-  - "How to process a return" (triggered when customer says "return")
-  - "How to escalate an issue" (triggered when "urgent" is mentioned)
-
-### Agent vs Skill: Quick Decision Guide
+Think of Claude Code like ordering at a restaurant:
 
 ```
-Do you need a consistent PERSONALITY/PERSPECTIVE?
-  --> Use an AGENT (call with @name)
-
-Do you need a consistent PROCESS/PROCEDURE?
-  --> Use a SKILL (auto-triggered by keywords)
-
-Do you need both?
-  --> Combine them! @agent-name with skill keywords
+You (customer) --> Waiter (Claude Code CLI) --> Kitchen (Anthropic API)
+                                                      |
+                                                      v
+                                                Chef prepares food
+                                                      |
+                                                      v
+                                Waiter <-- brings food --> You eat
 ```
+
+- The **waiter** (CLI) takes your order and communicates with the kitchen
+- The actual cooking (thinking) happens in the **kitchen** (API)
+- Every trip to the kitchen takes time (API round trip)
+- If you say "just make something delicious," the waiter has to make multiple trips
 
 ---
 
-## Concrete Comparison: Agent vs Skill
+## Why Should You Know the Architecture?
 
-Let's see the same task handled both ways:
+If you think of Claude Code as a "magic tool," there are limitations. Understanding how it works allows:
 
-### Code Review - As an Agent
-
-```markdown
-<!-- .claude/agents/strict-reviewer.md -->
-# Strict Code Reviewer
-
-## Identity
-You are a 15-year senior developer who has seen every bug.
-You're thorough but constructive.
-
-## Perspective
-- Assume every line could have a bug
-- Check security vulnerabilities
-- Question performance implications
-- Verify edge cases
-```
-
-**Usage:** `> @strict-reviewer check this function`
-
-The Agent gives Claude a **persistent personality** throughout the review.
-
-### Code Review - As a Skill
-
-```markdown
-<!-- .claude/skills/review-checklist.md -->
-# Code Review Checklist
-
-## Trigger Keywords
-"review", "check code", "look at this"
-
-## Process
-1. Identify all functions
-2. Check each for: null handling, error cases, types
-3. List issues by severity
-4. Provide summary
-```
-
-**Usage:** `> review this function`
-
-The Skill defines a **fixed process** that runs automatically.
-
-### When to Use Which?
-
-| Scenario | Use | Why |
-|----------|-----|-----|
-| "I need security expertise" | Agent | Persistent perspective |
-| "Run our standard review checklist" | Skill | Consistent process |
-| "Senior security expert doing our review" | Both | Best of both worlds |
+- **More accurate requests**: You can predict which tools will be used
+- **Problem solving**: You can figure out why things aren't working yourself
+- **Efficient usage**: Reduce unnecessary work
 
 ---
 
-## Why Learn Agents and Skills?
+## Overall Structure of Claude Code
 
-Commands save prompts. Agents and Skills go a step further:
+### At a Glance
 
-- **Agents**: Specialized Claude for specific roles
-- **Skills**: Automation that responds to specific keywords
+```
++------------------------------------------------------------------+
+|                        You (Terminal)                              |
++------------------------------------------------------------------+
+                               |
+                               v
++------------------------------------------------------------------+
+|                       Claude Code CLI                              |
+|  +---------------+  +---------------+  +-------------------+       |
+|  | Input Handler |  | Tool Engine   |  | Output Renderer   |       |
+|  +---------------+  +---------------+  +-------------------+       |
++------------------------------------------------------------------+
+                               |
+                               v
++------------------------------------------------------------------+
+|                    Anthropic API (Claude)                          |
+|               Models: opus / sonnet / haiku selectable             |
++------------------------------------------------------------------+
+```
+
+**Key Point**: Claude doesn't run directly on your computer. It communicates through API, and only tool execution happens locally.
+
+### What is an API? (For Beginners)
+
+**API** (Application Programming Interface) is like a messenger between two programs. When using Claude Code:
+
+1. Your computer sends a message to Anthropic servers
+2. Claude (on Anthropic servers) processes the request
+3. The response returns to your computer
+4. When Claude needs to do something (read files, execute commands, etc.), that happens on your computer
+
+**Why does this matter?**
+- Claude can't see your files until you specifically request it
+- Every time Claude asks a question = another round trip = more time and cost
+- Being specific from the start reduces the number of round trips
+
+### API Communication Cycle
+
+Let's see what happens when you make a request:
+
+```
+ [1] Your request                    [2] Send to API
+      |                                 |
+      v                                 v
++----------+    Message + tool defs   +-------------+
+| CLI      | -----------------------> | Anthropic   |
+| Client   |                          | API         |
++----------+                          +-------------+
+      ^                                 |
+      |     Response (text + tool calls)|
+      +---------------------------------+
+                    [3]
+
+ [4] Execute tool locally            [5] Send result back to API
+      |                                 |
+      v                                 v
++------------------+              +-------------+
+| Bash, Read, etc. | -----------> | Claude      |
+| execute          |              | decides next|
++------------------+              +-------------+
+```
+
+### What's the Benefit of Knowing This?
+
+```
+> Show me all files in this folder
+```
+
+When you make this request:
+1. Claude queries file list with `Glob` tool -> API round trip 1
+2. Receives result and decides next action -> API round trip 2
+3. If needed, checks file content with `Read` -> API round trip 3
+
+**One request = can become multiple API round trips**. So being specific reduces round trips and is faster.
 
 ---
 
-## Agents System
+## Tool System
 
-Agents are Claude optimized for specific roles.
+Claude Code uses 17 built-in tools.
 
-### Agents Folder Structure
+### Complete Tool List
 
-```
-.claude/
-└── agents/
-    ├── code-reviewer.md   # Code review expert
-    ├── doc-writer.md      # Documentation expert
-    └── tester.md          # Testing expert
-```
+| Category | Tool | Description |
+|----------|------|-------------|
+| **File Operations** | `Read` | Read files (supports images, PDF, Jupyter notebooks) |
+| | `Write` | Create/overwrite files |
+| | `Edit` | String replacement-based file editing |
+| | `Glob` | Search files by pattern (e.g., `**/*.ts`) |
+| | `Grep` | Content search (ripgrep-based) |
+| **Execution** | `Bash` | Execute shell commands |
+| | `KillShell` | Terminate background shells |
+| **Agents** | `Task` | Create and run sub-agents |
+| | `TaskOutput` | Get background task results |
+| **Web** | `WebFetch` | Fetch URL content (HTML->Markdown) |
+| | `WebSearch` | Web search |
+| **Planning** | `EnterPlanMode` | Enter plan mode |
+| | `ExitPlanMode` | Exit plan mode and request approval |
+| **User Interaction** | `AskUserQuestion` | Ask user questions (multiple choice) |
+| | `TodoWrite` | Manage task lists |
+| **Other** | `Skill` | Execute skills (/commit, /review-pr, etc.) |
+| | `NotebookEdit` | Edit Jupyter notebook cells |
 
-### Defining an Agent
+### Tool Limitations
 
-```markdown
-<!-- .claude/agents/code-reviewer.md -->
-# Code Review Expert
+| Tool | Limit | Value |
+|------|-------|-------|
+| **Bash** | Default timeout | 2 minutes |
+| | Max timeout | 10 minutes |
+| | Output limit | 30,000 characters |
+| **Read** | Default lines | 2,000 lines |
+| | Line length | 2,000 characters |
 
-## Role
-You are a senior developer specializing in code review.
-
-## Perspective
-- Find bugs and vulnerabilities
-- Identify performance issues
-- Suggest readability improvements
-- Verify best practices
-
-## Review Format
-1. Categorize issues by severity (Critical, Major, Minor)
-2. Provide specific improvement suggestions for each issue
-3. Mention what's done well too
-
-## Tone
-Constructive and educational. Don't criticize, suggest improvements.
-```
-
-### Using an Agent
+### Tool Classification (Visualization)
 
 ```
-> @code-reviewer review this PR
++-----------------------------------------------------------------------------+
+|                              Tool Execution Layer                            |
+|                                                                              |
+|  File Operations --------------------------------------------------------    |
+|  +---------+ +---------+ +---------+ +---------+ +---------+                |
+|  |  Read   | |  Write  | |  Edit   | |  Glob   | |  Grep   |                |
+|  |read file| |create   | |modify   | |search   | |content  |                |
+|  |         | |file     | |file     | |files    | |search   |                |
+|  +---------+ +---------+ +---------+ +---------+ +---------+                |
+|                                                                              |
+|  Execution ---------------------------------------------------------------   |
+|  +---------+ +-----------------+                                            |
+|  |  Bash   | |     Task        |                                            |
+|  |command  | | (sub-agent)     |                                            |
+|  |execute  | |                 |                                            |
+|  +---------+ +-----------------+                                            |
+|                                                                              |
+|  Web ---------------------------------------------------------------------   |
+|  +---------+ +---------+                                                    |
+|  |WebFetch | |WebSearch|                                                    |
+|  |fetch URL| |web      |                                                    |
+|  |         | |search   |                                                    |
+|  +---------+ +---------+                                                    |
+|                                                                              |
+|  User Interaction -------------------------------------------------------    |
+|  +---------+ +---------+ +---------------+ +---------------+                |
+|  |TodoWrite| |  Skill  | | EnterPlanMode | |AskUserQuestion|                |
+|  |task mgmt| |execute  | | plan mode     | |ask user       |                |
+|  |         | |skill    | |               | |               |                |
+|  +---------+ +---------+ +---------------+ +---------------+                |
++-----------------------------------------------------------------------------+
 ```
 
-Call Agents with `@`.
+### Tool Execution Flow
 
-### Why Does This Matter?
+When a tool is called, it's processed in this flow:
 
-**Consistent review quality:**
+```
+    Claude Response
+         |
+         v
+  +--------------+
+  | Parse        |
+  | response     |
+  | (text +      |
+  |  tool calls) |
+  +------+-------+
+         |
+    +----+----+
+    v         v
++--------+ +--------+
+| Text   | | Tool   |
+| output | | execute|
++--------+ +---+----+
+               |
+         +-----+-----+
+         v           v
+    +--------+  +--------+
+    | Success|  | Failure|
+    | result |  | error  |
+    +---+----+  +---+----+
+        |           |
+        +-----+-----+
+              v
+    +-----------------+
+    | Send result to  |
+    | API (next turn) |
+    +-----------------+
+```
 
-Reviews from the same perspective every time, nothing gets missed.
+### What's the Benefit of Knowing This?
 
-**Role-appropriate responses:**
+**Different tools are used depending on how you request:**
 
-Unlike general Claude, answers only from a specific perspective.
+```
+# Uses Glob (fast)
+> How many tsx files are in the src folder?
+
+# Uses Bash (unnecessarily complex)
+> Use the find command to count tsx files in the src folder
+```
+
+For tasks that have dedicated Claude Code tools, it's more efficient to request using those tools.
+
+### AskUserQuestion Tool
+
+This tool allows Claude to ask you questions during task execution.
+
+**When is it used?**
+- Clarifying ambiguous requirements
+- Choosing between multiple approaches
+- Confirming preferences for implementation details
+
+**Example interaction:**
+
+```
+Claude: I need clarification about authentication.
+
++-- Authentication Method -------------------------------------+
+| Which authentication method should I use?                    |
+|                                                              |
+| o JWT (recommended)                                          |
+|   Stateless, suitable for APIs                               |
+|                                                              |
+| o Session-based                                              |
+|   Traditional approach, server-side storage                  |
+|                                                              |
+| o OAuth                                                      |
+|   Social login (Google, GitHub)                              |
++--------------------------------------------------------------+
+```
+
+**Why is this important?**
+Instead of guessing or making assumptions, Claude can ask directly. This leads to better results that match actual requirements.
 
 ---
 
-## Practical Agents Examples
+## Sub-Agent System
 
-### 1. Documentation Expert
+Complex tasks are divided into multiple "sub-agents" for execution.
 
-```markdown
-<!-- .claude/agents/doc-writer.md -->
-# Documentation Expert
-
-## Role
-Write technical documentation that is clear and easy to understand.
-
-## Principles
-- Be concise (remove unnecessary explanations)
-- Include examples (code examples required)
-- Be structured (use headings, subheadings)
-
-## Document Formats
-- README: Project overview, installation, usage
-- API docs: Endpoints, parameters, responses
-- Guides: Step-by-step explanations
-
-## Language
-Use English, keep technical terms as-is
-```
+### Sub-Agent Architecture
 
 ```
-> @doc-writer write documentation for this API
+                          +-----------------+
+                          |   Main Agent    |
+                          | (talks with you)|
+                          +--------+--------+
+                                   |
+                    +--------------+--------------+
+                    |              |              |
+                    v              v              v
+         +--------------+ +--------------+ +--------------+
+         |   Task 1     | |   Task 2     | |   Task 3     |
+         |  (explore)   | |  (analyze)   | |  (execute)   |
+         +--------------+ +--------------+ +--------------+
 ```
 
-### 2. Testing Expert
+### Sub-Agent Types
 
-```markdown
-<!-- .claude/agents/tester.md -->
-# Testing Expert
+| Type | Purpose | Available Tools |
+|------|---------|-----------------|
+| `Explore` | Explore codebase, search files | Read, Glob, Grep (no Edit/Write) |
+| `Plan` | Create implementation plans, design architecture | Read, Glob, Grep (no Edit/Write) |
+| `Bash` | Git operations, command execution | Bash only |
+| `general-purpose` | Complex multi-step tasks | All tools (*) |
+| `claude-code-guide` | Claude Code usage guide | Glob, Grep, Read, WebFetch, WebSearch |
+| `statusline-setup` | Status line setup | Read, Edit |
 
-## Role
-Write robust test code.
-
-## Testing Strategy
-- Unit tests first
-- Always include edge cases
-- Minimize mocking
-
-## Test Structure
-```
-describe('functionName', () => {
-  it('normal case', () => {})
-  it('error case', () => {})
-  it('edge case', () => {})
-})
-```
-
-## Tools
-- Jest (default)
-- React Testing Library (components)
-- MSW (API mocking)
-```
+### Parallel vs Sequential Execution
 
 ```
-> @tester write tests for this function
+Parallel Execution (independent tasks):
+---------------------------------------------
+    +----------+     +----------+     +----------+
+    | Agent A  |     | Agent B  |     | Agent C  |
+    | (search1)|     | (search2)|     | (search3)|
+    +----+-----+     +----+-----+     +----+-----+
+         |                |                |
+         +----------------+----------------+
+                          |
+                          v
+                   +--------------+
+                   | Combine      |
+                   | results      |
+                   +--------------+
+
+Sequential Execution (dependent tasks):
+---------------------------------------------
+    +----------+     +----------+     +----------+
+    | Agent A  | --> | Agent B  | --> | Agent C  |
+    | (analyze)|     | (uses A  |     | (uses B  |
+    |          |     |  result) |     |  result) |
+    +----------+     +----------+     +----------+
 ```
 
-### 3. Refactoring Expert
+### What's the Benefit of Knowing This?
 
-```markdown
-<!-- .claude/agents/refactorer.md -->
-# Refactoring Expert
-
-## Role
-Improve existing code. Maintain behavior while increasing quality.
-
-## Refactoring Principles
-- Progress in small steps
-- Verify tests pass at each step
-- Explain reasons for changes
-
-## Priorities
-1. Remove duplication
-2. Split functions (under 20 lines)
-3. Improve naming
-4. Reduce complexity
-
-## Caution
-- Adding features is not refactoring
-- Don't change too much at once
-```
+**Large tasks are automatically split:**
 
 ```
-> @refactorer refactor this component
+> Analyze this entire project and create a refactoring plan
 ```
 
-### 4. Security Expert
+Internally:
+1. `Explore` agent understands project structure
+2. `Plan` agent creates the plan
+3. Main agent synthesizes results
 
-```markdown
-<!-- .claude/agents/security.md -->
-# Security Expert
-
-## Role
-Find security vulnerabilities in code and suggest improvements.
-
-## Checklist
-- SQL Injection
-- XSS (Cross-Site Scripting)
-- CSRF
-- Authentication/Authorization vulnerabilities
-- Sensitive data exposure
-
-## Report Format
-1. Vulnerability description
-2. Attack scenario
-3. Solution
-4. Prevention code
-
-## Severity
-- Critical: Immediate fix required
-- High: Quick fix needed
-- Medium: Planned fix
-- Low: Recommendations
-```
+**Splitting tasks in advance makes them more accurate:**
 
 ```
-> @security review this API security
-```
+# Do everything at once (agent splits automatically)
+> Analyze the project and refactor it
 
----
-
-## Skills System
-
-Skills automatically respond to specific keywords.
-
-### Skills Folder Structure
-
-```
-.claude/
-└── skills/
-    ├── pr-review.md      # Responds to PR-related requests
-    ├── deploy.md         # Responds to deployment requests
-    └── debug.md          # Responds to debugging requests
-```
-
-### Defining a Skill
-
-Skills can be configured more precisely using frontmatter (metadata):
-
-```markdown
-<!-- .claude/skills/pr-review.md -->
----
-name: PR Review
-description: Pull Request review and code analysis
-allowed-tools: [Read, Glob, Grep, Bash]
-model: sonnet
----
-
-# PR Review Skill
-
-## Keywords
-- "PR review"
-- "pull request check"
-- "code review"
-- "review this PR"
-
-## Behavior
-1. Check changes with git diff
-2. Analyze each changed file
-3. Identify issues and suggestions
-4. Provide overall summary
-
-## Output Format
-### Summary
-- Number of changed files
-- Lines added/deleted
-- Main changes
-
-### Detailed Review
-[Review by file]
-
-### Overall Assessment
-[Pass/Needs Changes]
-```
-
-### Using a Skill
-
-When you include keywords in your request, the Skill activates automatically:
-
-```
-> review this PR
-```
-
-Since "PR review" keyword is present, the PR review Skill activates automatically.
-
-### Why Does This Matter?
-
-**Natural automation:**
-
-Just include keywords and appropriate actions happen automatically.
-
-**Consistent process:**
-
-Same keyword always triggers the same process.
-
----
-
-## Practical Skills Examples
-
-### 1. Debugging Skill
-
-```markdown
-<!-- .claude/skills/debug.md -->
-# Debugging Skill
-
-## Keywords
-- "error"
-- "bug"
-- "doesn't work"
-- "broken"
-- "failing"
-
-## Behavior
-1. Analyze error message
-2. Find related code
-3. Identify cause
-4. Suggest solution
-
-## Process
-- Read error message literally
-- Analyze stack trace
-- Check related files
-- Try step-by-step fixes
-```
-
-```
-> getting error when logging in
-```
-
-Debugging process starts automatically.
-
-### 2. Deployment Skill
-
-```markdown
-<!-- .claude/skills/deploy.md -->
-# Deployment Skill
-
-## Keywords
-- "deploy"
-- "production"
-- "release"
-- "ship"
-
-## Checklist
-- [ ] Tests passing?
-- [ ] Build successful?
-- [ ] Environment variables set?
-- [ ] Migration needed?
-
-## Behavior
-1. Check current state
-2. Verify checklist
-3. Execute deployment
-4. Verify results
-```
-
-```
-> deploy to staging
-```
-
-Automatically checks deployment checklist and proceeds.
-
-### 3. Performance Analysis Skill
-
-```markdown
-<!-- .claude/skills/performance.md -->
-# Performance Analysis Skill
-
-## Keywords
-- "slow"
-- "performance"
-- "optimize"
-- "laggy"
-
-## Analysis Items
-- Render count (React)
-- Unnecessary recalculations
-- Memory leaks
-- API call optimization
-- Bundle size
-
-## Behavior
-1. Identify slow parts
-2. Analyze cause
-3. Suggest optimizations
-4. Compare after applying
-```
-
-```
-> why is this page so slow?
-```
-
-Performance analysis starts automatically.
-
----
-
-## Agents vs Skills
-
-### When to Use What?
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Agents vs Skills                              │
-├──────────────────────────────┬──────────────────────────────────┤
-│           Agents             │           Skills                  │
-├──────────────────────────────┼──────────────────────────────────┤
-│ Explicit call with @         │ Auto-activate via keywords        │
-│ Define role/perspective      │ Define process/procedure          │
-│ Expert persona               │ Automated workflow                │
-│ Ex: @code-reviewer           │ Ex: Auto-run on "PR review"       │
-└──────────────────────────────┴──────────────────────────────────┘
-```
-
-### Using Together
-
-```
-> @security review this PR
-```
-
-- `@security`: Security expert perspective (Agent)
-- "review this PR": PR review process (Skill)
-
-Runs PR review process from security expert perspective.
-
----
-
-## Sharing with Team
-
-### Commit to Git
-
-```
-my-project/
-├── .claude/
-│   ├── agents/       # Team shared Agents
-│   │   ├── code-reviewer.md
-│   │   └── doc-writer.md
-│   └── skills/       # Team shared Skills
-│       ├── pr-review.md
-│       └── deploy.md
-├── CLAUDE.md
-└── src/
-```
-
-### Document Team Standards
-
-```markdown
-# Team Agents & Skills
-
-## Agents
-- `@code-reviewer` - Code review expert
-- `@doc-writer` - Documentation expert
-- `@security` - Security expert
-
-## Skills (Auto-activate)
-- "PR review" - PR review process
-- "deploy" - Deployment checklist
-- "error" - Debugging process
+# Step by step (more precise control)
+> First, just analyze the project structure
+> (after checking result)
+> Create a refactoring plan for this part
+> (after checking plan)
+> Good, execute it
 ```
 
 ---
 
-## Try it yourself
+## Model Selection
 
-### Exercise 1: Create Your First Agent
+Claude Code supports multiple models.
 
-1. Create the agents folder: `mkdir -p .claude/agents`
-2. Create `.claude/agents/teacher.md`:
+| Model | Characteristics | When to Use |
+|-------|-----------------|-------------|
+| **Opus** | Smartest, highest cost | Complex design, difficult bugs |
+| **Sonnet** | Balanced performance | General tasks (default) |
+| **Haiku** | Fast and cheap | Simple tasks, repetitive tasks |
 
-```markdown
-# Patient Teacher
-
-## Role
-You are a patient teacher who explains coding concepts.
-Always use simple language and provide examples.
-
-## Style
-- Start with the big picture
-- Use analogies
-- Provide code examples
-- Check for understanding
-```
-
-3. Use it: `> @teacher explain what recursion is`
-
-### Exercise 2: Create Your First Skill
-
-1. Create the skills folder: `mkdir -p .claude/skills`
-2. Create `.claude/skills/explain.md`:
-
-```markdown
-# Code Explanation Skill
-
-## Keywords
-"explain", "what does this do", "how does this work"
-
-## Process
-1. Read the code
-2. Identify the main purpose
-3. Break down step by step
-4. Provide a simple summary
-```
-
-3. Test it: `> explain what this function does` (skill triggers automatically!)
-
-### Exercise 3: Combine Agent + Skill
+### Practical Strategy
 
 ```
-> @teacher explain what this function does
+# Planning phase: Use smart model
+> /model opus
+> How should I design this system?
+
+# Implementation phase: Use fast model
+> /model sonnet
+> Implement according to the plan above
 ```
 
-The teacher agent's personality + the explanation skill's process = best of both!
+You can adjust the **cost vs quality trade-off** according to the situation.
 
 ---
 
-## If it doesn't work?
+## Context Management
 
-### Problem: Agent not found
+### Quality Decreases as Conversations Get Longer
+
+Claude has a limit on the amount of information it can process at once. As conversations get longer:
+- It doesn't remember early content well
+- Overall context understanding becomes blurry
+- Response quality degrades
+
+### Solutions
+
+**1. Compress with /compact**
+```
+> /compact
+```
+Summarizes the conversation so far to save tokens.
+
+**2. Separate conversations by topic**
+```
+# Doing everything in one conversation (contexts get mixed)
+> Create authentication feature
+> Also modify the DB schema
+> Also create the frontend form
+
+# Separating by topic (more focused)
+> /clear
+> Let's focus on authentication. Create the backend API first.
+```
+
+**3. Utilize CLAUDE.md**
+
+CLAUDE.md is preserved even after `/clear`. If you write project rules here, context is preserved even when starting a new conversation.
+
+---
+
+## Permissions and Security
+
+### Security Policy Flow
+
+```
+  User Request
+       |
+       v
++--------------+    No        +--------------+
+| Dangerous    | -----------> | Execute      |
+| operation?   |              | immediately  |
++------+-------+              +--------------+
+       | Yes
+       v
++--------------+    Deny      +--------------+
+| Request user | -----------> | Cancel       |
+| approval     |              | operation    |
++------+-------+              +--------------+
+       | Approve
+       v
++--------------+
+| Execute in   |
+| sandbox      |
++--------------+
+```
+
+### Why Does It Request Approval?
+
+Claude Code requests approval before potentially dangerous operations:
+- File modification/deletion
+- Command execution
+- External API calls
+
+### Auto-Approval Settings
+
+You can auto-approve frequently used safe tools:
+
+```json
+// settings.json
+{
+  "permissions": {
+    "autoApprove": ["Read", "Glob", "Grep"]
+  }
+}
+```
+
+**Caution**: Be careful with `Edit`, `Write`, `Bash` settings.
+
+### Sandbox Mode
+
+Bash commands run in a sandbox by default. This protects your system while working.
+
+---
+
+## Practical Tips
+
+### 1. Explicitly Mention Tools
+
+```
+# Implicit (Claude has to infer)
+> How is error handling done in this project?
+
+# Explicit (faster)
+> Search for "catch" keyword with grep and show me the error handling patterns
+```
+
+### 2. One Thing at a Time
+
+```
+# Multiple tasks at once (can cause confusion)
+> Create the file, write tests, and commit
+
+# Step by step (more accurate)
+> Create the file first
+> (after checking) Write tests
+> (after checking) Commit
+```
+
+### 3. Check Results Before Proceeding
+
+If Claude modified files, check the results before proceeding to the next step. You can fix problems immediately if something went wrong.
+
+---
+
+## Try It Yourself
+
+Simple exercises to understand the tool system:
+
+### Exercise 1: Observe Tools
+
+```
+> How many files are in this folder?
+```
+
+Observe Claude's response. Did it use `Glob` or `Bash`? The result is the same but efficiency differs.
+
+### Exercise 2: Compare Approaches
+
+Try two requests and feel the difference:
+
+```
+# Approach A - Vague
+> Tell me about this project
+
+# Approach B - Specific
+> Read package.json and tell me what dependencies this project uses
+```
+
+Approach B is faster because Claude knows exactly which tool (Read) to use.
+
+### Exercise 3: Count Round Trips
+
+```
+> Find all TODO comments in this project and show me a list
+```
+
+Observe how many tool calls happen. Each one is an API round trip.
+
+---
+
+## What If It's Not Working?
+
+### Problem: Claude seems slow or stuck
 
 **Possible causes:**
-1. File not in `.claude/agents/` folder
-2. File doesn't end with `.md`
-3. Using wrong name (filename without .md is the name)
+1. Request requires many tool calls (round trips)
+2. Processing very large files
+3. Network issues with API
 
 **Solutions:**
-- Check folder: `ls -la .claude/agents/`
-- Agent `@teacher` needs file `teacher.md`
-- Case matters: `@Teacher` is different from `@teacher`
+- Break large requests into smaller steps
+- Be specific about what you want
+- Check your internet connection
+- Start fresh with `/clear` if context is confused
 
-### Problem: Skill not triggering
+### Problem: Claude uses the wrong tool
 
-**Possible causes:**
-1. Keywords don't match your request
-2. Skill file is malformed
-3. Skills folder in wrong location
+**Example:** You requested text search, but Claude runs `grep` via `Bash` instead of using the built-in `Grep` tool.
 
-**Solutions:**
-- Check your keywords exactly match what you typed
-- Skills folder should be `.claude/skills/`
-- Test with exact keyword from the skill file
+**Solution:** Explicitly mention tools when needed:
+```
+# Instead of this
+> Search for "TODO" in this project
 
-### Problem: Agent personality not consistent
+# Try this
+> Search for "TODO" in all files using the grep tool
+```
 
-**Possible causes:**
-1. Agent definition too vague
-2. Conflicting instructions
-3. Context getting diluted in long conversations
+### Problem: Permission denied errors
 
-**Solutions:**
-- Be specific in agent personality description
-- Avoid contradictory instructions
-- Use `/clear` to reset context if needed
+**Cause:** Claude Code needs permission for dangerous operations.
+
+**Solution:** Press `y` to approve, or configure auto-approval in settings for safe tools.
 
 ---
 
-## Common mistakes
+## Common Mistakes
 
-1. **Making agents too broad**
-   - Bad: "You're a helpful assistant" (too generic)
-   - Good: "You're a TypeScript expert who focuses on type safety" (specific)
+1. **Requesting too much at once**
+   - Bad: "Analyze this project, fix all bugs, add tests, and deploy"
+   - Good: "First, analyze the project structure"
 
-2. **Making skills too vague**
-   - Bad: Keywords like "help" (triggers on everything)
-   - Good: Specific keywords like "deploy to staging"
+2. **Not being specific about location**
+   - Bad: "Show me the config file"
+   - Good: "Show me the tsconfig.json file"
 
-3. **Confusing agents and commands**
-   - Commands: Just run a saved prompt
-   - Agents: Give Claude a persistent personality
-   - Use agents when perspective matters
+3. **Forgetting context limitations**
+   - Long conversations lose context
+   - Use `/compact` or `/clear` periodically
 
-4. **Forgetting to share with team**
-   - Commit `.claude/agents/` and `.claude/skills/` to git
-   - Document in README what's available
+4. **Ignoring tool output**
+   - Always check what Claude actually did before moving on
+   - You can catch mistakes early
 
-5. **Not testing before sharing**
-   - Test your agents and skills before sharing
-   - Edge cases often reveal problems
+5. **Not understanding costs**
+   - More round trips = more API calls = higher costs
+   - Specific requests are cheaper
 
 ---
 
 ## Summary
 
-What you learned in this chapter:
-- [x] Defining expert roles with Agents
-- [x] Keyword-based automation with Skills
-- [x] Difference between Agents and Skills
-- [x] Practical usage examples
-- [x] Sharing with team
+What we learned in this chapter:
+- [x] Overall Claude Code architecture and API communication flow
+- [x] 18 built-in tools system
+- [x] How sub-agents work and parallel execution
+- [x] Model selection and context management
+- [x] Permissions and security policies
 
-**Key point**: Agents focus on "like who", Skills focus on "what to do".
+**Key Point**: Claude Code is not magic, it's a system. Understanding the system helps you use it better.
 
-In the next chapter, you'll learn how to connect with external services using MCP.
+In the next chapter, we'll learn how to customize this system.
 
-Proceed to [Chapter 22: MCP Integration](../Chapter22/README.md).
+Continue to [Chapter 22: Advanced Configuration](../Chapter22/README.md).
+
+---
+
+## Learn More
+
+### Recommended Resources
+
+**Official Documentation:**
+- [Claude Code Official Docs](https://docs.anthropic.com/en/docs/claude-code) - Complete feature guide for Claude Code
+- [Claude Code Architecture](https://docs.anthropic.com/en/docs/claude-code/overview) - Detailed internal structure explanation
+- [Claude Extended Thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking) - Ultrathink feature explanation
+
+**Video Resources:**
+- [How LLMs Work (YouTube)](https://www.youtube.com/results?search_query=how+LLM+works+explained) - LLM working principles explained
+- [Claude Code Architecture (YouTube)](https://www.youtube.com/results?search_query=claude+code+architecture) - Claude Code structure explained
+- [AI Agents Explained (YouTube)](https://www.youtube.com/results?search_query=AI+agents+explained+tutorial) - AI agent concept explained
+
+**Reading Materials:**
+- [Building Effective Agents (Anthropic)](https://www.anthropic.com/research/building-effective-agents) - AI agent design principles
+- [LLM Architecture Overview](https://www.anthropic.com/news/claude-3-family) - Claude model architecture
+- [Context Windows Explained](https://docs.anthropic.com/en/docs/build-with-claude/context-windows) - Understanding context windows
+
+**Community:**
+- [Claude Code GitHub](https://github.com/anthropics/claude-code) - Official repository
+- [r/ClaudeAI](https://www.reddit.com/r/ClaudeAI/) - Reddit community

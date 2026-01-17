@@ -1,683 +1,1195 @@
-# Chapter 23: CI/CD Automation
+# Chapter 23: Hooks & Commands
 
 **English** | [한국어](./README.ko.md)
 
-## What You Will Learn
+---
 
-- CI/CD concepts and why they matter
-- Building automation with GitHub Actions
-- Integrating Claude Code into pipelines
+## Ask Questions
+
+If you have any questions while studying, ask on Discord!
+
+[![Discord](https://img.shields.io/badge/Discord-Ask%20Questions-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite-link)
 
 ---
 
-## Why do you need this?
+## What You Will Learn in This Chapter
 
-**Real-world scenario**: You push code to GitHub. You forget to run tests. The code breaks production. Your team is frustrated. You wish there was a way to automatically check everything before it goes live.
-
-CI/CD is exactly that - automatic checks and deployments that save you from yourself.
-
-### Simple Analogy: Factory Assembly Line
-
-Without CI/CD, you're hand-building each product:
-- Build (hope it works)
-- Test (if you remember)
-- Ship (fingers crossed)
-
-With CI/CD, you have a factory assembly line:
-- Raw materials (code) go in
-- Quality checks happen automatically
-- Only good products (working code) ship out
+- Creating automation triggers with Hooks
+- Saving frequently used prompts with Commands
+- Practical automation examples and best practices
+- Building powerful workflows by combining Hooks + Commands
 
 ---
 
-## YAML Basics (For Beginners)
+## Connection to Previous Chapter
 
-GitHub Actions use YAML format. Here's a crash course:
+In Chapter 22, we learned how to configure Claude's basic behavior with CLAUDE.md and settings.json. In this chapter, we take it a step further and enter the world of **automation**.
 
-### What is YAML?
+If configuration is "rules", then Hooks and Commands are "automatically executed actions".
 
-YAML is a human-readable format for configuration. It uses indentation (like Python) instead of brackets.
+> **Beginner Tip**: Hooks are "when ~ happens, automatically do ~" and Commands are "when I type /command, do ~". Both are magic tools that reduce repetitive work!
 
-### JSON vs YAML Comparison
+---
+
+## Why Do You Need This?
+
+**Real-world scenario**: Every time you ask Claude to edit a file, you manually run `npm run lint` to check formatting. Repeating this every time gets tiring.
+
+Hooks and Commands automate the repetitive parts so you can focus on creative work.
+
+### Real-World Applications in the Industry
+
+| Situation | Without Hooks/Commands | With Them |
+|-----------|------------------------|-----------|
+| Lint after file edit | Manual execution every time | Auto execution |
+| Writing commit messages | Remember format and type | Just `/commit` once |
+| PR review request | Copy-paste checklist | Just `/review` once |
+| Writing tests | Find and copy template | `/test filename` |
+
+### Simple Analogy: Smart Home Automation
+
+Think of Hooks like smart home rules:
+- **"When I leave home"** (trigger) --> **"Turn off lights"** (action)
+- **"When I open the door"** (trigger) --> **"Turn on AC"** (action)
+
+In Claude Code:
+- **"When Claude edits a file"** (trigger) --> **"Run linter"** (action)
+- **"When I press enter"** (trigger) --> **"Add context"** (action)
+
+Commands are like voice shortcuts: "Hey Siri, start my morning routine" = `/commit`
+
+> **Pro Tip**: If you automate a task you do 10 times a day, you can eliminate 300 repetitions per month!
+
+---
+
+## Common Traps Beginners Fall Into
+
+### Trap 1: "Automation is an advanced feature"
+
+Many people postpone thinking "I'll do it later when I'm more familiar." But:
+- One simple Hook saves 5 minutes daily
+- One Command prevents typos and mistakes
+- Setting it up from the start builds good habits
+
+> **Warning**: Don't start with complex automation. Start with one simple task you do most frequently!
+
+### Trap 2: "Too many Hooks, I don't know what's what"
+
+If you create too many Hooks:
+- Hard to track which Hook is executing
+- Possible conflicts between Hooks
+- Debugging becomes complex
+
+### Trap 3: "Trying to put everything in one Command"
+
+If you put too many features in a single Command:
+- Less flexible
+- Hard to modify
+- Can't be reused
+
+---
+
+## Your First Hook (Start Here!)
+
+Before diving into all the options, let's create one working hook:
+
+### Step 1: Add to settings.json
+
+Add this to your `~/.claude/settings.json`:
 
 ```json
-// JSON
 {
-  "name": "John",
-  "age": 30,
-  "hobbies": ["reading", "coding"]
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "command": "echo 'File edited!' >> ~/.claude/hook-log.txt"
+      }
+    ]
+  }
 }
 ```
 
-```yaml
-# YAML - same data, cleaner look
-name: John
-age: 30
-hobbies:
-  - reading
-  - coding
+### Step 2: Test It
+
+Ask Claude to edit any file:
+
+```
+> Add a comment to this file: test.js
 ```
 
-### Key YAML Rules
-
-1. **Indentation matters!** (use 2 spaces, not tabs)
-2. **Colons separate keys from values** `key: value`
-3. **Dashes make lists** `- item`
-4. **Comments start with #**
-
-### Common YAML Mistakes
-
-```yaml
-# BAD - inconsistent indentation
-steps:
-  - name: First
-     run: echo "hi"  # <-- 3 spaces instead of 2!
-
-# GOOD - consistent 2-space indentation
-steps:
-  - name: First
-    run: echo "hi"
-
-# BAD - missing space after colon
-name:value
-
-# GOOD - space after colon
-name: value
-```
-
----
-
-## Your First CI/CD (The Simplest Example)
-
-Let's create the simplest possible CI workflow:
-
-### Step 1: Create the Folder
+### Step 3: Check the Log
 
 ```bash
-mkdir -p .github/workflows
+cat ~/.claude/hook-log.txt
 ```
 
-### Step 2: Create the Workflow File
+You should see "File edited!" - your hook worked!
 
-Create `.github/workflows/hello.yml`:
+### Step 4: Make It Useful
 
-```yaml
-name: Hello CI
+Now replace the echo with something practical:
 
-on: push
-
-jobs:
-  say-hello:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Say Hello
-        run: echo "Hello, CI/CD!"
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "command": "npx prettier --write $FILE_PATH"
+      }
+    ]
+  }
+}
 ```
 
-### Step 3: Push to GitHub
+Now every edited file gets auto-formatted!
 
-```bash
-git add .github/workflows/hello.yml
-git commit -m "Add first CI workflow"
-git push
-```
-
-### Step 4: Check the Results
-
-Go to your GitHub repository > Actions tab. You should see your workflow running!
-
-That's it! You've created your first CI/CD pipeline. Now let's understand what each part means.
+> **Beginner Tip**: `$FILE_PATH` is a "variable" that automatically inserts the path of the file Claude edited. It's like cell references in Excel!
 
 ---
 
-## Understanding the Workflow File
+## Why Learn Hooks and Commands?
 
-```yaml
-name: Hello CI          # Name shown in GitHub UI
+Configuration alone has limits. Understanding Hooks and Commands gives you:
 
-on: push                 # Trigger: when code is pushed
+- **Eliminate repetition**: No need to type the same request every time
+- **Workflow automation**: Auto-process before/after specific actions
+- **Team standardization**: Whole team works the same way
 
-jobs:                    # List of jobs to run
-  say-hello:             # Job name (you choose this)
-    runs-on: ubuntu-latest  # What machine to run on
-    steps:               # Steps in this job
-      - name: Say Hello  # Step name (for logs)
-        run: echo "Hello, CI/CD!"  # Command to run
-```
+### ROI of Automation (Return on Investment)
 
----
-
-## Why Learn CI/CD?
-
-Manual work causes mistakes and wasted time:
-
-```
-Manual:
-1. Modify code
-2. Run tests (forgot)
-3. Build (error occurs)
-4. Fix again
-5. Deploy (missing config)
-...
-
-Automated:
-1. Modify code
-2. Everything else is automatic!
-```
+| Investment Time | Automation Target | Savings Effect |
+|-----------------|-------------------|----------------|
+| 5 min | Lint after file save | 20 times/day x 30 sec = 10 min/day |
+| 10 min | Commit message writing | 5 times/day x 2 min = 10 min/day |
+| 15 min | Test templates | 3 times/day x 5 min = 15 min/day |
 
 ---
 
-## What is CI/CD?
+## Hooks System Detailed Explanation
 
-### Basic Concept
+Hooks are code that automatically runs when specific events occur.
+
+### Hook Types
+
+Below is the execution flow of the most commonly used hooks:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        CI/CD Pipeline                            │
+│                   Main Hook Execution Points                    │
 └─────────────────────────────────────────────────────────────────┘
 
-     Code Push
+ User Input
+      │
+      ▼
+┌──────────────────┐
+│ UserPromptSubmit │ ← When user presses enter
+└────────┬─────────┘   (input preprocessing, context addition)
          │
          ▼
-┌──────────────┐
-│     CI       │  ← Continuous Integration
-│  (Auto Test) │
-└──────┬───────┘
-       │ Pass
-       ▼
-┌──────────────┐
-│    Build     │
-│              │
-└──────┬───────┘
-       │ Success
-       ▼
-┌──────────────┐
-│     CD       │  ← Continuous Deployment
-│ (Auto Deploy)│
-└──────────────┘
+┌──────────────────┐
+│   PreToolUse     │ ← Just before tool execution
+└────────┬─────────┘   (validation, backup, logging)
+         │
+         ▼
+    [Tool Executes]
+         │
+         ▼
+┌──────────────────┐
+│   PostToolUse    │ ← Just after tool execution
+└────────┬─────────┘   (formatting, testing, notification)
+         │
+         ▼
+┌──────────────────┐
+│      Stop        │ ← When response completes
+└──────────────────┘   (cleanup, summary, logging)
 ```
 
-- **CI**: Auto-test on code changes
-- **CD**: Auto-deploy when tests pass
+### Complete Hook Event List
+
+Claude Code supports a total of 12 hook events:
+
+| Hook Event | Description | Uses Matcher | Main Use |
+|------------|-------------|--------------|----------|
+| `PreToolUse` | Just before tool execution | Yes | Backup, validation, blocking |
+| `PostToolUse` | Just after successful tool execution | Yes | Formatting, testing, logging |
+| `PostToolUseFailure` | When tool execution fails | Yes | Error logging, notification |
+| `PermissionRequest` | When permission dialog is shown | Yes | Auto-approval, logging |
+| `UserPromptSubmit` | When user submits a prompt | No | Input transformation, context addition |
+| `Notification` | When Claude Code sends a notification | No | External notification integration |
+| `Stop` | When Claude Code response completes | No | Summary, cleanup, logging |
+| `SessionStart` | When session starts or resumes | No | Initialization, environment setup |
+| `SessionEnd` | When session ends | No | Cleanup, save, logging |
+| `SubagentStart` | When subagent starts | No | Monitoring, logging |
+| `SubagentStop` | When subagent completes | No | Result processing, logging |
+| `PreCompact` | Just before context compaction | No | Save important information |
+
+> **Note**: Matcher is a pattern for matching tool names. It is only used with `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, and `PermissionRequest`.
+
+### Hook Configuration File Details
+
+```json
+// ~/.claude/settings.json
+{
+  "hooks": {
+    // Pre-tool execution Hook
+    "PreToolUse": [
+      {
+        "matcher": "Edit",           // Apply only to Edit tool
+        "command": "cp $FILE_PATH $FILE_PATH.backup"  // Create backup
+      },
+      {
+        "matcher": "Bash",           // Apply only to Bash tool
+        "command": "echo 'Command executing: $COMMAND' >> ~/.claude/cmd-log.txt"
+      }
+    ],
+
+    // Post-tool execution Hook
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "command": "npx prettier --write $FILE_PATH && npx eslint --fix $FILE_PATH"
+      },
+      {
+        "matcher": "Write",
+        "command": "echo 'New file created: $FILE_PATH' >> ~/.claude/file-log.txt"
+      }
+    ],
+
+    // User input Hook
+    "UserPromptSubmit": [
+      {
+        "command": "echo '$(date): New request started' >> ~/.claude/session-log.txt"
+      }
+    ],
+
+    // Response completion Hook
+    "Stop": [
+      {
+        "command": "echo '$(date): Response completed' >> ~/.claude/session-log.txt"
+      }
+    ]
+  }
+}
+```
+
+### Available Variables
+
+| Variable | Description | Available in Hooks |
+|----------|-------------|-------------------|
+| `$FILE_PATH` | File path | Edit, Write, Read |
+| `$COMMAND` | Executed command | Bash |
+| `$TOOL_NAME` | Tool name | All tool-related Hooks |
+| `$EXIT_CODE` | Exit code | PostToolUse, PostToolUseFailure |
+
+> **Pro Tip**: You can use `$()` syntax in hook commands to insert shell command results. Examples: `$(date)`, `$(git branch --show-current)`
 
 ---
 
-## GitHub Actions Basics
+## Practical Hook Examples
 
-### Workflow File Location
+### 1. File Backup (Safety Net)
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit",
+        "command": "cp $FILE_PATH $FILE_PATH.backup.$(date +%Y%m%d_%H%M%S)"
+      }
+    ]
+  }
+}
+```
+
+Creates a backup with timestamp before editing files.
+
+### Real Conversation Example: When Backup Helped
 
 ```
-.github/
-└── workflows/
-    ├── ci.yml        # CI workflow
-    ├── deploy.yml    # Deploy workflow
-    └── review.yml    # Code review workflow
+User: Refactor this function
+
+Claude: I'll refactor the calculateTotal function.
+[File edit executed - Hook automatically creates backup]
+
+User: Ah, the original version was better. Revert it
+
+Claude: There's a backup file. I'll restore it.
+utils.ts.backup.20240115_143022 → utils.ts
+Restore complete!
 ```
 
-### Basic Structure
+### 2. Auto Lint and Formatting
 
-```yaml
-# .github/workflows/ci.yml
-name: CI
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run tests
-        run: npm test
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "command": "npx prettier --write $FILE_PATH"
+      },
+      {
+        "matcher": "Edit",
+        "command": "npx eslint --fix $FILE_PATH"
+      }
+    ]
+  }
+}
 ```
+
+> **Beginner Tip**: Prettier prettifies code alignment, and ESLint catches syntax errors. Running them automatically keeps your code always clean!
+
+### 3. Change Logging
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "command": "echo '$(date): New file created - $FILE_PATH' | tee -a ~/.claude/log.txt"
+      },
+      {
+        "matcher": "Edit",
+        "command": "echo '$(date): File edited - $FILE_PATH' | tee -a ~/.claude/log.txt"
+      }
+    ]
+  }
+}
+```
+
+Records all file changes to a log.
+
+### 4. Security Check
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "command": "if echo '$COMMAND' | grep -qE 'rm -rf|DROP|DELETE FROM'; then echo 'BLOCKED: Dangerous command' && exit 1; fi"
+      }
+    ]
+  }
+}
+```
+
+Blocks dangerous commands before execution.
+
+### 5. Auto Test Execution
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "command": "if [[ $FILE_PATH == *.test.* ]]; then npm test -- --testPathPattern=$(basename $FILE_PATH); fi"
+      }
+    ]
+  }
+}
+```
+
+When a test file is modified, only that test runs automatically.
+
+### 6. Slack Notification
+
+```json
+{
+  "hooks": {
+    "Stop": [
+      {
+        "command": "curl -X POST $SLACK_WEBHOOK -H 'Content-type: application/json' -d '{\"text\": \"Claude task completed!\"}'"
+      }
+    ]
+  }
+}
+```
+
+Sends a Slack notification when a long task finishes.
 
 ---
 
-## Practical Workflow Examples
+## Mini Quiz: Understanding Hooks
 
-### 1. Basic CI Pipeline
+**Question**: What is the correct use of a `PreToolUse` Hook?
 
-```yaml
-name: CI
+A) Running formatting after file edit
+B) Creating backup before file edit
+C) Logging after response completion
 
-on: [push, pull_request]
+<details>
+<summary>View Answer</summary>
 
-jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm ci
-      - run: npm run lint
+**Answer: B**
 
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm ci
-      - run: npm test
+- `PreToolUse` runs **before** tool execution
+- Used for backup, validation, blocking
+- A is for `PostToolUse`, C is for `Stop` Hook
 
-  build:
-    needs: [lint, test]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm ci
-      - run: npm run build
-```
-
-### 2. Auto Deployment
-
-```yaml
-name: Deploy
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Deploy to Vercel
-        run: |
-          npm install -g vercel
-          vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
-```
-
-### 3. PR Review Automation
-
-```yaml
-name: PR Review
-
-on: [pull_request]
-
-jobs:
-  review:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run Claude Code Review
-        uses: anthropics/claude-code-action@v1
-        with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          prompt: |
-            Review this PR for:
-            - Potential bugs
-            - Security vulnerabilities
-            - Code quality
-```
+</details>
 
 ---
 
-## Using Claude Code in CI
+## Commands System Detailed Explanation
 
-### Headless Mode
+Commands save frequently used prompts for reuse.
 
-Run Claude in scripts with the `-p` flag:
+### Commands Folder Structure
 
-```bash
-# Basic usage
-claude -p "Summarize this project"
-
-# Allow specific tools only
-claude -p "Analyze code" --allowedTools "Read,Glob,Grep"
-
-# JSON output
-claude -p "Extract function list" --output-format json
+```
+.claude/
+└── commands/
+    ├── commit.md       # /commit command
+    ├── review.md       # /review command
+    ├── test.md         # /test command
+    ├── explain.md      # /explain command
+    └── refactor.md     # /refactor command
 ```
 
-### Code Review in CI
+> **Beginner Tip**: When you create a `.md` file in the `.claude/commands/` folder, the filename becomes the command. `review.md` → `/review`
 
-```yaml
-- name: Claude Code Review
-  run: |
-    # Get changed files
-    CHANGED_FILES=$(git diff --name-only HEAD~1)
+### Simple Command Example
 
-    # Review with Claude
-    claude -p "Review these files: $CHANGED_FILES" \
-      --allowedTools "Read,Glob,Grep"
+```markdown
+<!-- .claude/commands/commit.md -->
+Analyze current changes and write a meaningful commit message.
+
+## Steps
+1. Check changes with git diff
+2. Identify change type (feat, fix, refactor, docs, test, etc.)
+3. Write commit message in English
+4. Execute git commit
+
+## Commit Message Format
+type: brief description
+
+- Detailed change 1
+- Detailed change 2
 ```
 
-### Auto Documentation
-
-```yaml
-- name: Generate Docs
-  run: |
-    claude -p "Generate documentation for functions in src/" \
-      --allowedTools "Read,Write,Glob"
-
-    git add docs/
-    git commit -m "docs: auto-generated documentation"
-    git push
+Usage:
+```
+> /commit
 ```
 
----
+### Command with Variables
 
-## Building Production Pipelines
+```markdown
+<!-- .claude/commands/explain.md -->
+Analyze the $ARGUMENTS code.
 
-### Complete CI/CD Example
+## Analysis Items
+1. What this code does (one sentence summary)
+2. Main functions/classes explanation
+3. Data flow
+4. Points that could be improved
 
-```yaml
-name: Full Pipeline
+## Output Format
+### Summary
+[One sentence explanation]
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+### Detailed Analysis
+[Function-by-function explanation]
 
-jobs:
-  # 1. Code Quality Check
-  quality:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run type-check
-
-  # 2. Testing
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm ci
-      - run: npm test -- --coverage
-
-  # 3. Build
-  build:
-    needs: [quality, test]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm ci
-      - run: npm run build
-      - uses: actions/upload-artifact@v4
-        with:
-          name: build
-          path: dist/
-
-  # 4. Deploy (main branch only)
-  deploy:
-    if: github.ref == 'refs/heads/main'
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: build
-      - run: vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
-
-  # 5. Notification
-  notify:
-    needs: deploy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Slack Notification
-        run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
-            -H 'Content-type: application/json' \
-            -d '{"text": "Deployment complete!"}'
+### Improvement Suggestions
+[Suggestions if any]
 ```
 
----
-
-## Security Management
-
-### Secrets Setup
-
-Set in GitHub Settings → Secrets and variables → Actions:
-
-- `ANTHROPIC_API_KEY`: Claude API key
-- `VERCEL_TOKEN`: Vercel deploy token
-- `SLACK_WEBHOOK`: Slack notification URL
-
-### Permission Restrictions
-
-```yaml
-- name: Read-only Claude
-  run: |
-    claude -p "Analyze code" \
-      --allowedTools "Read,Glob,Grep"  # Exclude write tools
+Usage:
+```
+> /explain src/auth/login.ts
 ```
 
----
+`$ARGUMENTS` gets replaced with `src/auth/login.ts`.
 
-## Cost Optimization
+### Including Dynamic Information
 
-### Process Only Changed Files
+```markdown
+<!-- .claude/commands/status.md -->
+Show the current project status.
 
-```yaml
-- name: Get changed files
-  id: changed
-  run: |
-    echo "files=$(git diff --name-only HEAD~1)" >> $GITHUB_OUTPUT
+## Current Information
+- Branch: $(git branch --show-current)
+- Changed files: $(git status --short)
+- Recent commit: $(git log -1 --oneline)
 
-- name: Review only changed
-  run: |
-    claude -p "Review only these files: ${{ steps.changed.outputs.files }}"
+## Requests
+Based on the above information:
+1. Summarize current work status
+2. Identify incomplete work
+3. Suggest next tasks
 ```
 
-### Use Caching
+Commands inside `$()` are executed and results are inserted.
 
-```yaml
-- name: Cache dependencies
-  uses: actions/cache@v4
-  with:
-    path: node_modules
-    key: npm-${{ hashFiles('package-lock.json') }}
+### Real Conversation Example: Using Commands
+
 ```
+User: /status
 
----
+Claude: I'll analyze the current project status.
 
-## Try it yourself
+## Current Status
+- Branch: feature/user-auth
+- Changed files: 3 (M src/auth/login.ts, A src/auth/signup.ts, M tests/auth.test.ts)
+- Recent commit: abc1234 feat: Add login form UI
 
-### Exercise 1: Create Your First Workflow
+## Analysis
+Currently developing user authentication features.
+Login and signup features are in progress,
+and test files are being modified together.
 
-1. Create the simplest workflow (see "Your First CI/CD" section above)
-2. Push to GitHub
-3. Watch it run in the Actions tab
-
-### Exercise 2: Add Real Tests
-
-Expand your workflow to run actual tests:
-
-```yaml
-name: Test
-
-on: push
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm ci
-      - run: npm test
-```
-
-### Exercise 3: Add Multiple Jobs
-
-Create a workflow with lint and test running in parallel:
-
-```yaml
-name: CI
-
-on: push
-
-jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: npm ci
-      - run: npm run lint
-
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: npm ci
-      - run: npm test
+## Suggested Next Steps
+1. Complete tests for current changes
+2. Create PR for code review
+3. Add signup validation
 ```
 
 ---
 
-## If it doesn't work?
+## Practical Command Examples
 
-### Problem: Workflow not triggering
+### 1. Code Review Request
+
+```markdown
+<!-- .claude/commands/review.md -->
+Review the $ARGUMENTS file.
+
+## Review Checklist
+- [ ] Bug potential
+- [ ] Security vulnerabilities
+- [ ] Performance issues
+- [ ] Code style (team conventions)
+- [ ] Test coverage
+- [ ] Error handling
+
+## Output Format
+
+### Summary
+[Overall code quality assessment]
+
+### Issues Found
+| Severity | Location | Issue | Suggestion |
+|----------|----------|-------|------------|
+| ... | ... | ... | ... |
+
+### Positives
+[Things done well]
+
+### Improvement Suggestions
+[Refactoring ideas]
+```
+
+```
+> /review src/api/users.ts
+```
+
+### 2. Writing Tests
+
+```markdown
+<!-- .claude/commands/test.md -->
+Write tests for $ARGUMENTS.
+
+## Test Requirements
+- Use Jest
+- Unit tests first
+- Include edge cases (null, undefined, empty values, boundary values)
+- Test file: *.test.ts
+
+## Test Structure
+```typescript
+describe('Function/ClassName', () => {
+  describe('methodName', () => {
+    it('normal case description', () => {});
+    it('error case description', () => {});
+    it('edge case description', () => {});
+  });
+});
+```
+
+## Mocking Rules
+- External APIs: Use MSW
+- Database: in-memory mock
+- Time: jest.useFakeTimers()
+```
+
+```
+> /test src/utils/validation.ts
+```
+
+### 3. Documentation
+
+```markdown
+<!-- .claude/commands/docs.md -->
+Write documentation for $ARGUMENTS.
+
+## Documentation Contents
+- Function/class description
+- Parameter descriptions (type, default value, required)
+- Return values
+- Exception cases
+- Usage examples (minimum 2)
+
+## Format
+Add directly to code in JSDoc or TSDoc format
+
+## Example
+/**
+ * Retrieves user information.
+ *
+ * @param userId - ID of the user to retrieve
+ * @returns User information object
+ * @throws {NotFoundError} When user cannot be found
+ *
+ * @example
+ * const user = await getUser('user123');
+ * console.log(user.name);
+ */
+```
+
+```
+> /docs src/services/auth.ts
+```
+
+### 4. Refactoring
+
+```markdown
+<!-- .claude/commands/refactor.md -->
+Refactor $ARGUMENTS.
+
+## Refactoring Principles
+- Keep behavior the same
+- Improve readability
+- Remove duplication
+- Split functions (20 lines or less)
+- Clear variable names
+
+## Process
+1. Analyze current code and identify problems
+2. Present refactoring plan
+3. Proceed after user approval
+4. Verify tests pass at each step
+
+## Cautions
+- Don't change too much at once
+- Adding features is not refactoring
+- Explain reasons for changes
+```
+
+```
+> /refactor src/components/Dashboard.tsx
+```
+
+### 5. Issue → Implementation Workflow
+
+A common pattern in real work. From issue to implementation in one go:
+
+```markdown
+<!-- .claude/commands/ticket.md -->
+Handle issue #$ARGUMENTS.
+
+## 1. Check Issue
+$(gh issue view $ARGUMENTS)
+
+## 2. Work Plan
+Analyze the issue content and create an implementation plan.
+- Expected work time
+- List of files to modify
+- Test plan
+
+## 3. Create Branch
+Create a feature/$ARGUMENTS branch.
+
+## 4. Implementation
+Implement once the plan is approved.
+
+## 5. Testing
+Run related tests and verify they pass.
+
+## 6. Create PR
+Create a PR with the changes.
+Link to issue: Closes #$ARGUMENTS
+```
+
+```
+> /ticket 42
+```
+
+One command handles: check issue → create branch → implement → create PR.
+
+### 6. Bug Debugging
+
+```markdown
+<!-- .claude/commands/debug.md -->
+Debug the following error:
+
+$ARGUMENTS
+
+## Debugging Steps
+1. Analyze error message
+2. Check stack trace
+3. Find related code
+4. Identify cause
+5. Present solution
+6. Prevention measures
+
+## Output Format
+### Error Summary
+[What error is it]
+
+### Cause
+[Why it occurred]
+
+### Solution
+[How to fix it - include code]
+
+### Prevention
+[How to prevent it in the future]
+```
+
+```
+> /debug "TypeError: Cannot read property 'map' of undefined at UserList.tsx:15"
+```
+
+---
+
+## Project-Specific Commands
+
+### Frontend Project
+
+```
+.claude/
+└── commands/
+    ├── component.md   # Create component
+    ├── hook.md        # Create custom hook
+    ├── story.md       # Create Storybook story
+    ├── style.md       # Add styles
+    └── page.md        # Create page
+```
+
+```markdown
+<!-- .claude/commands/component.md -->
+Create a React component named $ARGUMENTS.
+
+## Rules
+- Functional component (arrow function)
+- TypeScript strict mode
+- Tailwind CSS
+- Define props type with interface
+
+## File Structure
+src/components/$ARGUMENTS/
+├── $ARGUMENTS.tsx        # Component
+├── $ARGUMENTS.test.tsx   # Test
+├── $ARGUMENTS.stories.tsx # Storybook
+└── index.ts              # export
+
+## Component Template
+```tsx
+interface ${ARGUMENTS}Props {
+  // props definition
+}
+
+export const $ARGUMENTS = ({ }: ${ARGUMENTS}Props) => {
+  return (
+    <div>
+      {/* content */}
+    </div>
+  );
+};
+```
+```
+
+### Backend Project
+
+```
+.claude/
+└── commands/
+    ├── endpoint.md    # Create API endpoint
+    ├── migration.md   # DB migration
+    ├── seed.md        # Seed data
+    ├── validate.md    # Add input validation
+    └── middleware.md  # Create middleware
+```
+
+```markdown
+<!-- .claude/commands/endpoint.md -->
+Create CRUD API for $ARGUMENTS resource.
+
+## Endpoint Structure
+- GET /$ARGUMENTS - List (with pagination)
+- GET /$ARGUMENTS/:id - Detail
+- POST /$ARGUMENTS - Create
+- PATCH /$ARGUMENTS/:id - Update
+- DELETE /$ARGUMENTS/:id - Delete
+
+## Files to Create
+- src/controllers/$ARGUMENTS.controller.ts
+- src/services/$ARGUMENTS.service.ts
+- src/repositories/$ARGUMENTS.repository.ts
+- src/dto/$ARGUMENTS.dto.ts
+- src/entities/$ARGUMENTS.entity.ts
+
+## Requirements
+- Input validation (zod)
+- Error handling
+- Pagination
+- Also create Prisma model
+```
+
+---
+
+## Combining Hooks + Commands
+
+### Commit Workflow Automation
+
+```json
+// settings.json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "command": "if echo '$COMMAND' | grep -q 'git commit'; then npm test; fi"
+      }
+    ]
+  }
+}
+```
+
+```markdown
+<!-- .claude/commands/commit.md -->
+Commit the changes.
+
+## Steps
+1. Check changes with git diff
+2. Run tests (auto-runs via Hook)
+3. Write commit message (Conventional Commits)
+4. Execute commit
+
+## Commit Message Format
+type(scope): description
+
+- type: feat, fix, docs, style, refactor, test, chore
+- scope: optional, scope of change
+- description: present tense, in English
+```
+
+This way:
+1. Run `/commit`
+2. Hook auto-runs tests before commit
+3. Commit proceeds if tests pass
+
+### File Creation Workflow
+
+```json
+// settings.json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "command": "npx prettier --write $FILE_PATH && npx eslint --fix $FILE_PATH"
+      }
+    ]
+  }
+}
+```
+
+```markdown
+<!-- .claude/commands/feature.md -->
+Create the $ARGUMENTS feature.
+
+## Process
+1. Analyze and design the feature
+2. Create necessary files (auto-formatted by Hook)
+3. Write tests
+4. Update documentation
+
+## Automation
+After file creation, Hook automatically:
+- Prettier formatting
+- ESLint fixes
+```
+
+### Real Conversation Example: Using Combination
+
+```
+User: /feature user-profile
+
+Claude: I'll create the user-profile feature.
+
+## Design
+- User profile view/edit functionality
+- Profile image upload
+- Password change
+
+## Files to Create
+1. src/features/user-profile/
+   ├── UserProfile.tsx
+   ├── EditProfile.tsx
+   ├── ChangePassword.tsx
+   └── index.ts
+
+Starting creation...
+
+[File created: UserProfile.tsx]
+[Hook: prettier execution complete]
+[Hook: eslint execution complete]
+
+[File created: EditProfile.tsx]
+[Hook: prettier execution complete]
+[Hook: eslint execution complete]
+
+All files have been created and automatically formatted.
+```
+
+---
+
+## Sharing Commands with Team
+
+### Commit to Git
+
+```
+my-project/
+├── .claude/
+│   └── commands/     # Team shared Commands
+│       ├── commit.md
+│       ├── review.md
+│       ├── deploy.md
+│       └── hotfix.md
+├── CLAUDE.md
+└── src/
+```
+
+Committing `.claude/commands/` to git lets the whole team use the same Commands.
+
+### Document in README
+
+```markdown
+# Team Commands
+
+## Available Commands
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `/commit` | Commit changes | `/commit` |
+| `/review <file>` | Code review | `/review src/api.ts` |
+| `/test <file>` | Write tests | `/test src/utils.ts` |
+| `/deploy` | Deploy to staging | `/deploy` |
+| `/hotfix <issue>` | Emergency fix | `/hotfix 123` |
+
+## Usage
+Enter the above commands in Claude Code.
+
+## Adding Custom Commands
+1. Create a `.md` file in `.claude/commands/` folder
+2. Write the prompt in the file content
+3. Commit to Git
+```
+
+---
+
+## Practice Exercises
+
+### Exercise 1: Create a Simple Hook (Beginner)
+
+Create a hook that logs every time Claude runs a Bash command:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "command": "echo '$(date): Bash command executed' >> ~/.claude/bash-log.txt"
+      }
+    ]
+  }
+}
+```
+
+**Test**: Ask Claude to run `ls` command and check the log file
+
+### Exercise 2: Create Your First Command (Beginner)
+
+1. Create the commands folder: `mkdir -p .claude/commands`
+2. Create a file `.claude/commands/hello.md`:
+
+```markdown
+Say hello and tell me what project I'm working on.
+Look at the folder structure and give me a brief summary.
+```
+
+3. Use it: `> /hello`
+
+### Exercise 3: Command with Variables (Intermediate)
+
+Create `.claude/commands/explain.md`:
+
+```markdown
+Explain the $ARGUMENTS file in simple terms.
+
+## Explanation Items
+1. Purpose of this file
+2. Main functions/classes
+3. Relationship with other files
+4. Points that could be improved
+```
+
+Use it: `> /explain src/index.ts`
+
+### Exercise 4: Hook + Command Combination (Advanced)
+
+1. Hook: Auto backup on file modification
+2. Command: View backup list
+3. Command: Restore to specific backup
+
+---
+
+## Challenge Tasks
+
+### Challenge 1: Complete Development Workflow
+
+Create a system that automates all of the following:
+- Issue start (`/issue-start`)
+- Backup during development (Hook)
+- Auto test execution (Hook)
+- PR creation (`/pr`)
+
+### Challenge 2: Team Onboarding Command
+
+Create a `/onboarding` command that teaches a new team member everything about the project.
+
+### Challenge 3: Notification System
+
+Implement a Hook that sends Slack/Discord notifications when long tasks complete.
+
+---
+
+## Troubleshooting
+
+### Problem: Hook is not executing
 
 **Possible causes:**
-1. YAML syntax error
-2. Workflow file in wrong location
-3. Branch name doesn't match
+1. Wrong matcher name (case-sensitive)
+2. JSON syntax error
+3. Hook added to wrong section
 
 **Solutions:**
-- Check YAML syntax with an online validator
-- File must be in `.github/workflows/` folder
-- Check the `on:` trigger matches your branch
+- Check matcher names: `Edit`, `Write`, `Bash`, `Read`, etc. (exact case)
+- Validate JSON: `cat ~/.claude/settings.json | jq .`
+- Make sure it's inside the `"hooks": { }` section
 
-### Problem: "Invalid workflow file"
+### Problem: Hook command fails silently
 
 **Possible causes:**
-1. YAML indentation wrong
-2. Missing required fields
-3. Typo in action name
+1. Command not found
+2. Permission denied
+3. Wrong file path
 
 **Solutions:**
-- Use exactly 2 spaces for indentation
-- Every workflow needs: `name`, `on`, `jobs`
-- Check action names are spelled correctly
+- Test command manually in terminal first
+- Check if command exists: `which npm`, `which npx`
+- Use absolute paths when possible
 
-### Problem: Tests pass locally but fail in CI
+### Problem: Command not found
 
 **Possible causes:**
-1. Different Node/Python version
-2. Missing environment variables
-3. Different OS (your Mac vs Ubuntu)
+1. File not in `.claude/commands/` folder
+2. File extension is not `.md`
+3. Folder is in wrong location
 
 **Solutions:**
-- Match the version in your workflow to your local version
-- Add environment variables to the workflow
-- Test on the same OS as CI
+- Check folder exists: `ls -la .claude/commands/`
+- Make sure file ends with `.md`
+- Commands folder should be in project root or `~/.claude/`
 
-### Problem: Secrets not working
+### Problem: $ARGUMENTS not working
 
 **Possible causes:**
-1. Secret name misspelled
-2. Secret not added to repository
-3. Wrong secret scope
+1. Using wrong variable name
+2. Not providing arguments when calling
 
 **Solutions:**
-- Check exact secret name in Settings > Secrets
-- Add secret to the correct repository
-- Use `${{ secrets.SECRET_NAME }}` format
+- Use exactly `$ARGUMENTS` (case-sensitive)
+- Provide arguments: `/explain src/file.ts` not just `/explain`
 
 ---
 
-## Common mistakes
+## Common Mistakes
 
-1. **Wrong indentation**
-   ```yaml
-   # BAD - tabs instead of spaces
-   jobs:
-   	test:  # This is a tab!
+1. **Wrong hook timing**
+   - `PreToolUse`: Before the tool runs (for blocking, backup)
+   - `PostToolUse`: After the tool runs (for formatting, testing)
+   - Mixing these up causes unexpected behavior
 
-   # GOOD - 2 spaces
-   jobs:
-     test:
+2. **Forgetting to escape special characters**
+   ```json
+   // BAD - unescaped quotes
+   "command": "echo "hello""
+
+   // GOOD - use single quotes
+   "command": "echo 'hello'"
+
+   // GOOD - escape quotes
+   "command": "echo \"hello\""
    ```
 
-2. **Forgetting checkout**
-   ```yaml
-   # BAD - no checkout, can't access files
-   steps:
-     - run: npm test
+3. **Commands that hang**
+   - If your hook command waits for input, Claude Code will hang
+   - Always use non-interactive commands (`-y`, `--yes` flags)
 
-   # GOOD - checkout first
-   steps:
-     - uses: actions/checkout@v4
-     - run: npm test
-   ```
+4. **Overcomplicating hooks**
+   - Start simple, add complexity gradually
+   - One hook doing one thing is easier to debug
 
-3. **Exposing secrets in logs**
-   ```yaml
-   # BAD - prints secret to logs!
-   - run: echo ${{ secrets.API_KEY }}
+5. **Not testing commands manually first**
+   - Always run your command in terminal first
+   - If it doesn't work there, it won't work in a hook
 
-   # GOOD - use secret directly
-   - run: my-command
-     env:
-       API_KEY: ${{ secrets.API_KEY }}
-   ```
+---
 
-4. **Running on every push**
-   ```yaml
-   # BAD - runs on every branch
-   on: push
+## Glossary
 
-   # BETTER - only main branch
-   on:
-     push:
-       branches: [main]
-   ```
-
-5. **Not caching dependencies**
-   - Without caching, `npm install` runs every time
-   - Add caching to speed up workflows significantly
+| Term | Description |
+|------|-------------|
+| **Hook** | Code that automatically runs when specific events occur |
+| **Command** | Saved prompt executed with `/command` |
+| **Matcher** | Pattern that specifies which tool the Hook responds to |
+| **$ARGUMENTS** | Variable that receives arguments passed to Command |
+| **$FILE_PATH** | Variable containing the path of the modified file |
+| **PreToolUse** | Hook that runs before tool execution |
+| **PostToolUse** | Hook that runs after tool execution |
 
 ---
 
 ## Summary
 
 What you learned in this chapter:
-- [x] CI/CD concepts (auto-test, auto-deploy)
-- [x] GitHub Actions basic structure
-- [x] Practical workflow examples
-- [x] Claude Code CI integration
-- [x] Security and cost optimization
+- [x] Hooks system (Pre/Post ToolUse, UserPromptSubmit, Stop)
+- [x] Reusing prompts with Commands
+- [x] Using variables and dynamic information
+- [x] Combining Hooks + Commands
+- [x] Sharing Commands with team
 
-**Key point**: Automation provides value continuously once set up.
+**Key Point**: Automate repetitive work with Hooks and Commands.
 
-In the next chapter, you'll learn how to effectively use Claude Code in teams.
+---
 
-Proceed to [Chapter 24: Team Collaboration](../Chapter24/README.md).
+## Next Chapter Preview
+
+In Chapter 24, you'll learn about **Agents and Skills**:
+- Agents: Giving Claude expert roles
+- Skills: Keyword-based automatic workflows
+- Creating specialized helpers like code reviewers, testers, documentation writers
+
+If Hooks and Commands focus on "what to do", Agents and Skills focus on "who does it, and how"!
+
+Proceed to [Chapter 24: Agents & Skills](../Chapter24/README.md).

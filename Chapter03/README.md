@@ -1,39 +1,70 @@
-# Chapter 03: Your First Conversation
+# Chapter 03: Starting Your First Conversation
 
 **English** | [한국어](./README.ko.md)
 
-## What You'll Learn
+---
 
-- Basic conversation methods with Claude Code
-- Understanding permission modes (important)
-- Frequently used shortcuts
+## 💬 Ask Questions
+
+If you have any questions while learning, ask on Discord!
+
+[![Discord](https://img.shields.io/badge/Discord-Ask_Questions-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite-link)
 
 ---
 
-## Why Do You Need This?
+## 🎯 Goals for This Chapter
 
-You've installed Claude Code. Now what? This chapter teaches you how to actually talk to it and keep your files safe while doing so.
+- Learn the basic way to converse with Claude Code
+- Understand permission modes (very important!)
+- Know frequently used shortcuts and commands
+- Learn effective questioning methods
 
-**Real-world scenarios:**
-- You want to build a website, but you don't want Claude to accidentally delete important files
-- You're exploring a new project and want to understand the code before making changes
-- You need to make quick edits without clicking "approve" every single time
+---
 
-### Simple Analogy: Giving Instructions to a Helper
+## ⏱️ Estimated Time
 
-Imagine you have a very capable helper at your house. Before they start working, you'd want to set some ground rules:
+- Reading: **25 minutes**
+- Hands-on: **20 minutes**
 
-- **"Just look around first"** = Plan Mode (read-only)
-- **"Ask me before touching anything"** = Normal Mode (asks permission)
-- **"Go ahead and clean, but ask before throwing things away"** = Accept Edits Mode (auto-approves safe actions)
+---
 
-Permission modes are these ground rules for Claude.
+## 📋 What You Need
+
+- Claude Code installation complete (Chapter 02)
+- Terminal access
+
+---
+
+## 🔗 Previous Chapter Review
+
+In [Chapter 02](../Chapter02/README.md), we opened the terminal, installed Claude Code, and had our first conversation. Now it's time to learn how to have deeper conversations.
+
+---
+
+## Why Is This Necessary?
+
+You've installed Claude Code. Now what? In this chapter, you'll learn how to actually converse and how to safely protect your files.
+
+**Real situations:**
+- Want to make a website, but Claude shouldn't accidentally delete important files
+- Want to understand code before making changes while exploring a new project
+- Want to make quick edits without clicking "approve" every time
+
+### Easy Analogy: Giving Instructions to a Helper
+
+Imagine you have a capable helper at home. Before they start working, you'd want to set some rules:
+
+- **"Just look around first"** = Plan mode (read-only)
+- **"Ask me before touching anything"** = Normal mode (ask for permission)
+- **"You can clean without asking, but ask before throwing anything away"** = Accept Edits mode (auto-approve safe actions)
+
+Permission modes are these kinds of rules you set for Claude.
 
 ---
 
 ## Basic Conversation Method
 
-Claude Code operates as a chat interface. Type input after the `>` prompt.
+Claude Code converses like a chat. Just type after the `>`.
 
 ### Starting a Conversation
 
@@ -42,57 +73,91 @@ Claude Code operates as a chat interface. Type input after the `>` prompt.
 claude
 ```
 
-This screen appears:
+When you start, this screen appears:
 
 ```
+╭────────────────────────────────────────╮
+│ Welcome to Claude Code!                │
+│                                        │
+│ /help for commands, Shift+Tab for mode │
+╰────────────────────────────────────────╯
+
 >
 ```
 
-Type input here.
+Just type here.
 
-### Examples
+### Basic Examples
 
 ```
 > Hello!
 ```
 
 ```
-> What's the weather like?
+> How's the weather today?
 ```
 
 ```
 > What's in this folder?
 ```
 
-Any question works. Multiple languages including Korean are supported.
+You can ask anything. It understands English well.
+
+> 💡 **Beginner Tip**
+>
+> Claude Code can handle everyday conversation, but it's optimized for coding-related tasks.
+> You'll get more useful answers with specific requests like "Explain this project" rather than just "Hello."
 
 ---
 
-## Permission Modes (Essential)
+## Permission Modes (⭐ Must Understand)
 
-Claude Code has three modes. **This is the most important concept.**
+Claude Code has three modes. **This is the most important thing.**
 
-### Why Permission Management?
+### Why Is Permission Management Necessary?
 
-LLMs "interpret" your requests and execute them. They're usually accurate, but occasionally interpret differently than intended.
+LLMs "interpret" your requests to execute them. Most of the time it's accurate, but sometimes it may interpret differently than intended.
 
-For example, "clean up this folder" could mean:
-- Organizing files by category
-- Deleting unnecessary files
+For example, if you say "Clean up this folder":
+- It could mean organizing files by category
+- It could mean deleting unnecessary files
 
-The LLM selects the most appropriate interpretation from context, but cannot be 100% certain. That's why confirmation before important operations is safer.
+That's why it's safer to get confirmation before important actions.
 
-### 1. Plan Mode (Safest)
+### Design Philosophy of Permission Modes
+
+Claude Code's permission system follows these principles:
+
+1. **Safety first**: By default, asks for confirmation on all changes
+2. **Gradual trust**: Users can adjust the trust level
+3. **Transparency**: Always shows what it's about to do
+4. **Reversible**: Can recover even from mistakes
+
+> 🔥 **Pro Tip**
+>
+> Permission modes are not about "trusting Claude."
+> It's a safety mechanism to **confirm whether your request is clear**.
+> Vague request → Possibility of unexpected results
+
+### 🔵 1. Plan Mode (Safest)
 
 ```
-Plan Mode
-Read-only. Cannot modify anything.
+📋 Plan Mode
+Read-only. Cannot change anything.
 ```
 
-**Use when:**
-- First examining a project
-- Understanding code behavior
-- Planning before changes
+**Features:**
+- Can only read files
+- Cannot create/modify/delete files
+- Cannot execute terminal commands (read commands are okay)
+- Optimal for planning
+
+**When to use:**
+- When first looking at a project
+- When you want to understand how code works
+- When making a plan before changes
+- When only doing code review or analysis
+- When you're afraid of making mistakes
 
 **How to enter:**
 ```
@@ -100,38 +165,148 @@ Read-only. Cannot modify anything.
 ```
 Or press `Shift + Tab` twice
 
-### 2. Normal Mode (Default)
+**Real conversation example:**
+```
+Plan Mode 📋
+
+> Explain this project structure
+
+This project is a React-based web application.
+
+Main structure:
+├── src/
+│   ├── components/  # UI components
+│   ├── pages/       # Page components
+│   └── utils/       # Utility functions
+├── public/          # Static files
+└── package.json     # Dependency list
+
+Key files:
+- src/App.js: Main app component
+- src/index.js: Entry point
+```
+
+> 💡 **Beginner Tip**
+>
+> Even if you say "Create a file" in Plan mode, it won't be created.
+> Claude will only tell you a plan like "It would be good to make it like this."
+> To actually create it, you need to change modes.
+
+### 🟡 2. Normal Mode (Default)
 
 ```
-Normal Mode
-Asks before making any changes.
+🔒 Normal Mode
+Asks for confirmation before every change.
 ```
 
-**Use when:**
-- First learning Claude Code
-- Working with important files
-- Verifying each change individually
+**Features:**
+- Can read/write files (after confirmation)
+- Can execute terminal commands (after confirmation)
+- Requests approval for all changes
+- Balance of safety and efficiency
 
-When Claude attempts to modify a file:
+**When to use:**
+- When first learning Claude Code
+- When handling important files
+- When you want to verify changes one by one
+- When working in production environment
+
+When Claude tries to modify a file:
 ```
 Claude wants to edit src/app.js
 [Allow] [Deny] [Allow all]
 ```
-Select Allow to proceed.
+It asks for confirmation like this. Select Allow and it's modified.
 
-### 3. Accept Edits Mode (Fast)
+**Approval option explanations:**
+| Option | Meaning | When to use? |
+|--------|---------|--------------|
+| `y` / Allow | Allow just this time | When you've checked the change and it's okay |
+| `n` / Deny | Reject | When it's an unwanted change |
+| `a` / Allow all | Allow all similar actions | When there are many repetitive tasks |
+
+**Real conversation example:**
+```
+Normal Mode 🔒
+
+> Create an index.html file
+
+Creating file: index.html
+──────────────────────────────
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Page</title>
+</head>
+<body>
+    <h1>Hello!</h1>
+</body>
+</html>
+──────────────────────────────
+
+Allow this action? [y/n/a]
+> y
+
+✓ Created index.html
+```
+
+### 🟢 3. Accept Edits Mode (Fast)
 
 ```
-Accept Edits Mode
-File edits auto-approved. Only asks for dangerous commands.
+⚡ Accept Edits Mode
+File edits auto-approved. Only dangerous commands ask for confirmation.
 ```
 
-**Use when:**
-- Already comfortable with Claude Code
-- Working quickly
-- Trusting Claude's decisions
+**Features:**
+- File read/write auto-approved
+- Only dangerous commands ask for confirmation (rm, git push, etc.)
+- Fastest work speed
+- Recommended after building trust
 
-### Mode Switching
+**When to use:**
+- When you're already comfortable
+- When you want to work quickly
+- When you can trust Claude
+- For personal projects or experimental environments
+
+**Actions that are auto-approved:**
+- File creation
+- File modification
+- File reading
+- Safe terminal commands (ls, cat, npm install, etc.)
+
+**Actions that still ask for confirmation:**
+- File deletion (rm)
+- git push
+- System commands
+- sudo commands
+
+**Real conversation example:**
+```
+Accept Edits Mode ⚡
+
+> Create a login form component
+
+✓ Created src/components/LoginForm.js
+✓ Updated src/App.js (added import)
+✓ Created src/styles/LoginForm.css
+
+I've created the login form component. Features:
+- Email/password input fields
+- Validation
+- Login button
+
+Would you like to test it?
+```
+
+> ⚠️ **Caution**
+>
+> Even in Accept Edits mode, mistakes can happen.
+> Using Git allows you to return to previous states anytime.
+> Normal mode is recommended for important projects.
+
+### Switching Modes
 
 | Method | Description |
 |--------|-------------|
@@ -139,222 +314,826 @@ File edits auto-approved. Only asks for dangerous commands.
 | `/plan` | Switch to Plan mode |
 | `claude --permission-mode plan` | Start in Plan mode |
 
-### Pro Tip
+### Mode Comparison Table
 
-> "Almost always start in Plan mode."
+| Feature | Plan 📋 | Normal 🔒 | Accept Edits ⚡ |
+|---------|---------|-----------|-----------------|
+| Read files | ✅ | ✅ | ✅ |
+| Create/modify files | ❌ | ✅ (confirm) | ✅ (auto) |
+| Delete files | ❌ | ✅ (confirm) | ✅ (confirm) |
+| Safe commands | ✅ | ✅ (confirm) | ✅ (auto) |
+| Dangerous commands | ❌ | ✅ (confirm) | ✅ (confirm) |
+| Work speed | Slow | Medium | Fast |
+| Safety | Highest | High | Medium |
 
-For new work, press `Shift + Tab` twice to enter Plan mode. LLMs generate better code when they understand the full context first. Analyzing code and planning before execution reduces situations where "it interpreted differently than intended, now I need to redo it."
+### 🌟 Mode Selection Guide
+
+```
+┌─────────────────────────────────────────────────────┐
+│           When Should I Use Which Mode?              │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│   🆕 When first opening a project                   │
+│   └─→ Plan mode to understand structure             │
+│                                                     │
+│   📝 When code modification is needed               │
+│   └─→ Normal mode to verify one by one              │
+│                                                     │
+│   🚀 When you need to work fast                     │
+│   └─→ Accept Edits mode (after getting comfortable) │
+│                                                     │
+│   🔍 When only doing code review/analysis           │
+│   └─→ Stay in Plan mode                             │
+│                                                     │
+│   🏢 Company projects                               │
+│   └─→ Normal mode recommended                       │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+### 🌟 Pro Tip
+
+> **"Almost always start in Plan mode."**
+
+When doing new work, press `Shift + Tab` twice to first enter Plan mode. Analyze the code and make a plan before executing, and you'll reduce situations where you have to redo things because it was "interpreted differently than intended."
 
 ---
 
 ## Frequently Used Shortcuts
 
-No need to memorize. Reference when needed.
+No need to memorize. Just check when needed.
 
 | Shortcut | Function |
 |----------|----------|
-| `Shift + Tab` | Change permission mode |
-| `Ctrl + C` | Cancel current operation |
-| `Esc Esc` | Undo (revert to previous state) |
-| `Ctrl + L` | Clear screen (preserves conversation) |
-| `Shift + Enter` | Line break (for long messages) |
+| `Shift + Tab` | Switch permission mode |
+| `Ctrl + C` | Cancel current task |
+| `Esc Esc` | Undo (return to last state) |
+| `Ctrl + L` | Clear screen (conversation preserved) |
+| `Shift + Enter` | New line (when writing long messages) |
 
-### Note for Mac Users
+> 💡 **Beginner Tip**
+>
+> The most important ones are `Shift + Tab` (mode switch) and `Esc Esc` (undo).
+> Just remember these two!
 
-To use `Alt` key combinations on Mac, enable "Option as Meta" in terminal settings.
+### Shortcut Details
+
+#### Shift + Tab - Mode Switch
+```
+Normal 🔒 → Accept Edits ⚡ → Plan 📋 → Normal 🔒 ...
+```
+Cycles in order. You can check current mode at the top of the screen.
+
+#### Esc Esc - Undo
+Cancels the action Claude just did.
+```
+> Change the file contents
+✓ Updated config.js
+
+> (Esc Esc)
+↩ Reverted changes to config.js
+```
+
+> 🔥 **Pro Tip**
+>
+> `Esc Esc` only undoes the last action.
+> Use Git to undo multiple actions.
+
+#### Ctrl + C - Cancel Task
+Use when you want to stop Claude while it's generating a response.
+```
+> Write long code
+
+Claude: Sure, I'll write that...
+[=========>            ] 50%
+
+(Ctrl + C)
+
+Task cancelled.
+```
+
+#### Shift + Enter - New Line
+You can write long requests across multiple lines.
+```
+> Create a website (Shift+Enter)
+> - Put a logo in the header (Shift+Enter)
+> - Divide into 3 sections (Shift+Enter)
+> - Support dark mode (Enter to send)
+```
+
+### Mac Users Note
+
+To use `Alt` key combinations on Mac, you need to enable "Option as Meta" in terminal settings.
+
+**How to set up:**
+1. Terminal > Preferences > Profiles
+2. Keyboard tab
+3. Check "Use Option as Meta key"
 
 ---
 
 ## Slash Commands
 
-Special commands starting with `/`.
+Special commands that start with `/`.
 
-| Command | Description |
-|---------|-------------|
-| `/help` | View all commands |
-| `/clear` | Clear conversation history |
-| `/exit` | Exit Claude Code |
-| `/cost` | View usage cost |
-| `/model` | View/change model |
+| Command | Description | Usage Example |
+|---------|-------------|---------------|
+| `/help` | View all commands | When you can't remember a command |
+| `/clear` | Delete conversation history | When starting a new topic |
+| `/exit` | Exit Claude Code | When work is done |
+| `/cost` | View usage cost so far | API key users |
+| `/model` | View/change model in use | When you want to use a different model |
+| `/plan` | Switch to Plan mode | Read-only mode |
 
 ### /clear vs Ctrl+L
 
-- `/clear`: Deletes conversation. Claude forgets previous context.
-- `Ctrl+L`: Clears screen only. Claude retains memory.
+These look similar but are completely different!
+
+| Category | `/clear` | `Ctrl+L` |
+|----------|----------|----------|
+| Screen | Cleared | Cleared |
+| Conversation history | **Deleted** | Preserved |
+| Claude's memory | **Forgets** | Remembers |
+| Purpose | Start new topic | Just clean the screen |
+
+**Example:**
+```
+> Create a button component
+✓ Created Button.js
+
+> /clear
+
+> Modify the button I made earlier
+Which button are you referring to?
+(Claude forgot the previous conversation)
+```
+
+```
+> Create a button component
+✓ Created Button.js
+
+> (Ctrl + L)
+
+(Screen becomes clean)
+
+> Modify the button I made earlier
+Sure, I'll modify Button.js.
+(Claude remembers)
+```
+
+> 💡 **Beginner Tip**
+>
+> If confused, just use `Ctrl+L`.
+> Use `/clear` only when you really want to start from scratch.
 
 ---
 
-## Continuing Sessions
+## Resuming Sessions
 
-Previous conversations can be continued after closing Claude Code.
+You can continue previous conversations even after exiting and restarting Claude Code.
 
 ```bash
 # Continue last conversation
 claude --continue
 
-# Select from past conversations
+# Choose from past conversations
 claude --resume
+```
 
-# Name current session (for easier retrieval)
-/rename my-project-work
+**--continue usage example:**
+```bash
+# Yesterday's work
+> Create a login page
+✓ Created login.html
+> /exit
+
+# Continue today
+$ claude --continue
+> Add CSS to the login page I made yesterday
+Sure, I'll add styles to login.html...
+```
+
+**--resume usage example:**
+```bash
+$ claude --resume
+
+Past conversation list:
+1. 2024-01-17 Login page work
+2. 2024-01-16 API server build
+3. 2024-01-15 Database setup
+
+Select (1-3): 2
+
+(2024-01-16 conversation restored)
 ```
 
 ---
 
-## Practice
+## Effective Conversation Patterns
 
-1. Start Claude Code: `claude`
-2. Switch to Plan mode: `Shift + Tab` twice (or `/plan`)
-3. Examine the folder:
-   ```
-   > What's in this folder? Explain.
-   ```
-4. Switch to Normal mode: `Shift + Tab`
-5. Create a simple file:
-   ```
-   > Create a file called test.txt. Write "Hello World" in it.
-   ```
-6. When prompted, select `y` or `Allow`
-7. Verify the result:
-   ```
-   > Show me the contents of the file you just created.
-   ```
+Methods for getting better results when talking with Claude Code.
+
+### Pattern 1: Provide Context
+
+**Bad example:**
+```
+> Create a button
+```
+
+**Good example:**
+```
+> This is a React project. Create a blue submit button.
+> When clicked, send form data to API.
+```
+
+### Pattern 2: Request Step by Step
+
+**Bad example:**
+```
+> Create a shopping mall
+```
+
+**Good example:**
+```
+> I'm going to build a shopping mall. First create the product list page.
+> Product data can be hardcoded for now.
+```
+
+### Pattern 3: Specify Result Format
+
+**Bad example:**
+```
+> Process user information
+```
+
+**Good example:**
+```
+> Create a function that processes user information.
+> Input: { name: string, email: string }
+> Output: { valid: boolean, errors: string[] }
+```
+
+### Pattern 4: State Constraints
+
+```
+> Create a login form.
+> But with pure HTML/CSS/JS only, no external libraries.
+> Include validation too.
+```
+
+### Pattern 5: Show Examples
+
+```
+> Parse API response in this format:
+>
+> Input: { "user": { "name": "John Doe" } }
+> Output: "John Doe"
+```
+
+### Pattern 6: Ask Why
+
+```
+> Why did you recommend useReducer instead of useState?
+```
+
+### Pattern 7: Request Alternatives
+
+```
+> Is there another way besides this?
+> Do it in a more performant way.
+```
+
+### Pattern 8: Request Review
+
+```
+> Check if there are any problems with the code I just made.
+> Check for security vulnerabilities too.
+```
+
+### Pattern 9: Request Explanation
+
+```
+> Explain the code you just made so a beginner can understand.
+> Add comments to each line too.
+```
+
+### Pattern 10: Request Comparison
+
+```
+> Compare the pros and cons of this method vs that method.
+> Tell me when to use which.
+```
 
 ---
 
-## Advanced: Using Claude Code Effectively
+## Good Questions vs Bad Questions
+
+### Bad Question Examples
+
+| Question | Problem |
+|----------|---------|
+| "Create a website" | Too vague. What kind of website? |
+| "Fix the code" | Unclear what and how to fix |
+| "It's not working" | No explanation of what's not working |
+| "Make it the best" | Unclear criteria |
+| "There's an error" | No information about what error |
+
+### Good Question Examples
+
+| Question | Why It's Good |
+|----------|---------------|
+| "Create a portfolio website. With intro, 3 projects, and contact sections." | Specific requirements |
+| "@app.js Fix the null error on line 35" | File, location, and error type specified |
+| "I get a 'Cannot read property' error. I'll show you the console log." | Shares error message |
+| "Make it responsive so it looks good on mobile too" | Clear criteria |
+| "Loading takes over 3 seconds. I want to reduce it to under 1 second." | Measurable goal |
+
+### Question Improvement Example
+
+**Before:**
+```
+> There's a bug
+```
+
+**After:**
+```
+> @src/api.js There's an error when loading user data.
+> Console shows "TypeError: Cannot read property 'name' of undefined".
+> It seems to happen when the user isn't logged in.
+```
+
+> 🔥 **Pro Tip**
+>
+> Asking good questions to Claude is like entering good search terms in a search engine.
+> The more specific, the more accurate the answer.
+
+---
+
+## 🔨 Try It Yourself
+
+### Exercise 1: Switching Modes
+
+1. Start Claude Code: `claude`
+2. Check current mode (displayed at top of screen)
+3. Press `Shift + Tab` to switch mode
+4. Confirm mode indicator changes
+5. Press `Shift + Tab` again until you reach Plan mode
+
+**Expected result:** Mode changes Normal → Accept Edits → Plan
+
+### Exercise 2: Exploring in Plan Mode
+
+```
+> What's in this folder? Explain it.
+```
+
+**Expected result:** Claude shows file list and explains. Nothing is modified.
+
+### Exercise 3: Creating a File in Normal Mode
+
+1. Press `Shift + Tab` to switch to Normal mode
+2. Type:
+```
+> Create hello.txt file. Write "Hello" inside.
+```
+3. Select `y` or `Allow` when approval is requested
+4. Verify:
+```
+> Show me the contents of the file I just made.
+```
+
+**Expected result:** File is created, contents confirmed as "Hello"
+
+### Exercise 4: Undo Practice
+
+1. Make a file modification request:
+```
+> Change hello.txt contents to "Hello World"
+```
+2. Confirm change after approval
+3. Press `Esc Esc` to undo
+4. Check if file contents returned to original
+
+### Exercise 5: Practice Various Question Patterns
+
+```
+> Explain this project structure (Plan mode)
+
+> Create a simple calculator function (Normal mode)
+
+> Explain the code you just made
+
+> Is there another way?
+
+> Add error handling too
+```
+
+---
+
+## 🖼️ Expected Screens
+
+### Mode Indicator
+
+```
+╭─ Plan Mode ────────────────────────────╮
+│ 📋 Read-only - No changes allowed      │
+╰────────────────────────────────────────╯
+
+>
+```
+
+### Approval Request (Normal Mode)
+
+```
+Claude wants to create file: hello.txt
+
+────────────────────────────────────────
+Hello
+────────────────────────────────────────
+
+Allow this action? [y/n/a]
+```
+
+- `y`: Allow just this time
+- `n`: Deny
+- `a`: Allow all similar actions from now on
+
+### File Modification Diff Display
+
+```
+Claude wants to edit hello.txt:
+
+────────────────────────────────────────
+- Hello
++ Hello World
+────────────────────────────────────────
+
+Allow this action? [y/n/a]
+```
+
+---
+
+## 🎯 Mini Quiz
+
+### Q1. Can you create files in Plan mode?
+<details>
+<summary>Show Answer</summary>
+
+No. Plan mode is read-only.
+To create files, you need to switch to Normal or Accept Edits mode.
+</details>
+
+### Q2. What's the biggest difference between Normal mode and Accept Edits mode?
+<details>
+<summary>Show Answer</summary>
+
+- **Normal**: Asks for confirmation on all changes
+- **Accept Edits**: File modifications auto-approved, only dangerous actions ask for confirmation
+</details>
+
+### Q3. What does Esc Esc shortcut do?
+<details>
+<summary>Show Answer</summary>
+
+Undoes the action Claude just did.
+</details>
+
+### Q4. What's the difference between /clear and Ctrl+L?
+<details>
+<summary>Show Answer</summary>
+
+- `/clear`: Conversation history is deleted and Claude forgets previous conversation
+- `Ctrl+L`: Only the screen is cleared and conversation history is preserved
+</details>
+
+### Q5. What mode should you start with when opening a new project for the first time?
+<details>
+<summary>Show Answer</summary>
+
+It's good to start in Plan mode.
+First understand the project structure, make a plan, then start modifications - this is safer.
+</details>
+
+---
+
+## 📝 Practice Exercises
+
+### Difficulty 1: Basic (Required)
+
+1. Start Claude Code and experience all three modes
+2. Say "Create a file" in each mode and observe differences
+3. Practice switching modes 5 times with `Shift + Tab`
+
+### Difficulty 2: Intermediate
+
+1. Get current folder structure analysis in Plan mode
+2. Switch to Normal mode and create `practice.txt` file
+3. Modify file contents and undo with `Esc Esc`
+4. Experience the difference between `/clear` and `Ctrl+L` directly
+
+### Difficulty 3: Challenge
+
+1. Create HTML, CSS, JS files each in Normal mode
+2. Request modifications so each file connects to each other
+3. Switch to Accept Edits mode and quickly implement additional features
+4. Recover from mistakes during work using undo
+
+---
+
+## 🏆 Challenge Tasks
+
+1. **Continue conversation**: Try continuing previous conversation with `claude --continue`
+2. **Custom start**: Set up Plan mode start with `claude --permission-mode plan`
+3. **Efficient workflow**: Complete work following Plan → Normal → Accept Edits sequence
+
+---
+
+## Advanced: Effective Claude Code Usage
 
 ### Think → Plan → Execute
 
-When starting with an AI tool, the instinct is to type immediately. But pausing to clarify "what am I trying to build?" leads to much better results.
+When first encountering an AI tool, you want to input something right away. But pausing for a moment to first organize "What am I trying to build?" makes results much better.
 
-Plan Mode helps with this. Claude analyzes the code and suggests an approach, and you can verify the plan before proceeding. Getting the direction right early prevents "do I need to redo this?" situations later.
-
-### Choosing the Right Permission Mode
-
-If you are unsure which mode to use, consider two factors:
-
-**1. Risk level of the task**
-- Creating new files → Low
-- Modifying existing code → Medium
-- Config files or database operations → High
-
-**2. Can it be undone?**
-- Tracked by Git → Easy to revert
-- External service calls → Hard to undo
-
-| Situation | Recommended Mode |
-|-----------|-----------------|
-| Low risk + Easy to revert | Accept Edits |
-| Medium risk or unfamiliar task | Normal |
-| High risk or hard to undo | Plan |
-
-### Clear Requests Lead to Clear Results
-
-Saying "make a website" forces Claude to choose from countless possibilities. But "make a portfolio page with intro, 3 projects, and contact sections in dark theme" lets Claude understand exactly what you want.
-
-When making requests, consider:
-- **What**: What result do you want
-- **Where**: Which file/location
-- **How**: Any specific approach you prefer
-- **Why**: Context enables better judgment
-
-### Design Decisions Together
-
-For complex features, rather than jumping into implementation, discuss the structure with Claude in Plan Mode first.
+Plan Mode helps this process. When Claude analyzes code and suggests approaches, you can verify if that plan is correct before proceeding.
 
 ```
-> /plan
-> I want to add user authentication.
-> What options are there, and what fits this project?
+┌──────────────────────────────────────────────────┐
+│              Effective Workflow                    │
+├──────────────────────────────────────────────────┤
+│                                                  │
+│  1️⃣ Plan mode: "Analyze this project"            │
+│     └─→ Understand structure, make plan          │
+│                                                  │
+│  2️⃣ Normal mode: "Modify this part"              │
+│     └─→ Proceed while confirming important       │
+│         changes                                  │
+│                                                  │
+│  3️⃣ Accept Edits mode: "Do the rest quickly"    │
+│     └─→ Handle repetitive tasks quickly          │
+│                                                  │
+│  4️⃣ Plan mode: "Review what we've done so far"  │
+│     └─→ Final verification                       │
+│                                                  │
+└──────────────────────────────────────────────────┘
 ```
 
-When Claude explains options like JWT, sessions, or OAuth, you choose and then proceed with implementation. This prevents "built it but it doesn't match the requirements" situations.
+### Permission Mode Selection Criteria
+
+| Situation | Recommended Mode | Reason |
+|-----------|------------------|--------|
+| Low risk + Easy to undo | Accept Edits | Speed priority |
+| Medium risk or first time | Normal | Proceed while confirming |
+| High risk or hard to undo | Plan | Plan first |
+| Code review | Plan | Only need reading |
+| Learning purpose | Normal | Understand the process |
+| Before production deployment | Plan → Normal | Be careful |
+
+### Clear Request Makes Clear Results
+
+**Vague request:**
+```
+> Create a website
+```
+
+**Clear request:**
+```
+> Create a portfolio page.
+> Structure with intro, 3 projects, and contact sections, with a dark theme.
+> Use React and Tailwind CSS.
+```
+
+### Iterative Pattern: Request → Verify → Improve
+
+```
+1. Request: "Create a login form"
+2. Verify: "Add email validation too"
+3. Improve: "Add password strength indicator too"
+4. Complete: "Good, now clean up the styling"
+```
 
 ---
 
-## Try It Yourself
+## 🚨 Common Errors and Solutions
 
-Let's practice what you learned. Open Claude Code and follow along:
+### Error 1: File Not Created in Plan Mode
 
-### Exercise 1: Mode Switching
-```
-1. Start Claude Code: claude
-2. Check current mode (shown in the interface)
-3. Press Shift + Tab to switch modes
-4. Notice how the mode indicator changes
-5. Press Shift + Tab again until you're in Plan mode
-```
+**Situation:** Said "Create a file" but it only explains and doesn't create
 
-### Exercise 2: First Real Conversation
-```
-> What's in this folder?
-```
-Claude will show you the files. In Plan mode, it can only read, not change anything.
+**Cause:** Plan mode is read-only
 
-### Exercise 3: Create Something Simple
+**Solution:** Switch to Normal or Accept Edits mode with `Shift + Tab`
+
+**Conversation example:**
 ```
-1. Press Shift + Tab to switch to Normal mode
-2. Type: Create a file called hello.txt with "Hello World" inside
-3. When Claude asks for permission, click Allow
-4. Type: Show me what's in hello.txt
+Plan Mode 📋
+
+> Create index.html
+
+In Plan mode, files cannot be created.
+It would be good to create with this structure:
+- DOCTYPE declaration
+- head section (meta, title)
+- body section (content)
+
+To actually create it, please switch to Normal mode (Shift+Tab).
 ```
 
-Congratulations! You just created your first file with Claude Code.
+### Error 2: Accidentally Modified Wrong File
+
+**Situation:** Unwanted file was modified
+
+**Solution:** `Esc Esc` (press Escape twice) to undo. Or:
+```
+> Cancel what you just did
+```
+
+### Error 3: Mode Switch Doesn't Work
+
+**Situation:** `Shift + Tab` doesn't respond
+
+**Solution:**
+- Confirm you're holding `Shift` and pressing `Tab`
+- Some terminals may have different key settings. Switch directly with `/plan` command
+
+### Error 4: Claude Doesn't Remember Previous Conversation
+
+**Situation:** Said "the file I made earlier" but Claude doesn't know
+
+**Cause:** Used `/clear` or started a new session
+
+**Solution:**
+```bash
+# Continue previous conversation
+claude --continue
+```
+
+### Error 5: Too Many Approval Dialogs
+
+**Situation:** Creating one file requires multiple approvals
+
+**Solution:**
+- Select `a` (Allow all) to auto-approve similar actions
+- Switch to Accept Edits mode
 
 ---
 
-## Common Mistakes
+## ❌ Common Mistakes
 
 ### 1. Forgetting Which Mode You're In
-Always check the mode indicator before making requests. If you're in Plan mode and ask Claude to create a file, it will explain what it would do but won't actually do it.
+Always check the mode indicator before making a request.
 
-### 2. Clicking "Deny" by Accident
-If you accidentally deny a change, just ask Claude again. "Do that again" or "Yes, please create that file" works fine.
+> 💡 **Beginner Tip**
+>
+> Current mode is always displayed at the top of the screen.
+> Plan 📋 / Normal 🔒 / Accept Edits ⚡
 
-### 3. Not Using Plan Mode for Exploration
-When you first open a project, resist the urge to immediately start changing things. Use Plan mode to understand the structure first.
+### 2. Accidentally Clicking "Deny"
+If you accidentally denied, just make the request again. Just say "Do it again."
+
+### 3. Not Using Plan Mode When Exploring
+When first opening a project, resist the urge to modify right away. First understand the structure in Plan mode.
 
 ### 4. Typing Commands Instead of Natural Language
-You don't need to type terminal commands. Instead of `ls -la`, just say "show me the files in this folder." Claude understands both, but natural language is easier.
+No need to type terminal commands. Instead of `ls -la`, say "Show me the files in this folder."
 
 ### 5. Not Reading Claude's Explanations
-Claude often explains what it's about to do and why. Reading these explanations helps you learn and catch potential issues.
+Claude often explains what it's going to do and why. Reading these explanations helps you learn and catch problems early.
+
+### 6. Making Vague Requests
+"Fix it" is worse than "Fix the null error." Be specific.
+
+### 7. Requesting Too Much at Once
+"Create a shopping mall" is worse than requesting step by step.
 
 ---
 
-## If It Doesn't Work...
+## 🆘 If It's Not Working?
 
-**Mode won't switch?**
-Make sure you're pressing Shift + Tab (not just Tab). Some terminals require specific key combinations.
-
-**Claude isn't responding?**
-- Check your internet connection
-- Try typing `/help` to see if Claude is active
-- Exit with `/exit` and restart
-
-**Permission dialogs not appearing?**
-You might be in Plan mode (read-only) or Accept Edits mode (auto-approve). Press `Shift + Tab` to switch to Normal mode.
-
-**Claude did something you didn't want?**
-- Press `Esc Esc` (Escape twice) to undo the last change
-- Or ask Claude: "Undo that last change"
-
-**Confused about what Claude is doing?**
-Just ask! "What did you just do?" or "Explain that change" works great.
+| Symptom | Solution |
+|---------|----------|
+| Mode doesn't change | Check `Shift + Tab`, or use `/plan` command |
+| Claude doesn't respond | Check internet connection, type `/help`, `/exit` and restart |
+| Approval dialog doesn't appear | Might be in Plan or Accept Edits mode. Switch to Normal mode with `Shift + Tab` |
+| Does unwanted action | Undo with `Esc Esc` |
+| Doesn't remember previous conversation | Restore previous session with `claude --continue` |
 
 ---
 
-## Summary
+## 💡 How Professionals Use It
 
-Covered in this chapter:
-- [x] Conversation methods with Claude Code
-- [x] Three permission modes (Plan, Normal, Accept Edits)
-- [x] Frequently used shortcuts
-- [x] Slash commands
+### Code Review Scenario
 
-**Key takeaway**: Start new work in Plan mode.
+```
+Plan Mode 📋
 
-The next chapter covers file operations in detail.
+> @src/auth.js Does this code have security vulnerabilities?
 
-Proceed to [Chapter 04: Working with Files](../Chapter04/README.md).
+Security review results:
+
+1. ⚠️ Password stored in plain text (line 45)
+   → Need to hash with bcrypt
+
+2. ⚠️ SQL injection possible (line 78)
+   → Recommend using prepared statement
+
+3. ✅ CORS settings appropriate
+
+Would you like to fix these?
+```
+
+### Quick Prototyping
+
+```
+Accept Edits Mode ⚡
+
+> Create a chat UI prototype
+
+✓ Created components/Chat.js
+✓ Created components/Message.js
+✓ Created components/InputBox.js
+✓ Updated App.js
+✓ Created styles/chat.css
+
+I've created a basic chat UI.
+Check it out at localhost:3000.
+```
+
+### Careful Deployment Work
+
+```
+Normal Mode 🔒
+
+> Prepare for production deployment
+
+I'll perform the following tasks:
+1. Check environment variables
+2. Build optimization
+3. Run tests
+4. Execute deployment script
+
+Would you like confirmation at each step? [y/n]
+```
+
+---
+
+## ✅ Checklist
+
+Before finishing your learning, confirm:
+
+- [ ] I can converse with Claude Code
+- [ ] I can explain the three permission modes (Plan, Normal, Accept Edits)
+- [ ] I can switch modes with `Shift + Tab`
+- [ ] I know a few slash commands (/help, /clear, /exit)
+- [ ] I can undo with `Esc Esc`
+- [ ] I know the difference between good and bad questions
+- [ ] I know the difference between `/clear` and `Ctrl+L`
+
+**Key point**: Start new work in Plan mode.
+
+---
+
+## 🔑 Key Terms
+
+| Term | Description |
+|------|-------------|
+| **Plan mode** | Read-only mode. Cannot modify files |
+| **Normal mode** | Default mode. All changes require confirmation |
+| **Accept Edits mode** | File modifications auto-approved. Only dangerous actions confirm |
+| **Slash commands** | Special commands starting with `/` |
+| **Session** | One conversation unit with Claude Code |
+
+Also refer to the [full glossary](../GLOSSARY.md).
+
+---
+
+## 📚 Learn More
+
+**Official Documentation:**
+- [Claude Code Usage Guide](https://docs.anthropic.com/en/docs/claude-code/using-claude-code) - Conversation and command guide
+- [Claude Code Permission Modes](https://docs.anthropic.com/en/docs/claude-code/security) - Security and permission settings
+
+**Video Resources:**
+- [Claude Code Tutorial (YouTube)](https://www.youtube.com/results?search_query=claude+code+tutorial) - Claude Code usage tutorial
+- [AI Coding Best Practices (YouTube)](https://www.youtube.com/results?search_query=ai+coding+best+practices) - AI coding best practices
+
+**Reading Materials:**
+- [Prompt Engineering Guide](https://www.promptingguide.ai/) - Effective prompt writing methods
+- [Learn Prompting](https://learnprompting.org/) - Prompting learning resources
+
+**Community:**
+- [Reddit r/ClaudeAI](https://www.reddit.com/r/ClaudeAI/) - Claude user community
+- [Claude Code Discussions](https://github.com/anthropics/claude-code/discussions) - Official GitHub discussions
+
+---
+
+## ➡️ Next Steps
+
+In the next chapter, we'll learn how to handle files in detail.
+
+**Next Chapter Preview:**
+- Referencing files with `@`
+- File creation, modification, deletion
+- Handling multiple files simultaneously
+- Using special prefixes (`@`, `!`, `#`)
+
+Proceed to [Chapter 04: Reading and Writing Files](../Chapter04/README.md).
