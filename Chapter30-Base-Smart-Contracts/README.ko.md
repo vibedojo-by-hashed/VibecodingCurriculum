@@ -1,7 +1,7 @@
 # Chapter 30: Base 스마트 컨트랙트
 
 ## 💬 질문하기
-[Discord](https://discord.gg/your-invite-link) - 막히면 여기서 질문하세요!
+[Discord](https://discord.gg/zpk3efB3aY) - 막히면 여기서 질문하세요!
 
 ## 🎯 이 챕터의 목표
 
