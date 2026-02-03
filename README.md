@@ -49,7 +49,7 @@ This curriculum goes beyond the official Claude Code tutorial to provide:
 
 If you have questions while learning, ask on Discord!
 
-[![Discord](https://img.shields.io/badge/Discord-Join_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite-link)
+[![Discord](https://img.shields.io/badge/Discord-Join_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/TxbJ56hS94)
 
 - Questions and Answers
 - Project Sharing
@@ -440,7 +440,7 @@ Claim tokens/NFTs      Viral distribution    NFT-gated communities
 
 1. **Ask Claude**: "What is this?", "Why does this error happen?"
 2. **Check the Glossary**: [GLOSSARY.md](./GLOSSARY.md)
-3. **Ask the Community**: [Discord](https://discord.gg/your-invite-link)
+3. **Ask the Community**: [Discord](https://discord.gg/TxbJ56hS94)
 4. **Review previous chapter**: Often the answer is there
 
 ### Common Beginner Mistakes

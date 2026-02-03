@@ -52,7 +52,7 @@ Claude Code를 기반으로 커리큘럼을 구성한 이유:
 - **Git 워크플로우** → 표준
 
 > 💡 **향후 계획**: Cursor, Windsurf, Jules 등 다른 도구 커리큘럼도 확장 예정입니다.
-> 관심 있으시면 [Discord](https://discord.gg/your-invite-link)에서 의견 주세요!
+> 관심 있으시면 [Discord](https://discord.gg/TxbJ56hS94)에서 의견 주세요!
 
 ---
 
@@ -81,7 +81,7 @@ Claude Code를 기반으로 커리큘럼을 구성한 이유:
 
 학습 중 궁금한 점이 있으면 디스코드에서 질문하세요!
 
-[![Discord](https://img.shields.io/badge/Discord-커뮤니티_참여하기-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite-link)
+[![Discord](https://img.shields.io/badge/Discord-커뮤니티_참여하기-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/TxbJ56hS94)
 
 - 질문과 답변
 - 프로젝트 공유
@@ -455,7 +455,7 @@ Ch.28: 소비자 🛒      Ch.29: 빌더 🔨       Ch.30: 창조자 ⚡
 
 1. **Claude에게 질문**: "이게 뭐야?", "왜 이 에러가 나?"
 2. **용어 사전 확인**: [GLOSSARY.ko.md](./GLOSSARY.ko.md)
-3. **커뮤니티에 질문**: [Discord](https://discord.gg/your-invite-link)
+3. **커뮤니티에 질문**: [Discord](https://discord.gg/TxbJ56hS94)
 4. **이전 챕터 복습**: 답이 거기 있는 경우가 많음
 
 ### 초보자가 자주 하는 실수

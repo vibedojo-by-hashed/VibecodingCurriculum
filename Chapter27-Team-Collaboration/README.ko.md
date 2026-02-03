@@ -8,7 +8,7 @@
 
 학습 중 궁금한 점이 있으면 디스코드에서 질문하세요!
 
-[![Discord](https://img.shields.io/badge/Discord-질문하기-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite-link)
+[![Discord](https://img.shields.io/badge/Discord-질문하기-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/TxbJ56hS94)
 
 ---
 
@@ -1692,7 +1692,7 @@ Part 3: 고급 (Chapter 22-27)
 
 ### 디스코드 커뮤니티
 
-[![Discord](https://img.shields.io/badge/Discord-바이브코딩_커뮤니티-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite-link)
+[![Discord](https://img.shields.io/badge/Discord-바이브코딩_커뮤니티-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/TxbJ56hS94)
 
 **채널 소개**:
 - `#질문답변`: 학습 중 궁금한 점
@@ -1760,7 +1760,7 @@ Part 3: 고급 (Chapter 22-27)
 
 ---
 
-[![Discord](https://img.shields.io/badge/Discord-커뮤니티_참여-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite-link)
+[![Discord](https://img.shields.io/badge/Discord-커뮤니티_참여-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/TxbJ56hS94)
 [![GitHub](https://img.shields.io/badge/GitHub-프로젝트_스타-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/your-repo)
 
 ---

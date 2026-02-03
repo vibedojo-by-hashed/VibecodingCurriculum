@@ -1,7 +1,7 @@
 # Chapter 29: Farcaster Frames
 
 ## 💬 Ask Questions
-[Discord](https://discord.gg/your-invite-link) - When you're stuck, ask here!
+[Discord](https://discord.gg/TxbJ56hS94) - When you're stuck, ask here!
 
 ## 🎯 Goals for This Chapter
 

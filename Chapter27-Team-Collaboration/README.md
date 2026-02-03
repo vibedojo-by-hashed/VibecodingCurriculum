@@ -8,7 +8,7 @@
 
 If you have questions while learning, ask on Discord!
 
-[![Discord](https://img.shields.io/badge/Discord-Ask%20Questions-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite-link)
+[![Discord](https://img.shields.io/badge/Discord-Ask%20Questions-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/TxbJ56hS94)
 
 ---
 
@@ -1691,7 +1691,7 @@ Part 3: Advanced (Chapter 22-27)
 
 ### Discord Community
 
-[![Discord](https://img.shields.io/badge/Discord-Vibecoding_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite-link)
+[![Discord](https://img.shields.io/badge/Discord-Vibecoding_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/TxbJ56hS94)
 
 **Channel Introduction**:
 - `#questions`: Questions during learning
@@ -1759,7 +1759,7 @@ We support your development journey!
 
 ---
 
-[![Discord](https://img.shields.io/badge/Discord-Join_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite-link)
+[![Discord](https://img.shields.io/badge/Discord-Join_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/TxbJ56hS94)
 [![GitHub](https://img.shields.io/badge/GitHub-Star_Project-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/your-repo)
 
 ---
