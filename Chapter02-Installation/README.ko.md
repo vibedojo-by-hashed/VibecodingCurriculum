@@ -150,8 +150,14 @@ ls                  # 현재 폴더의 파일 목록 보기
 
 > 💡 **비전공자 팁 (Windows)**
 >
-> PowerShell과 명령 프롬프트(cmd) 두 가지가 있습니다. PowerShell이 더 현대적이니 PowerShell을 사용하세요.
-> "관리자 권한으로 실행"이 아닌 일반 실행으로 시작하세요.
+> Windows에서 "터미널"과 "쉘"은 다른 개념입니다:
+> - **터미널 앱** (창을 띄워주는 프로그램): Windows Terminal, PowerShell 창 등
+> - **쉘** (명령어를 해석하는 프로그램): PowerShell, cmd 등
+>
+> **추천 조합:** Windows Terminal 앱 안에서 PowerShell 쉘을 사용하세요.
+> - Windows Terminal은 Microsoft Store에서 무료로 설치할 수 있습니다.
+> - PowerShell이 cmd보다 현대적이고 Claude Code와 호환이 좋습니다.
+> - "관리자 권한으로 실행"이 아닌 일반 실행으로 시작하세요.
 
 **Linux:**
 1. `Ctrl + Alt + T` (대부분의 배포판)
@@ -496,6 +502,26 @@ PS C:\Users\홍길동>
 | 마우스 우클릭 | 복사한 텍스트 붙여넣기 (Windows) |
 | Cmd + V | 붙여넣기 (Mac) |
 
+### 터미널에서 복사/붙여넣기
+
+터미널에서의 복사/붙여넣기는 일반 앱과 약간 다릅니다. 처음에는 헷갈릴 수 있으니 꼭 알아두세요!
+
+| 동작 | Mac | Windows (PowerShell) | Windows (Windows Terminal) |
+|------|-----|---------------------|---------------------------|
+| **복사** | `Cmd + C` | 텍스트 드래그 후 `Enter` | `Ctrl + Shift + C` |
+| **붙여넣기** | `Cmd + V` | 마우스 우클릭 | `Ctrl + Shift + V` |
+
+> ⚠️ **주의사항**
+>
+> Windows의 기본 PowerShell에서 `Ctrl + C`는 복사가 아니라 **현재 명령 취소**입니다!
+> 복사하려면 텍스트를 드래그한 후 `Enter`를 누르세요.
+> Windows Terminal을 사용하면 `Ctrl + Shift + C/V`로 더 직관적으로 사용할 수 있습니다.
+
+> 💡 **비전공자 팁**
+>
+> 이 커리큘럼의 명령어를 따라할 때, 웹 브라우저에서 명령어를 복사한 뒤 터미널에 붙여넣는 과정이 자주 있습니다.
+> 위 표를 참고해서 자신의 운영체제에 맞는 방법을 먼저 연습해보세요!
+
 ---
 
 ## Claude Code 설치
@@ -508,6 +534,13 @@ PS C:\Users\홍길동>
 ```bash
 curl -fsSL https://claude.ai/install.sh | bash
 ```
+
+> 💡 **"curl이 뭔가요?"**
+>
+> `curl`은 인터넷에서 파일을 다운로드하는 터미널 명령어입니다.
+> 브라우저에서 링크를 클릭해서 다운로드하는 것과 같은 일을 터미널에서 하는 것이죠.
+> `| bash`는 "다운로드한 스크립트를 바로 실행해라"는 의미입니다.
+> 즉, **설치 파일을 다운로드하고 바로 실행**하는 한 줄짜리 명령어입니다.
 
 **Windows (PowerShell):**
 
