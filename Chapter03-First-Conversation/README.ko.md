@@ -186,6 +186,29 @@ Plan Mode 📋
 - src/index.js: 엔트리 포인트
 ```
 
+**Plan 모드에서 수정 계획 세우기:**
+```
+Plan Mode 📋
+
+> 이 프로젝트에 다크 모드를 추가하고 싶어
+
+다크 모드를 추가하려면 다음 단계가 필요합니다:
+
+1. src/styles/theme.css에 다크 모드 CSS 변수 추가
+2. src/components/ThemeToggle.js 버튼 컴포넌트 생성
+3. src/App.js에 테마 상태 관리 로직 추가
+4. 기존 컴포넌트들의 색상을 CSS 변수로 교체
+
+실제로 수정하시려면 Normal 모드로 전환해주세요 (Shift+Tab).
+```
+
+> 💡 **비전공자 팁**
+>
+> Plan 모드의 핵심은 **"먼저 계획, 나중에 실행"**입니다.
+> Claude가 제안한 계획을 보고 "이게 맞아" 싶으면 모드를 바꿔서 실행하고,
+> "이건 아닌데?"라면 계획을 수정 요청할 수 있습니다.
+> **실행 전에 방향을 잡는 것**이 Plan 모드의 가치입니다.
+
 > 💡 **비전공자 팁**
 >
 > Plan 모드에서 "파일 만들어줘"라고 해도 만들어지지 않습니다.
@@ -211,19 +234,17 @@ Plan Mode 📋
 - 변경 사항을 하나씩 확인하고 싶을 때
 - 프로덕션 환경에서 작업할 때
 
-Claude가 파일을 수정하려고 하면:
+Claude가 파일을 수정하려고 하면 확인을 요청합니다:
 ```
-Claude wants to edit src/app.js
-[Allow] [Deny] [Allow all]
+Allow this action? [y/n/a]
 ```
-이렇게 확인을 요청합니다. Allow를 선택하면 수정됩니다.
 
 **승인 옵션 설명:**
-| 옵션 | 의미 | 언제 사용? |
+| 입력 | 의미 | 언제 사용? |
 |------|------|-----------|
-| `y` / Allow | 이번만 허용 | 변경 내용을 확인하고 괜찮을 때 |
-| `n` / Deny | 거부 | 원하지 않는 변경일 때 |
-| `a` / Allow all | 비슷한 작업 모두 허용 | 반복 작업이 많을 때 |
+| `y` (Yes) | 이번만 허용 | 변경 내용을 확인하고 괜찮을 때 |
+| `n` (No) | 거부 | 원하지 않는 변경일 때 |
+| `a` (Always) | 이 세션에서 비슷한 작업 모두 허용 | 반복 작업이 많을 때 |
 
 **실제 대화 예시:**
 ```
@@ -288,9 +309,9 @@ Accept Edits Mode ⚡
 
 > 로그인 폼 컴포넌트 만들어줘
 
-✓ Created src/components/LoginForm.js
-✓ Updated src/App.js (import 추가)
-✓ Created src/styles/LoginForm.css
+✓ Created src/components/LoginForm.js       ← 자동 승인 (파일 생성)
+✓ Updated src/App.js (import 추가)          ← 자동 승인 (파일 수정)
+✓ Created src/styles/LoginForm.css          ← 자동 승인 (파일 생성)
 
 로그인 폼 컴포넌트를 생성했습니다. 기능:
 - 이메일/비밀번호 입력 필드
@@ -299,6 +320,28 @@ Accept Edits Mode ⚡
 
 테스트해보시겠어요?
 ```
+
+**Normal 모드와의 차이:**
+```
+Normal Mode 🔒 (같은 요청)
+
+> 로그인 폼 컴포넌트 만들어줘
+
+Creating: src/components/LoginForm.js
+Allow? [y/n/a] → y                          ← 매번 확인
+
+Updating: src/App.js
+Allow? [y/n/a] → y                          ← 매번 확인
+
+Creating: src/styles/LoginForm.css
+Allow? [y/n/a] → y                          ← 매번 확인
+```
+
+> 💡 **비전공자 팁**
+>
+> Accept Edits 모드는 파일 수정을 **묻지 않고 바로 실행**합니다.
+> Normal 모드에서 3번 "y"를 눌러야 할 작업이 자동으로 처리되어 훨씬 빠릅니다.
+> 단, 파일 삭제나 `git push` 같은 위험한 작업은 여전히 확인을 요청합니다.
 
 > ⚠️ **주의사항**
 >
@@ -382,7 +425,9 @@ Accept Edits Mode ⚡
 ```
 Normal 🔒 → Accept Edits ⚡ → Plan 📋 → Normal 🔒 ...
 ```
-순서대로 순환합니다. 화면 상단에서 현재 모드를 확인할 수 있습니다.
+순서대로 순환합니다. 모드를 전환하면 입력 프롬프트 근처에 현재 모드가 표시됩니다.
+
+> 💡 **참고:** 모드 표시 위치와 형식은 Claude Code 버전에 따라 다를 수 있습니다. 정확한 위치보다는 모드 전환 시 화면에 표시되는 변화를 확인하세요.
 
 #### Esc Esc - 되돌리기
 Claude가 방금 한 작업을 취소합니다.
@@ -420,15 +465,6 @@ Claude: 네, 작성하겠습니다...
 > - 3개 섹션으로 나눠줘 (Shift+Enter)
 > - 다크 모드 지원해줘 (Enter로 전송)
 ```
-
-### Mac 사용자 참고
-
-Mac에서 `Alt` 키 조합을 사용하려면 터미널 설정에서 "Option as Meta"를 활성화해야 합니다.
-
-**설정 방법:**
-1. 터미널 > 환경설정 > 프로파일
-2. 키보드 탭
-3. "Option 키를 메타 키로 사용" 체크
 
 ---
 
@@ -754,9 +790,9 @@ Claude wants to create file: hello.txt
 Allow this action? [y/n/a]
 ```
 
-- `y`: 이번만 허용
-- `n`: 거부
-- `a`: 앞으로 비슷한 작업 모두 허용
+- `y` (Yes): 이번만 허용
+- `n` (No): 거부
+- `a` (Always): 이 세션에서 비슷한 작업 모두 허용
 
 ### 파일 수정 Diff 표시
 
@@ -1122,6 +1158,15 @@ Normal Mode 🔒
 **커뮤니티:**
 - [Reddit r/ClaudeAI](https://www.reddit.com/r/ClaudeAI/) - Claude 사용자 커뮤니티
 - [Claude Code Discussions](https://github.com/anthropics/claude-code/discussions) - 공식 GitHub 토론
+
+**Mac 사용자 참고: Option as Meta 설정**
+
+일부 단축키가 Mac 기본 터미널에서 작동하지 않을 수 있습니다. `Alt` 키 조합이 필요한 경우:
+1. 터미널 > 환경설정 > 프로파일 > 키보드 탭
+2. "Option 키를 메타 키로 사용" 체크
+3. iTerm2 사용자: Preferences > Profiles > Keys > "Option key acts as Meta" 선택
+
+> 💡 이 설정은 Claude Code의 기본 사용에는 필수가 아닙니다. `Alt` 키 조합이 안 될 때만 설정하세요.
 
 ---
 
