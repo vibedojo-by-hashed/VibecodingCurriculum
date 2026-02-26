@@ -929,7 +929,7 @@ config 관련 파일들을 찾았습니다:
 ```
 > 방금 거 취소해줘
 ```
-또는 `Esc Esc`로 되돌리기
+또는 Claude에게 "방금 거 취소해줘"라고 요청
 
 ---
 
@@ -992,7 +992,7 @@ Normal 모드에서 파일 생성/수정 시 반드시 승인해야 합니다.
 | 변경 사항이 안 보임 | Allow 선택 확인 |
 | 숨김 파일 못 찾음 | `!ls -la` 명령으로 확인 |
 | 파일이 너무 커서 안 열림 | 부분 요청 또는 요약 요청 |
-| 수정이 잘못됨 | `Esc Esc` 또는 "취소해줘" |
+| 수정이 잘못됨 | `Ctrl+C` 또는 Claude에게 "취소해줘" 요청 |
 
 ---
 
@@ -1077,7 +1077,7 @@ README.md 생성 완료:
 | **Diff** | 파일 변경 전후 비교 표시 |
 | **확장자** | 파일 종류를 나타내는 접미사 (.js, .html 등) |
 
-[전체 용어 사전](../GLOSSARY.ko.md)도 참고하세요.
+[전체 용어 사전](https://github.com/vibedojo-by-hashed/VibecodingCurriculum/blob/main/GLOSSARY.ko.md)도 참고하세요.
 
 ---
 
